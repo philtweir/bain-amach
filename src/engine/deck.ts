@@ -68,3 +68,25 @@ export function deckSize(nPlayers: number): number {
 export function packSize(): number {
   return Object.values(DECK.verbs.pack3to4).reduce((a, b) => a + b, 0);
 }
+
+// Each compound is printed on exactly three meaning cards. A meaning with two compounds
+// (GIVE UP) prints the first compound on its first three cards and the second on the next three.
+const PRINTED: Record<string, Record<string, string>> = {};
+{
+  const seen: Record<string, number> = {};
+  for (const m of DECK.meaningCards) {
+    PRINTED[m.id] = {};
+    for (const g of m.meanings) {
+      const cs = COMPOUNDS_BY_MEANING[g] ?? [];
+      const i = seen[g] ?? 0;
+      seen[g] = i + 1;
+      const c = cs[Math.min(cs.length - 1, Math.floor(i / 3))];
+      if (c) PRINTED[m.id][g] = compoundText(c);
+    }
+  }
+}
+
+/** The Irish answer printed under meaning `g` on meaning card `cardT` (m01…). */
+export function printedAnswer(cardT: string, g: string): string {
+  return PRINTED[cardT]?.[g] ?? answersFor(g)[0] ?? '';
+}

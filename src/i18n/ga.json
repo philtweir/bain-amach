@@ -1,0 +1,12 @@
+{
+  "_status": "PLACEHOLDER. Irish UI strings await Phil. Any key missing here falls back to English (see i18n/index.ts). Only strings fixed in the design are filled in.",
+  "app.name": "Bain Amach",
+  "lang.title": "Cén teanga?",
+  "lang.sub": "Which language?",
+  "lang.desc": "Cards are always in Irish. This sets the menus and help. You can change it later in Settings.",
+  "lang.ga": "Gaeilge",
+  "lang.gaSub": "Irish · default",
+  "lang.en": "English",
+  "lang.enSub": "Béarla",
+  "lang.continue": "Ar aghaidh · Continue"
+}

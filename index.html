@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ga">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Bain Amach</title>
+<meta name="description" content="A fast card game for Ulster Irish compound verbs.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#bfd3cc" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121a19" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bain Amach">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
+<link rel="apple-touch-startup-image" href="/splash/iphone-1170x2532-light.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)">
+<link rel="apple-touch-startup-image" href="/splash/iphone-1170x2532-dark.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)">
+<link rel="apple-touch-startup-image" href="/splash/iphone-1290x2796-light.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: light)">
+<link rel="apple-touch-startup-image" href="/splash/iphone-1290x2796-dark.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (prefers-color-scheme: dark)">
+<link rel="apple-touch-startup-image" href="/splash/iphone-se-750x1334-light.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)">
+<link rel="apple-touch-startup-image" href="/splash/iphone-se-750x1334-dark.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)">
+<link rel="apple-touch-startup-image" href="/splash/ipad-2048x2732-light.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: light)">
+<link rel="apple-touch-startup-image" href="/splash/ipad-2048x2732-dark.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (prefers-color-scheme: dark)">
+<!-- Paint the felt before anything loads, in the right theme, so launch never flashes white. -->
+<style>
+  html, body { margin: 0; height: 100%; background: #bfd3cc; overflow: hidden; }
+  @media (prefers-color-scheme: dark) { html:not([data-theme="light"]), html:not([data-theme="light"]) body { background: #121a19; } }
+  html[data-theme="dark"], html[data-theme="dark"] body { background: #121a19; }
+  #boot { position: fixed; inset: 0; display: grid; place-items: center; }
+  #boot img { width: 120px; height: 120px; border-radius: 27px; box-shadow: 0 6px 18px rgba(10,20,18,0.18); }
+</style>
+<script>
+  // Before first paint: saved theme, reduced motion and the iOS text size, so nothing jumps after load.
+  (function () {
+    var d = document.documentElement, s = {};
+    try { s = JSON.parse(localStorage.getItem('ba.settings') || '{}').data || {}; } catch (e) {}
+    var dark = s.theme === 'dark' || (s.theme !== 'light' && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+    d.setAttribute('data-theme', dark ? 'dark' : 'light');
+    if (s.reducedMotion === 'always') d.classList.add('ba-reduce-motion');
+    if (s.lang === 'en') d.lang = 'en';
+    if (window.CSS && CSS.supports('font', '-apple-system-body')) {
+      var p = document.createElement('div'); p.style.font = '-apple-system-body'; p.style.position = 'absolute'; p.style.visibility = 'hidden';
+      d.appendChild(p); var px = parseFloat(getComputedStyle(p).fontSize) || 17; d.removeChild(p);
+      d.style.setProperty('--text-scale', String(Math.min(1.35, Math.max(0.9, px / 17))));
+    }
+  })();
+</script>
+</head>
+<body>
+<div id="boot" aria-hidden="true"><img src="/icons/icon.svg" alt=""></div>
+<div id="app"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
