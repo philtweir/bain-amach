@@ -1,0 +1,781 @@
+<title>Bain Amach Design Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: one long board — playable table first, then the card system, then every screen in phone frames. */
+:root {
+  --table: #E3E8E4;      /* sea mist: the playing surface */
+  --page: #EEF1EE;
+  --surface: #F7F8F5;
+  --raised: #FFFFFF;
+  --ink: #172022;
+  --ink-2: #4B585A;
+  --ink-3: #7A8789;
+  --line: #C8D0CB;
+  --frame: #1C2426;
+  --verb-f: #E9E0F3; --verb-e: #5A4180; --verb-t: #34224D;
+  --adv-f: #D8EEEA; --adv-e: #1C6C66; --adv-t: #0D3D39;
+  --prep-f: #F6E1D3; --prep-e: #A04E27; --prep-t: #5B2810;
+  --mean-f: #FFFCF3; --mean-e: #75705F; --mean-t: #26241F;
+  --wild-f: #EEF2F7; --wild-e: #586D88; --wild-t: #283649;
+  --gorse: #E2A41F;      /* highlight: what you can use right now */
+  --gorse-soft: #F8E7B8;
+  --gorse-ink: #4E3500;
+  --you: #2C6CB3;
+  --bot: #B13F7B;
+  --good: #2F7D4A;
+  --lip: rgba(23, 32, 34, .18);
+  --scrim: rgba(18, 24, 26, .55);
+  --f-card: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --table: #172022; --page: #111819; --surface: #1C2527; --raised: #243032; --ink: #E5ECE8; --ink-2: #A9B5B1; --ink-3: #7D8A87; --line: #34413F; --frame: #05090A;
+  --verb-f: #382950; --verb-e: #B7A1D9; --verb-t: #F0E8FA; --adv-f: #11403C; --adv-e: #6CC7BE; --adv-t: #DCF4F0;
+  --prep-f: #4C2513; --prep-e: #E39166; --prep-t: #FBE5D8; --mean-f: #2A2924; --mean-e: #B4AE9C; --mean-t: #F3EFE4;
+  --wild-f: #1E2A38; --wild-e: #91A6C2; --wild-t: #DCE6F3; --gorse: #F2BF47; --gorse-soft: #4A3A12; --gorse-ink: #FFF1CC;
+  --you: #72A8E8; --bot: #E27DB2; --good: #6BC08A; --lip: rgba(0,0,0,.45); --scrim: rgba(0,0,0,.6); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --table: #172022; --page: #111819; --surface: #1C2527; --raised: #243032; --ink: #E5ECE8; --ink-2: #A9B5B1; --ink-3: #7D8A87; --line: #34413F; --frame: #05090A;
+  --verb-f: #382950; --verb-e: #B7A1D9; --verb-t: #F0E8FA; --adv-f: #11403C; --adv-e: #6CC7BE; --adv-t: #DCF4F0;
+  --prep-f: #4C2513; --prep-e: #E39166; --prep-t: #FBE5D8; --mean-f: #2A2924; --mean-e: #B4AE9C; --mean-t: #F3EFE4;
+  --wild-f: #1E2A38; --wild-e: #91A6C2; --wild-t: #DCE6F3; --gorse: #F2BF47; --gorse-soft: #4A3A12; --gorse-ink: #FFF1CC;
+  --you: #72A8E8; --bot: #E27DB2; --good: #6BC08A; --lip: rgba(0,0,0,.45); --scrim: rgba(0,0,0,.6); color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--page); color: var(--ink); font-family: var(--f-ui); font-size: 15px; line-height: 1.5 }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px }
+h1, h2, h3 { font-family: var(--f-card); text-wrap: balance; margin: 0 }
+h1 { font-size: clamp(34px, 6vw, 56px); font-weight: 800; letter-spacing: -.02em; line-height: 1 }
+h2 { font-size: 26px; font-weight: 800; letter-spacing: -.01em }
+h3 { font-size: 17px; font-weight: 600 }
+p { margin: 0; max-width: 66ch }
+.lede { color: var(--ink-2); font-size: 17px; margin-top: 10px }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 700 }
+.head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px }
+.head-tiles { display: flex; gap: 6px }
+section { margin-top: 44px }
+section > .intro { display: grid; gap: 8px; margin-bottom: 20px }
+.muted { color: var(--ink-2) }
+button { font: inherit; cursor: pointer }
+:focus-visible { outline: 3px solid var(--gorse); outline-offset: 2px }
+
+/* ---------- tiles (shared everywhere) ---------- */
+.tile { position: relative; width: var(--s); height: var(--s); border-radius: calc(var(--s) * .16); border: 1.5px solid; display: grid; place-items: center; font-family: var(--f-card); line-height: 1; box-shadow: 0 2px 0 var(--lip); user-select: none; flex: none; overflow: hidden }
+.tile > b { position: relative; z-index: 1; font-weight: 600; white-space: nowrap; padding: 0 2px }
+.t-V { background: var(--verb-f); border-color: var(--verb-e); color: var(--verb-t) }
+.t-V > b { font-weight: 800 }
+.t-A { background: var(--adv-f); border-color: var(--adv-e); color: var(--adv-t) }
+.t-P { background: var(--prep-f); border-color: var(--prep-e); color: var(--prep-t) }
+.t-A > b, .t-P > b { font-style: italic }
+.t-M { background: var(--mean-f); border-color: var(--mean-e); color: var(--mean-t) }
+.t-M > b { font-family: var(--f-ui); font-weight: 700; text-transform: uppercase; letter-spacing: .02em; white-space: normal; text-align: center; line-height: 1.05 }
+.t-W { background: var(--wild-f); border-color: var(--wild-e); color: var(--wild-t); border-style: dashed }
+/* the axis stripe: a road through the tile along its line, notched at both ends */
+.ax-h::before, .ax-v::before { content: ""; position: absolute; background: currentColor; opacity: .14 }
+.ax-h::before { left: 0; right: 0; top: 50%; height: 34%; transform: translateY(-50%) }
+.ax-v::before { top: 0; bottom: 0; left: 50%; width: 34%; transform: translateX(-50%) }
+.ax-h::after, .ax-v::after { content: ""; position: absolute; border: 0 solid currentColor; opacity: .7 }
+.ax-h::after { left: -1px; right: -1px; top: 33%; bottom: 33%; border-left-width: 3px; border-right-width: 3px }
+.ax-v::after { top: -1px; bottom: -1px; left: 33%; right: 33%; border-top-width: 3px; border-bottom-width: 3px }
+.tile.cross::before { left: 0; right: 0; top: 0; bottom: 0; width: auto; height: auto; transform: none; background: linear-gradient(currentColor, currentColor) center / 34% 100% no-repeat, linear-gradient(currentColor, currentColor) center / 100% 34% no-repeat }
+.tile .xmark { position: absolute; left: 6%; bottom: 6%; width: 26%; height: 26%; border-radius: 50%; background: var(--gorse); color: var(--gorse-ink); font: 800 calc(var(--s) * .2)/1 var(--f-ui); display: grid; place-items: center; z-index: 2 }
+.tile .own { position: absolute; top: 7%; right: 7%; width: 16%; height: 16%; border-radius: 50%; z-index: 2 }
+.own.o0 { background: var(--you) } .own.o1 { background: var(--bot) }
+.wildmark { font: 800 calc(var(--s) * .42)/1 var(--f-card); position: relative; z-index: 1 }
+
+/* states on tiles */
+.lit { box-shadow: 0 0 0 3px var(--gorse), 0 2px 0 var(--lip) }
+.pick { box-shadow: 0 0 0 3px var(--gorse), 0 0 0 6px var(--gorse-soft) }
+.ghost { opacity: .62; border-style: dashed }
+.fresh { animation: drop .38s cubic-bezier(.2, 1.4, .4, 1) both }
+.botfresh { animation: drop .38s cubic-bezier(.2, 1.4, .4, 1) both; box-shadow: 0 0 0 3px var(--bot), 0 2px 0 var(--lip) }
+.dim { opacity: .35 }
+@keyframes drop { from { transform: translateY(-14px) scale(1.12); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 3px var(--gorse) } 50% { box-shadow: 0 0 0 7px var(--gorse-soft) } }
+.pulse { animation: pulse 1.1s ease-in-out infinite }
+@media (prefers-reduced-motion: reduce) { .fresh, .botfresh, .pulse { animation: none } }
+
+/* ---------- phone frames ---------- */
+.phone { width: 300px; max-width: 100%; height: 620px; border-radius: 38px; border: 9px solid var(--frame); background: var(--surface); overflow: hidden; position: relative; display: flex; flex-direction: column; font-size: 13px; box-shadow: 0 18px 40px -22px rgba(0,0,0,.45) }
+.phone.big { width: 380px; height: 780px }
+.notch { height: 22px; flex: none; display: flex; justify-content: center; align-items: start }
+.notch::after { content: ""; width: 86px; height: 18px; border-radius: 0 0 12px 12px; background: var(--frame) }
+.shot { display: grid; gap: 10px; justify-items: center; align-content: start }
+.shot figcaption { max-width: 300px; font-size: 13.5px; color: var(--ink-2) }
+.shot figcaption b { color: var(--ink); font-family: var(--f-card); font-size: 15px; display: block; margin-bottom: 2px }
+.screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 34px 20px }
+.scr { flex: 1; display: flex; flex-direction: column; padding: 10px 16px 18px; gap: 12px; min-height: 0 }
+.btn { border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 700; font-size: 15px; background: var(--raised); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line) }
+.btn.primary { background: var(--ink); color: var(--surface); box-shadow: none }
+.btn.gorse { background: var(--gorse); color: var(--gorse-ink); box-shadow: none }
+.btn.small { padding: 8px 12px; font-size: 13px; border-radius: 11px }
+.btn:disabled { opacity: .45; cursor: default }
+.seg { display: flex; background: var(--table); border-radius: 12px; padding: 3px; gap: 3px }
+.seg span { flex: 1; text-align: center; padding: 7px 4px; border-radius: 9px; font-weight: 700; font-size: 12.5px; color: var(--ink-2) }
+.seg span.on { background: var(--raised); color: var(--ink); box-shadow: 0 1px 0 var(--lip) }
+.seg span.off { opacity: .4 }
+.field { display: grid; gap: 6px }
+.field > label { font-size: 12px; font-weight: 700; color: var(--ink-2); letter-spacing: .02em }
+.row { display: flex; align-items: center; gap: 8px }
+.spacer { flex: 1 }
+.listrow { display: flex; align-items: center; gap: 10px; padding: 11px 12px; background: var(--raised); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--line) }
+.listrow small { color: var(--ink-3); margin-left: auto }
+.wordmark { font: 800 22px/1 var(--f-card); letter-spacing: -.02em }
+.wordmark i { font-style: normal; color: var(--adv-e) }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--table); color: var(--ink-2) }
+
+/* ---------- table screen ---------- */
+.tb { display: flex; flex-direction: column; flex: 1; min-height: 0; background: var(--table) }
+.tb-status { display: flex; align-items: center; gap: 8px; padding: 6px 12px 8px }
+.av { display: flex; align-items: center; gap: 6px; font-weight: 700 }
+.av i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 var(--f-card); color: var(--surface); font-style: normal }
+.av.p0 i { background: var(--you) } .av.p1 i { background: var(--bot) }
+.av span { font-variant-numeric: tabular-nums }
+.turnchip { margin: 0 auto; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line) }
+.turnchip.mine { background: var(--you); color: var(--surface); box-shadow: none }
+.iconbtn { width: 30px; height: 30px; border-radius: 10px; border: 0; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); display: grid; place-items: center; color: var(--ink) }
+.river { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 0 12px 8px }
+.pile { display: grid; justify-items: center; gap: 3px; background: none; border: 0; padding: 0; color: var(--ink-3); font-size: 11px; font-variant-numeric: tabular-nums }
+.pile .stack { position: relative }
+.pile .stack::before { content: ""; position: absolute; inset: 3px -3px -3px 3px; border-radius: 8px; background: var(--line) }
+.pile.taken .tile { animation: taken .9s ease-out both }
+@keyframes taken { 0% { transform: scale(1) } 30% { transform: scale(.85) rotate(-6deg); opacity: .4 } 100% { transform: none; opacity: 1 } }
+.faceup { display: flex; align-items: center; gap: 8px; padding: 0 12px 8px; font-size: 11.5px; color: var(--ink-2) }
+.board-wrap { flex: 1; min-height: 0; position: relative; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--table) }
+.board-scroll { position: absolute; inset: 0; overflow: auto; display: grid }
+.board { position: relative; margin: auto }
+.board .tile { position: absolute }
+.zoom { position: absolute; right: 8px; bottom: 8px; display: grid; gap: 4px; z-index: 5 }
+.infochip { position: absolute; left: 8px; right: 52px; bottom: 8px; z-index: 5; background: var(--raised); border-radius: 12px; padding: 7px 10px; font-size: 12.5px; box-shadow: 0 6px 16px -8px rgba(0,0,0,.4), inset 0 0 0 1px var(--line) }
+.infochip i { font-family: var(--f-card); font-weight: 600 }
+.actionbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; min-height: 52px; background: var(--surface); font-size: 12.5px }
+.actionbar .msg { flex: 1; min-width: 0; color: var(--ink-2); line-height: 1.3 }
+.actionbar .msg b { color: var(--ink) }
+.hand { background: var(--surface); padding: 0 12px 12px; display: grid; gap: 8px }
+.hand-m { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 4px }
+.hand-v { display: flex; flex-wrap: wrap; gap: 7px; padding: 2px }
+.mcard { flex: none; width: 128px; border-radius: 12px; border: 1.5px solid var(--mean-e); background: var(--mean-f); color: var(--mean-t); padding: 7px 8px; display: grid; gap: 4px; text-align: left; box-shadow: 0 2px 0 var(--lip) }
+.mcard div { display: grid; line-height: 1.12 }
+.mcard div + div { border-top: 1px dashed var(--line); padding-top: 4px }
+.mcard b { font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em }
+.mcard i { font: 600 11.5px/1.15 var(--f-card); color: var(--ink-2) }
+.mcard.small { width: auto; padding: 4px 7px; display: flex; gap: 6px; border-radius: 9px }
+.mcard.small div { display: block } .mcard.small div + div { border: 0; padding: 0; border-left: 1px dashed var(--line); padding-left: 6px }
+.toast { position: absolute; left: 50%; top: 168px; transform: translateX(-50%); z-index: 20; background: var(--ink); color: var(--surface); border-radius: 14px; padding: 9px 14px; text-align: center; box-shadow: 0 10px 24px -10px rgba(0,0,0,.5); pointer-events: none; transition: opacity .25s; min-width: 190px }
+.toast i { display: block; font: 700 18px/1.15 var(--f-card); font-style: normal }
+.toast small { opacity: .8 }
+.overlay { position: absolute; inset: 0; z-index: 30; background: var(--scrim); display: grid; place-items: center; padding: 20px }
+.sheet { background: var(--surface); border-radius: 22px; padding: 18px; width: 100%; display: grid; gap: 10px }
+
+/* ---------- card spec ---------- */
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px }
+.spec figure { margin: 0; display: grid; gap: 10px; align-content: start }
+.spec figcaption { font-size: 13.5px; color: var(--ink-2) }
+.spec figcaption b { color: var(--ink); display: block; font-family: var(--f-card); font-size: 15px }
+.print { --s: 150px; position: relative; width: var(--s); height: var(--s); border-radius: 18px; border: 2px solid; box-shadow: 0 3px 0 var(--lip); font-family: var(--f-card) }
+.print .w { position: absolute; font-weight: 600; font-size: 17px; line-height: 1; white-space: nowrap }
+.print .n { top: 12px; left: 50%; transform: translateX(-50%) }
+.print .s { bottom: 12px; left: 50%; transform: translateX(-50%) rotate(180deg) }
+.print .e { right: 12px; top: 50%; transform: translateY(-50%) rotate(90deg); transform-origin: center; right: -2px }
+.print .wst { left: -2px; top: 50%; transform: translateY(-50%) rotate(-90deg) }
+.print .hub { position: absolute; inset: 50% auto auto 50%; width: 18px; height: 18px; margin: -9px; border-radius: 50%; background: currentColor; opacity: .5 }
+.print.mean { --s: 176px; padding: 12px; display: grid; gap: 7px; align-content: center; background: var(--mean-f); border-color: var(--mean-e); color: var(--mean-t); font-family: var(--f-ui) }
+.print.mean div { display: grid }
+.print.mean div + div { border-top: 1px dashed var(--line); padding-top: 6px }
+.print.mean b { font-size: 12px; text-transform: uppercase; letter-spacing: .04em }
+.print.mean i { font: 600 14px var(--f-card) }
+.sizes { display: flex; flex-wrap: wrap; align-items: end; gap: 14px }
+.sizes > div { display: grid; gap: 6px; justify-items: center; font-size: 12px; color: var(--ink-3) }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px }
+.sw { border-radius: 14px; padding: 12px; display: grid; gap: 2px; border: 1.5px solid; font-size: 12.5px }
+.sw b { font-family: var(--f-card); font-size: 14px }
+.proto { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 32px; align-items: start }
+@media (max-width: 860px) { .proto { grid-template-columns: 1fr } .proto .phone { margin: 0 auto } }
+.notes { display: grid; gap: 18px; min-width: 0 }
+.notes ol, .notes ul { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 6px; max-width: 62ch }
+.notes .card { background: var(--surface); border-radius: 18px; padding: 16px 18px; box-shadow: inset 0 0 0 1px var(--line) }
+.kbd { font-family: var(--f-card); font-weight: 600; font-style: italic }
+@media (max-width: 420px) { .phone.big { height: 760px } }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <div>
+      <div class="eyebrow">Design board · working title</div>
+      <h1>Bain <span style="color:var(--adv-e)">amach</span></h1>
+      <p class="lede">The UI for the Ulster Irish compound-verb card game: a playable table, the card system, and every screen in the flow. Built from the handoff spec; the rules are the simulator's final ruleset.</p>
+    </div>
+    <div class="head-tiles" id="headTiles" aria-hidden="true"></div>
+  </header>
+
+  <section id="table">
+    <div class="intro">
+      <div class="eyebrow">01 · The core screen</div>
+      <h2>Play the table</h2>
+      <p class="muted">A working prototype in turn mode against one bot, with the full rules: the five-pile river, full lines, lines through a particle already down, wildcards, lone verbs, swaps and stalls. Tap rather than drag; everything you can use lights up.</p>
+    </div>
+    <div class="proto">
+      <div class="phone big" id="proto" aria-label="Playable game table prototype"></div>
+      <div class="notes">
+        <div class="card">
+          <h3>Laying a full line in three taps</h3>
+          <ol>
+            <li><b>Tap a meaning card</b> in your hand. Every verb that can complete one of its three meanings lights up, on the table and in your hand, along with any particle a line could pass through.</li>
+            <li><b>Tap a verb.</b> The line appears as a ghost on the table and the river piles it needs start to pulse. A wildcard stands in for a particle the river isn't showing.</li>
+            <li><b>Tap “Lay it”</b>, or the ghost itself. “Other spot” cycles through the places the line fits.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>Other plays</h3>
+          <ul>
+            <li><b>Lone verb:</b> tap a verb with no meaning selected, then “Lay alone”. You draw 2.</li>
+            <li><b>Swap:</b> select a meaning card, then tap the face-up one beside the river.</li>
+            <li><b>Draw and pass</b> when nothing fits. Once both players pass in a row, every river pile turns its top card under.</li>
+            <li><b>Read the table:</b> with nothing selected, tap any card to see its line. Use + and − to zoom; meanings print in full when tiles are large enough.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Design decisions to carry into the build</h3>
+          <ul>
+            <li>Gorse yellow means “you can use this now”, and nothing else. Bot plays flash in the bot's colour.</li>
+            <li>Particles and wildcards carry an axis stripe along their line. A particle shared by two crossing lines gets a cross stripe and a <b>+</b> badge.</li>
+            <li>Every completed line is announced with the Irish first and the meaning under it.</li>
+            <li>Race mode, the tutorial, pass-and-play hand-over and the recap are drawn as screens in section 03; the build adds them around this same table.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cards">
+    <div class="intro">
+      <div class="eyebrow">02 · Cards</div>
+      <h2>The card system</h2>
+      <p class="muted">Every card is a square, so particles can turn to lie along a row or a column without breaking the grid. In print, verbs and particles carry their word on all four sides so they read from any seat; in the app the word stays upright and the stripe carries the axis.</p>
+    </div>
+    <div class="spec" id="spec"></div>
+    <div style="margin-top:28px; display:grid; gap:14px">
+      <h3>Three sizes in the app</h3>
+      <div class="sizes" id="sizes"></div>
+    </div>
+    <div style="margin-top:28px; display:grid; gap:14px">
+      <h3>Reading a dense table</h3>
+      <p class="muted">A meaning's line is the particle whose stripe points into it. Here <span class="kbd">cuir ar</span> runs across, <span class="kbd">tabhair ar</span> runs down through the same <span class="kbd">ar</span>, and the shared tile shows both stripes with a <b>+</b>.</p>
+      <div id="straddleDemo"></div>
+    </div>
+    <div style="margin-top:28px; display:grid; gap:14px">
+      <h3>Colour families</h3>
+      <div class="swatches" id="swatches"></div>
+    </div>
+  </section>
+
+  <section id="screens">
+    <div class="intro">
+      <div class="eyebrow">03 · Flow</div>
+      <h2>Every screen</h2>
+      <p class="muted">First launch, then one loop: Home, setup, the table, the recap, and back. Names, counts and progress on these screens are sample data. English copy shown; the Irish strings come from Phil.</p>
+    </div>
+    <div class="screens" id="screenGrid"></div>
+  </section>
+</div>
+
+<script>
+
+const DATA = {"comps": [["bain", "amach", "REACH"], ["bain", "as", "GET FROM"], ["bain", "de", "TAKE OFF"], ["bain", "le", "CONCERN"], ["cuir", "amach", "THROW UP"], ["cuir", "ar", "PUT ON"], ["cuir", "isteach ar", "APPLY FOR"], ["cuir", "suas le", "PUT UP WITH"], ["cuir", "síos ar", "DESCRIBE"], ["cuir", "as do", "DISTURB"], ["tabhair", "suas", "GIVE UP"], ["tabhair", "faoi", "ATTEMPT"], ["tabhair", "amach do", "SCOLD"], ["tabhair", "ar", "MAKE (SOMEONE)"], ["déan", "amach", "FIGURE OUT"], ["déan", "ar", "HEAD FOR"], ["éirigh", "le", "SUCCEED"], ["éirigh", "as", "GIVE UP"], ["éirigh", "amach", "REBEL"], ["tit", "amach", "HAPPEN"], ["tóg", "suas", "PICK UP"], ["tóg", "ar", "HOLD AGAINST"], ["coinnigh", "ar", "KEEP GOING"], ["coinnigh", "suas", "KEEP UP"], ["fan", "le", "WAIT FOR"], ["fan", "amach ó", "STAY AWAY FROM"], ["lig", "amach", "LET OUT"], ["lig", "ar", "PRETEND"], ["lig", "do", "LEAVE ALONE"], ["buail", "le", "MEET"], ["buail", "isteach", "DROP IN"], ["éist", "le", "LISTEN TO"], ["amharc", "ar", "LOOK AT"], ["fág", "amach", "LEAVE OUT"], ["seas", "le", "STAND BY"], ["tar", "ar", "COME ACROSS"]], "mcards": [["LISTEN TO", "PUT ON", "SUCCEED"], ["STAND BY", "LOOK AT", "REACH"], ["LEAVE OUT", "KEEP UP", "REBEL"], ["TAKE OFF", "PUT UP WITH", "LET OUT"], ["HAPPEN", "GIVE UP", "DISTURB"], ["FIGURE OUT", "REBEL", "PICK UP"], ["MEET", "MAKE (SOMEONE)", "PUT ON"], ["LOOK AT", "HEAD FOR", "KEEP GOING"], ["GIVE UP", "CONCERN", "PUT ON"], ["TAKE OFF", "DISTURB", "LET OUT"], ["STAND BY", "PICK UP", "REACH"], ["HOLD AGAINST", "TAKE OFF", "THROW UP"], ["PICK UP", "WAIT FOR", "ATTEMPT"], ["GIVE UP", "GET FROM", "LET OUT"], ["SUCCEED", "STAY AWAY FROM", "ATTEMPT"], ["DESCRIBE", "COME ACROSS", "MEET"], ["SCOLD", "PUT UP WITH", "FIGURE OUT"], ["DROP IN", "APPLY FOR", "STAY AWAY FROM"], ["MAKE (SOMEONE)", "WAIT FOR", "LEAVE ALONE"], ["STAND BY", "SCOLD", "LEAVE OUT"], ["PRETEND", "GET FROM", "DESCRIBE"], ["THROW UP", "LISTEN TO", "KEEP GOING"], ["LOOK AT", "HOLD AGAINST", "PRETEND"], ["DISTURB", "SUCCEED", "HEAD FOR"], ["LEAVE OUT", "COME ACROSS", "GIVE UP"], ["APPLY FOR", "KEEP UP", "LEAVE ALONE"], ["GET FROM", "DROP IN", "GIVE UP"], ["DROP IN", "ATTEMPT", "COME ACROSS"], ["DESCRIBE", "GIVE UP", "STAY AWAY FROM"], ["REACH", "HAPPEN", "SCOLD"], ["HOLD AGAINST", "FIGURE OUT", "MAKE (SOMEONE)"], ["KEEP UP", "MEET", "REBEL"], ["HEAD FOR", "CONCERN", "THROW UP"], ["KEEP GOING", "WAIT FOR", "PRETEND"], ["PUT UP WITH", "CONCERN", "LEAVE ALONE"], ["LISTEN TO", "APPLY FOR", "HAPPEN"]], "verbs": [["cuir", 3], ["bain", 2], ["lig", 2], ["tabhair", 2], ["éirigh", 2], ["amharc", 1], ["buail", 1], ["coinnigh", 1], ["déan", 1], ["fan", 1], ["fág", 1], ["seas", 1], ["tar", 1], ["tit", 1], ["tóg", 1], ["éist", 1]], "parts": [["ar", 10], ["amach", 9], ["le", 7], ["suas", 4], ["as", 3], ["do", 3], ["isteach", 2], ["de", 1], ["faoi", 1], ["síos", 1], ["ó", 1]]};
+const ADV = new Set(["amach","isteach","suas","síos"]);
+const COMP = DATA.comps.map(([v, ps, g]) => ({ v, ps: ps.split(" "), g }));
+const ANS = {}; COMP.forEach(c => { (ANS[c.g] = ANS[c.g] || []).push(c.v + " " + c.ps.join(" ")); });
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+const K = (x, y) => x + "," + y;
+
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function shuffle(a, r) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+class Game {
+  constructor(seed = 7, nPlayers = 2, handSize = 12) {
+    const r = this.r = rng(seed);
+    let id = 0; const card = (k, t) => ({ id: id++, k, t });
+    const main = []; DATA.verbs.forEach(([v, n]) => { for (let i = 0; i < n; i++) main.push(card("V", v)); });
+    for (let i = 0; i < 4; i++) main.push(card("W", "*"));
+    const parts = []; DATA.parts.forEach(([p, n]) => { for (let i = 0; i < n; i++) parts.push(card("P", p)); });
+    const means = DATA.mcards.map(m => card("M", m.join("|")));
+    shuffle(main, r); shuffle(parts, r); shuffle(means, r);
+    this.board = new Map(); this.lines = []; this.log = [];
+    const starters = []; const seen = new Set();
+    for (let i = main.length - 1; i >= 0 && starters.length < 4; i--) if (main[i].k === "V" && !seen.has(main[i].t)) { seen.add(main[i].t); starters.push(main.splice(i, 1)[0]); }
+    [[0,0],[4,1],[1,4],[5,5]].forEach(([x, y], i) => this.put(x, y, starters[i], null, -1));
+    this.piles = [0,1,2,3,4].map(i => parts.filter((_, j) => j % 5 === i));
+    this.main = main; this.mpile = means; this.faceUp = this.mpile.pop();
+    this.hands = []; for (let p = 0; p < nPlayers; p++) { const h = []; for (let i = 0; i < handSize - 3; i++) h.push(this.main.pop()); for (let i = 0; i < 3; i++) h.push(this.mpile.pop()); this.hands.push(h); }
+    this.turn = 0; this.passes = 0; this.over = null; this.lastPlay = null;
+  }
+  put(x, y, c, axis, owner) { this.board.set(K(x, y), { ...c, x, y, axis, owner }); }
+  at(x, y) { return this.board.get(K(x, y)); }
+  free(x, y) { return !this.board.has(K(x, y)); }
+  opts(m) { return m.t.split("|"); }
+  tops() { return this.piles.map(p => p.length ? p[p.length - 1] : null); }
+  plan(ps, wilds) {
+    const st = this.piles.map(p => p.length), src = []; let w = 0;
+    for (const p of ps) {
+      const i = this.piles.findIndex((pl, j) => st[j] > 0 && pl[st[j] - 1].t === p);
+      if (i >= 0) { st[i]--; src.push({ river: i }); continue; }
+      if (w < wilds) { w++; src.push({ wild: true }); continue; }
+      return null;
+    }
+    return src;
+  }
+  bounds() { let a = [1e9, 1e9, -1e9, -1e9]; for (const c of this.board.values()) { a = [Math.min(a[0], c.x), Math.min(a[1], c.y), Math.max(a[2], c.x), Math.max(a[3], c.y)]; } return a; }
+  spots(len) {
+    const [x0, y0, x1, y1] = this.bounds(), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, out = [];
+    for (let x = x0 - len - 2; x <= x1 + len + 2; x++) for (let y = y0 - len - 2; y <= y1 + len + 2; y++) {
+      if (!this.free(x, y)) continue;
+      for (const [dx, dy] of DIRS) {
+        let ok = true; for (let k = 1; k <= len + 1; k++) if (!this.free(x + dx * k, y + dy * k)) { ok = false; break; }
+        if (ok) out.push({ x, y, d: [dx, dy], dist: Math.abs(x + dx * (len + 1) / 2 - cx) + Math.abs(y + dy * (len + 1) / 2 - cy) });
+      }
+    }
+    return out.sort((a, b) => a.dist - b.dist);
+  }
+  moves(p) {
+    const hand = this.hands[p], wilds = hand.filter(c => c.k === "W").length, out = [];
+    const ms = hand.filter(c => c.k === "M"), hv = hand.filter(c => c.k === "V");
+    const seenV = new Set();
+    for (const m of ms) for (const g of this.opts(m)) for (const c of COMP.filter(c => c.g === g)) {
+      const L = c.ps.length;
+      // verbs already on the table
+      for (const v of this.board.values()) {
+        if (v.k !== "V" || v.t !== c.v) continue;
+        for (const d of DIRS) {
+          let ok = true; for (let k = 1; k <= L + 1; k++) if (!this.free(v.x + d[0] * k, v.y + d[1] * k)) { ok = false; break; }
+          if (!ok) continue;
+          const src = this.plan(c.ps, wilds); if (!src) continue;
+          out.push({ type: "line", m, g, c, verb: { table: v }, x: v.x, y: v.y, d, src });
+        }
+      }
+      // verb from hand (a few best spots)
+      const vc = hv.find(h => h.t === c.v);
+      if (vc) { const src = this.plan(c.ps, wilds); if (src) this.spots(L).slice(0, 4).forEach(s => out.push({ type: "line", m, g, c, verb: { hand: vc }, x: s.x, y: s.y, d: s.d, src })); }
+      // through a particle already down
+      if (vc) for (const b of this.board.values()) {
+        if (b.k !== "P") continue;
+        c.ps.forEach((pt, i) => {
+          if (pt !== b.t) return;
+          for (const d of DIRS) {
+            const vx = b.x - d[0] * (i + 1), vy = b.y - d[1] * (i + 1);
+            let ok = true; for (let k = 0; k <= L + 1; k++) { if (k === i + 1) continue; if (!this.free(vx + d[0] * k, vy + d[1] * k)) { ok = false; break; } }
+            if (!ok) continue;
+            const rest = c.ps.filter((_, j) => j !== i), src0 = this.plan(rest, wilds); if (!src0) continue;
+            const src = []; let q = 0; c.ps.forEach((_, j) => src.push(j === i ? { existing: true } : src0[q++]));
+            out.push({ type: "line", m, g, c, verb: { hand: vc }, x: vx, y: vy, d, src, straddle: b });
+          }
+        });
+      }
+    }
+    for (const v of hv) { if (seenV.has(v.t)) continue; seenV.add(v.t); const s = this.spots(2)[0]; if (s) out.push({ type: "lone", v, x: s.x, y: s.y }); }
+    return out;
+  }
+  shed(mv) { return mv.type === "lone" ? 0 : 1 + (mv.verb.hand ? 1 : 0) + mv.src.filter(s => s.wild).length; }
+  apply(p, mv) {
+    const hand = this.hands[p], rm = c => hand.splice(hand.indexOf(c), 1);
+    if (mv.type === "lone") {
+      rm(mv.v); this.put(mv.x, mv.y, mv.v, null, p);
+      for (let i = 0; i < 2; i++) this.drawOne(p, true);
+      this.lastPlay = { p, cells: [K(mv.x, mv.y)], text: mv.v.t + " on its own", lone: true };
+    } else {
+      const [dx, dy] = mv.d, axis = dx ? "h" : "v", cells = [];
+      if (mv.verb.hand) { rm(mv.verb.hand); this.put(mv.x, mv.y, mv.verb.hand, null, p); }
+      cells.push(K(mv.x, mv.y));
+      mv.c.ps.forEach((pt, i) => {
+        const x = mv.x + dx * (i + 1), y = mv.y + dy * (i + 1), s = mv.src[i];
+        if (s.existing) { const b = this.at(x, y); b.cross = true; }
+        else if (s.wild) { const w = hand.find(c => c.k === "W"); rm(w); this.put(x, y, w, axis, p); }
+        else { const card = this.piles[s.river].pop(); this.put(x, y, card, axis, p); }
+        cells.push(K(x, y));
+      });
+      const L = mv.c.ps.length; rm(mv.m); this.put(mv.x + dx * (L + 1), mv.y + dy * (L + 1), { ...mv.m, used: mv.g }, axis, p);
+      cells.push(K(mv.x + dx * (L + 1), mv.y + dy * (L + 1)));
+      const line = { p, c: mv.c, g: mv.g, cells, wild: mv.src.some(s => s.wild), straddle: !!mv.straddle };
+      this.lines.push(line);
+      this.lastPlay = { p, cells, text: mv.c.v + " " + mv.c.ps.join(" ") + " · " + mv.g.toLowerCase(), line };
+    }
+    this.passes = 0; this.log.push(this.lastPlay);
+    if (!hand.length) this.over = { winner: p, how: "out" };
+  }
+  drawOne(p, any) {
+    const h = this.hands[p], nm = h.filter(c => c.k === "M").length;
+    if (!any && nm < 2 && this.mpile.length) { h.push(this.mpile.pop()); return true; }
+    if (this.main.length) { h.push(this.main.pop()); return true; }
+    if (this.mpile.length) { h.push(this.mpile.pop()); return true; }
+    return false;
+  }
+  swap(p, m) { const h = this.hands[p]; h.splice(h.indexOf(m), 1); h.push(this.faceUp); this.faceUp = m; this.lastPlay = { p, cells: [], text: "swapped a meaning card" }; }
+  pass(p) {
+    const drew = this.drawOne(p, false); this.passes++;
+    this.lastPlay = { p, cells: [], text: drew ? "drew a card and passed" : "passed" };
+    if (this.passes >= this.hands.length) {
+      this.piles.forEach(pl => { if (pl.length > 1) pl.unshift(pl.pop()); });
+      this.lastPlay.bury = true;
+      if (!drew && !this.main.length && !this.mpile.length) {
+        this.stuck = (this.stuck || 0) + 1;
+        if (this.stuck >= 2) { const n = this.hands.map(h => h.length), best = Math.min(...n); this.over = { winner: n.indexOf(best), how: "fewest", tie: n.filter(x => x === best).length > 1 }; }
+      }
+      this.passes = 0;
+    }
+  }
+  next() { this.turn = (this.turn + 1) % this.hands.length; }
+  botMove(p) {
+    const mv = this.moves(p), lines = mv.filter(m => m.type === "line");
+    if (lines.length) { lines.sort((a, b) => (this.shed(b) - b.src.filter(s => s.wild).length * 0.6) - (this.shed(a) - a.src.filter(s => s.wild).length * 0.6)); return lines[0]; }
+    const hand = this.hands[p], gl = new Set(hand.filter(c => c.k === "M").flatMap(m => this.opts(m)));
+    const lone = mv.filter(m => m.type === "lone" && COMP.some(c => c.v === m.v.t && gl.has(c.g)));
+    if (lone.length && this.main.length) return lone[0];
+    return null;
+  }
+}
+if (typeof module !== "undefined") module.exports = { Game, COMP, ANS, ADV, DATA };
+
+</script>
+<script>
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const kindOf = c => c.k === "P" ? (ADV.has(c.t) ? "A" : "P") : c.k;
+function label(c, s) {
+  if (c.k === "M") { const g = c.used || c.t.split("|")[0]; if (s >= 44) return g.toLowerCase(); const w = g.split(" "); return w[0].toLowerCase() + (w.length > 1 ? "…" : ""); }
+  if (c.k === "W") return "";
+  return c.t;
+}
+function tile(c, s, cls = "", attrs = "", style = "") {
+  const k = kindOf(c), lab = label(c, s);
+  let fs = Math.min(s * .36, s * 1.55 / Math.max(3, lab.length));
+  if (k === "M") fs = s >= 44 ? Math.min(s * .19, 12) : Math.min(s * .26, s * 1.6 / Math.max(4, lab.length));
+  const ax = (c.k === "P" || c.k === "W") && c.axis ? " ax-" + c.axis : "";
+  const inner = c.k === "W" ? `<span class="wildmark">*</span>` : `<b style="font-size:${fs.toFixed(1)}px">${esc(lab)}</b>`;
+  const own = c.owner === 0 || c.owner === 1 ? `<span class="own o${c.owner}"></span>` : "";
+  const x = c.cross ? `<span class="xmark">+</span>` : "";
+  const title = c.k === "M" ? (c.used ? c.used.toLowerCase() + " · " + (ANS[c.used] || []).join(" / ") : c.t.split("|").join(" / ").toLowerCase()) : c.k === "W" ? "wildcard" : c.t;
+  return `<div class="tile t-${k}${ax}${c.cross ? " cross" : ""} ${cls}" style="--s:${s}px;${style}" title="${esc(title)}" ${attrs}>${inner}${own}${x}</div>`;
+}
+function mcard(c, cls = "", attrs = "", answers = true) {
+  return `<button class="mcard ${cls}" ${attrs} aria-label="Meaning card: ${esc(c.t.split("|").map(g => g.toLowerCase()).join(", "))}">` +
+    c.t.split("|").map(g => `<div><b>${esc(g)}</b>${answers ? `<i>${esc((ANS[g] || []).join(" / "))}</i>` : ""}</div>`).join("") + `</button>`;
+}
+function boardHTML(cards, o) {
+  const s = o.s, gap = 2, all = cards.concat(o.ghost || []);
+  if (!all.length) return { html: "", w: 0, h: 0 };
+  let x0 = Math.min(...all.map(c => c.x)), y0 = Math.min(...all.map(c => c.y)), x1 = Math.max(...all.map(c => c.x)), y1 = Math.max(...all.map(c => c.y));
+  const pad = o.pad ?? 1, step = s + gap;
+  const w = (x1 - x0 + 1 + 2 * pad) * step, h = (y1 - y0 + 1 + 2 * pad) * step;
+  const pos = c => `left:${(c.x - x0 + pad) * step}px;top:${(c.y - y0 + pad) * step}px`;
+  let html = "";
+  for (const c of cards) {
+    const key = c.x + "," + c.y; let cls = "";
+    if (o.fresh && o.fresh.has(key)) cls += " fresh";
+    if (o.botfresh && o.botfresh.has(key)) cls += " botfresh";
+    if (o.lit && o.lit.has(key)) cls += " lit";
+    if (o.dim && !(o.lit && o.lit.has(key))) cls += " dim";
+    html += tile(c, s, cls, o.clickable ? `data-act="bt" data-key="${key}" role="button" tabindex="0"` : "", pos(c));
+  }
+  for (const c of o.ghost || []) html += tile(c, s, "ghost", o.clickable ? `data-act="ghost" role="button" tabindex="0" aria-label="Lay this line"` : "", pos(c));
+  return { html: `<div class="board" style="width:${w}px;height:${h}px">${html}</div>`, w, h, x0, y0, pad, step };
+}
+const fit = (cards, width, max = 30) => { const xs = cards.map(c => c.x), ys = cards.map(c => c.y); const n = Math.max(...xs) - Math.min(...xs) + 3; return Math.max(16, Math.min(max, Math.floor(width / n) - 2)); };
+
+/* ================= the playable prototype ================= */
+const P = { G: null, sel: null, busy: false, z: 1, info: null, fresh: new Set(), botfresh: new Set(), toast: null, pause: false, layout: null };
+const ZS = [26, 34, 48];
+const clearSel = () => { P.sel = { m: null, cand: [], ci: 0, lone: null, from: null }; };
+function newGame(seed) { P.G = new Game(seed ?? Math.floor(Math.random() * 1e6)); clearSel(); P.fresh = new Set(); P.botfresh = new Set(); P.info = null; P.busy = false; renderProto(true); }
+function ghostOf(mv) {
+  const G = P.G, out = [], [dx, dy] = mv.d, axis = dx ? "h" : "v", st = G.piles.map(p => p.length);
+  if (mv.verb.hand) out.push({ ...mv.verb.hand, x: mv.x, y: mv.y, owner: 0 });
+  mv.c.ps.forEach((p, i) => {
+    const s = mv.src[i], x = mv.x + dx * (i + 1), y = mv.y + dy * (i + 1);
+    if (s.existing) return;
+    if (s.wild) out.push({ k: "W", t: "*", x, y, axis, owner: 0 });
+    else { st[s.river]--; out.push({ k: "P", t: p, x, y, axis, owner: 0 }); }
+  });
+  const L = mv.c.ps.length; out.push({ ...mv.m, used: mv.g, x: mv.x + dx * (L + 1), y: mv.y + dy * (L + 1), axis, owner: 0 });
+  return out;
+}
+function showToast(title, sub, who) {
+  P.toast = { title, sub, who }; renderToast();
+  clearTimeout(P.toastT); P.toastT = setTimeout(() => { P.toast = null; renderToast(); }, 2400);
+}
+function renderToast() {
+  const el = $("#protoToast"); if (!el) return;
+  if (!P.toast) { el.style.opacity = 0; return; }
+  el.style.opacity = 1;
+  el.innerHTML = `<i>${esc(P.toast.title)}</i>${P.toast.sub ? `<small>${esc(P.toast.sub)}</small>` : ""}`;
+  el.style.background = P.toast.who === 1 ? "var(--bot)" : "var(--ink)";
+  el.style.color = "var(--surface)";
+}
+function lineText(l) { return `${l.c.v} ${l.c.ps.join(" ")}`; }
+function renderProto(recentre) {
+  const G = P.G, root = $("#proto"), my = G.turn === 0 && !G.over && !P.busy;
+  const moves = my ? G.moves(0) : [];
+  const lines = moves.filter(m => m.type === "line");
+  const sel = P.sel;
+  const ms = sel.m != null ? lines.filter(m => m.m.id === sel.m) : [];
+  const litBoard = new Set(), litHand = new Set(), pulsePiles = new Set();
+  if (sel.m != null && !sel.cand.length) {
+    ms.forEach(m => { if (m.verb.table) litBoard.add(m.x + "," + m.y); else litHand.add(m.verb.hand.id); if (m.straddle) litBoard.add(m.straddle.x + "," + m.straddle.y); });
+  }
+  let ghost = [];
+  const cur = sel.cand.length ? sel.cand[sel.ci % sel.cand.length] : null;
+  if (cur) { ghost = ghostOf(cur); cur.src.forEach(s => { if (s.river != null) pulsePiles.add(s.river); }); if (cur.verb.table) litBoard.add(cur.x + "," + cur.y); }
+  if (sel.lone) { ghost = [{ ...sel.lone.v, x: sel.lone.x, y: sel.lone.y, owner: 0 }]; }
+  const s = ZS[P.z];
+  const cards = [...G.board.values()];
+  const b = boardHTML(cards, { s, ghost, fresh: P.fresh, botfresh: P.botfresh, lit: litBoard, clickable: true });
+  P.layout = b;
+  const hand = G.hands[0];
+  const hm = hand.filter(c => c.k === "M"), hv = hand.filter(c => c.k !== "M");
+  const tops = G.tops();
+  let msg = "", btns = "";
+  if (G.over) { msg = "Game over"; }
+  else if (!my) { msg = `<b>Bot's turn.</b> Watch the table.`; }
+  else if (cur) {
+    const w = cur.src.filter(x => x.wild).length;
+    msg = `<b>${esc(lineText(cur))}</b> · ${esc(cur.g.toLowerCase())}${w ? " · uses a wildcard" : ""}${cur.straddle ? " · through the " + esc(cur.straddle.t) + " already down" : ""}`;
+    btns = (sel.cand.length > 1 ? `<button class="btn small" data-act="other">Other spot</button>` : "") + `<button class="btn small" data-act="cancel">Cancel</button><button class="btn small gorse" data-act="lay">Lay it</button>`;
+  } else if (sel.lone) {
+    msg = `Lay <b>${esc(sel.lone.v.t)}</b> on its own and draw 2?`;
+    btns = `<button class="btn small" data-act="cancel">Cancel</button><button class="btn small gorse" data-act="lone">Lay alone</button>`;
+  } else if (sel.m != null) {
+    msg = ms.length ? "Now tap a lit verb, or a lit particle to build through." : "Nothing fits this card yet. Tap the face-up card to swap, or pick another.";
+    btns = `<button class="btn small" data-act="cancel">Cancel</button>`;
+  } else {
+    msg = lines.length ? `Tap a meaning card to start a line.` : `No line fits. Lay a verb alone, or draw.`;
+    btns = `<button class="btn small" data-act="pass">Draw &amp; pass</button>`;
+  }
+  let info = "";
+  if (P.info && !sel.m && !sel.lone) {
+    const c = G.board.get(P.info);
+    if (c) {
+      const ls = G.lines.filter(l => l.cells.includes(P.info));
+      info = ls.length ? ls.map(l => `<i>${esc(lineText(l))}</i> · ${esc(l.g.toLowerCase())} <span class="muted">— ${l.p === 0 ? "you" : "bot"}${l.wild ? ", with a wildcard" : ""}</span>`).join("<br>")
+        : c.k === "V" ? `<i>${esc(c.t)}</i> <span class="muted">— no lines yet</span>` : "";
+    }
+  }
+  root.innerHTML = `<div class="notch"></div><div class="tb">
+    <div class="tb-status">
+      <div class="av p0"><i>You</i><span>${hand.length}</span></div>
+      <div class="turnchip ${G.turn === 0 && !G.over ? "mine" : ""}">${G.over ? "Game over" : G.turn === 0 ? "Your turn" : "Bot's turn"}</div>
+      <div class="av p1"><span>${G.hands[1].length}</span><i>Bot</i></div>
+      <button class="iconbtn" data-act="pause" aria-label="Pause"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="1" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1" fill="currentColor"/></svg></button>
+    </div>
+    <div class="river" aria-label="River: five particle piles">${tops.map((t, i) => `<div class="pile ${P.anim ? "taken" : ""}"><div class="stack">${t ? tile({ ...t, axis: null }, 40, pulsePiles.has(i) ? "pulse" : "") : `<div class="tile t-W" style="--s:40px;opacity:.3"></div>`}</div><span>${G.piles[i].length} left</span></div>`).join("")}</div>
+    <div class="faceup"><span>Face-up meaning</span>${G.faceUp ? mcard(G.faceUp, "small " + (sel.m != null && !cur ? "lit" : ""), `data-act="fu"`, false) : "<span>none</span>"}<span class="spacer"></span><span>${G.mpile.length} in pile</span></div>
+    <div class="board-wrap"><div class="board-scroll" id="bscroll">${b.html}</div>
+      ${info ? `<div class="infochip">${info}</div>` : ""}
+      <div class="zoom"><button class="iconbtn" data-act="zin" aria-label="Zoom in">+</button><button class="iconbtn" data-act="zout" aria-label="Zoom out">−</button></div>
+    </div>
+    <div class="actionbar"><div class="msg">${msg}</div>${btns}</div>
+    <div class="hand" aria-label="Your hand">
+      <div class="hand-m">${hm.map(c => mcard(c, sel.m === c.id ? "pick" : "", `data-act="m" data-id="${c.id}"`)).join("") || `<span class="muted" style="font-size:12px">No meaning cards. Draw to get one.</span>`}</div>
+      <div class="hand-v">${hv.map(c => tile(c, 46, (litHand.has(c.id) ? "lit " : "") + (sel.lone && sel.lone.v.id === c.id ? "pick" : ""), `data-act="${c.k === "V" ? "hv" : "hw"}" data-id="${c.id}" role="button" tabindex="0"`)).join("")}<span class="muted" style="font-size:11.5px;align-self:center">${G.main.length} in deck</span></div>
+    </div></div>
+    <div class="toast" id="protoToast" style="opacity:0"></div>
+    ${G.over ? overHTML() : ""}${P.pause ? pauseHTML() : ""}`;
+  renderToast(); P.anim = false;
+  const sc = $("#bscroll");
+  if (sc && (recentre || P.scrollTo)) {
+    const keys = P.scrollTo || [...G.board.keys()];
+    const pts = keys.map(k => k.split(",").map(Number));
+    const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length, cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    sc.scrollLeft = (cx - b.x0 + b.pad + .5) * b.step - sc.clientWidth / 2;
+    sc.scrollTop = (cy - b.y0 + b.pad + .5) * b.step - sc.clientHeight / 2;
+    P.scrollTo = null;
+  } else if (sc && P.keep) { sc.scrollLeft = P.keep[0]; sc.scrollTop = P.keep[1]; }
+}
+function overHTML() {
+  const G = P.G, o = G.over, mine = G.lines.filter(l => l.p === 0);
+  const head = o.how === "out" ? (o.winner === 0 ? "You went out first" : "The bot went out first") : (o.tie ? "No more plays: a draw" : (o.winner === 0 ? "No more plays: you win on cards" : "No more plays: the bot wins on cards"));
+  return `<div class="overlay"><div class="sheet"><div class="eyebrow">Game over</div><h2 style="font-size:22px">${head}</h2>
+    <p class="muted">You ${G.hands[0].length} cards · Bot ${G.hands[1].length} cards</p>
+    <div style="display:grid;gap:4px;max-height:220px;overflow:auto">${mine.map(l => `<div class="row" style="gap:6px"><b style="font-family:var(--f-card)">${esc(lineText(l))}</b><span class="muted">${esc(l.g.toLowerCase())}</span></div>`).join("") || `<span class="muted">No lines this time.</span>`}</div>
+    <button class="btn gorse" data-act="new">Play again</button></div></div>`;
+}
+function pauseHTML() {
+  return `<div class="overlay"><div class="sheet"><div class="eyebrow">Paused</div>
+  <button class="btn primary" data-act="resume">Resume</button><button class="btn" data-act="new">New game</button><button class="btn" data-act="resume">Rules</button><button class="btn" data-act="resume">Settings</button></div></div>`;
+}
+function keepScroll() { const sc = $("#bscroll"); P.keep = sc ? [sc.scrollLeft, sc.scrollTop] : null; }
+function afterMyPlay(text, sub) {
+  const G = P.G;
+  P.fresh = new Set(G.lastPlay.cells); P.botfresh = new Set(); P.scrollTo = G.lastPlay.cells.length ? G.lastPlay.cells : null;
+  if (text) showToast(text, sub, 0);
+  clearSel(); P.info = null;
+  if (!G.over) G.next();
+  renderProto(false);
+  if (!G.over) botTurn();
+}
+function botTurn() {
+  const G = P.G; P.busy = true; keepScroll(); renderProto(false);
+  setTimeout(() => {
+    const mv = G.botMove(1);
+    if (mv) G.apply(1, mv); else G.pass(1);
+    const lp = G.lastPlay;
+    P.botfresh = new Set(lp.cells); P.fresh = new Set(); P.anim = !!lp.bury;
+    if (lp.line) showToast(lineText(lp.line), lp.line.g.toLowerCase(), 1);
+    else if (lp.lone) showToast("Bot lays " + lp.text, "and draws 2", 1);
+    else showToast(lp.bury ? "Both passed" : "Bot " + lp.text, lp.bury ? "Every river pile turns its top card under" : "", 1);
+    P.scrollTo = lp.cells.length ? lp.cells : null;
+    if (!G.over) G.next();
+    P.busy = false; keepScroll(); renderProto(false);
+  }, 1100);
+}
+function onAct(e) {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const G = P.G, act = t.dataset.act, my = G.turn === 0 && !G.over && !P.busy;
+  keepScroll();
+  if (act === "zin") { P.z = Math.min(2, P.z + 1); return renderProto(true); }
+  if (act === "zout") { P.z = Math.max(0, P.z - 1); return renderProto(true); }
+  if (act === "pause") { P.pause = true; return renderProto(false); }
+  if (act === "resume") { P.pause = false; return renderProto(false); }
+  if (act === "new") { P.pause = false; return newGame(); }
+  if (act === "bt") {
+    const key = t.dataset.key, c = G.board.get(key);
+    if (my && P.sel.m != null) {
+      const ms = G.moves(0).filter(m => m.type === "line" && m.m.id === P.sel.m);
+      let cand = c.k === "V" ? ms.filter(m => m.verb.table && m.x + "," + m.y === key) : ms.filter(m => m.straddle && m.straddle.x + "," + m.straddle.y === key);
+      cand.sort((a, b) => a.src.filter(s => s.wild).length - b.src.filter(s => s.wild).length);
+      if (cand.length) { P.sel.cand = cand; P.sel.ci = 0; }
+      return renderProto(false);
+    }
+    P.info = P.info === key ? null : key; return renderProto(false);
+  }
+  if (!my) return;
+  if (act === "m") { const id = +t.dataset.id; const was = P.sel.m === id; clearSel(); if (!was) P.sel.m = id; P.info = null; return renderProto(false); }
+  if (act === "hv") {
+    const id = +t.dataset.id, v = G.hands[0].find(c => c.id === id);
+    if (P.sel.m != null) {
+      const cand = G.moves(0).filter(m => m.type === "line" && m.m.id === P.sel.m && m.verb.hand && m.verb.hand.id === id);
+      cand.sort((a, b) => a.src.filter(s => s.wild).length - b.src.filter(s => s.wild).length);
+      if (cand.length) { P.sel.cand = cand; P.sel.ci = 0; P.scrollTo = ghostOf(cand[0]).map(g => g.x + "," + g.y); }
+      return renderProto(false);
+    }
+    const lone = G.moves(0).find(m => m.type === "lone" && m.v.t === v.t);
+    clearSel(); if (lone) { P.sel.lone = { ...lone, v }; P.scrollTo = [lone.x + "," + lone.y]; }
+    return renderProto(false);
+  }
+  if (act === "hw") { showToast("Wildcard", "It goes down inside a line, in place of a particle", 0); return; }
+  if (act === "fu" && P.sel.m != null) {
+    const m = G.hands[0].find(c => c.id === P.sel.m); G.swap(0, m); clearSel(); showToast("Swapped", "Your meaning card is now face up", 0); G.next(); renderProto(false); return botTurn();
+  }
+  if (act === "other") { P.sel.ci++; const g = ghostOf(P.sel.cand[P.sel.ci % P.sel.cand.length]); P.scrollTo = g.map(c => c.x + "," + c.y); return renderProto(false); }
+  if (act === "cancel") { clearSel(); return renderProto(false); }
+  if (act === "lay" || act === "ghost") {
+    if (P.sel.lone && act === "ghost") return onAct({ target: { closest: () => ({ dataset: { act: "lone" } }) } });
+    const mv = P.sel.cand[P.sel.ci % P.sel.cand.length]; if (!mv) return;
+    G.apply(0, mv); return afterMyPlay(lineText(mv), mv.g.toLowerCase());
+  }
+  if (act === "lone" && P.sel.lone) { const l = P.sel.lone; G.apply(0, { type: "lone", v: l.v, x: l.x, y: l.y }); return afterMyPlay(l.v.t + " on its own", "You draw 2"); }
+  if (act === "pass") { G.pass(0); const b = G.lastPlay.bury; P.anim = !!b; P.fresh = new Set(); clearSel(); showToast(b ? "Both passed" : "You drew a card", b ? "Every river pile turns its top card under" : "", 0); G.next(); renderProto(false); return botTurn(); }
+}
+
+/* ================= static content ================= */
+function sampleGame(seed, plies) { const g = new Game(seed); for (let i = 0; i < plies && !g.over; i++) { const mv = g.botMove(g.turn); if (mv) g.apply(g.turn, mv); else g.pass(g.turn); g.next(); } return g; }
+function phone(inner, title, caption) { return `<figure class="shot"><div class="phone">${`<div class="notch"></div>` + inner}</div><figcaption><b>${title}</b>${caption}</figcaption></figure>`; }
+function statusStrip(you, bot, chip, mine = true) { return `<div class="tb-status"><div class="av p0"><i>You</i><span>${you}</span></div><div class="turnchip ${mine ? "mine" : ""}">${chip}</div><div class="av p1"><span>${bot}</span><i>Bot</i></div><span class="iconbtn" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><rect x="2" y="1" width="3.5" height="12" rx="1" fill="currentColor"/><rect x="8.5" y="1" width="3.5" height="12" rx="1" fill="currentColor"/></svg></span></div>`; }
+function riverRow(g, cls = {}) { return `<div class="river">${g.tops().map((t, i) => `<div class="pile ${cls[i] || ""}"><div class="stack">${t ? tile(t, 34, cls[i] === "lit" ? "pulse" : "") : ""}</div><span>${g.piles[i].length} left</span></div>`).join("")}</div>`; }
+function miniTable(g, w, h, opts = {}) { const cards = [...g.board.values()]; const s = fit(cards, w, opts.max || 26); const b = boardHTML(cards, { s, pad: 0, lit: opts.lit, dim: opts.dim }); return `<div class="board-wrap" style="flex:1"><div class="board-scroll" style="place-items:center">${b.html}</div>${opts.over || ""}</div>`; }
+function handRow(g, n = 3) { const h = g.hands[0]; return `<div class="hand"><div class="hand-m">${h.filter(c => c.k === "M").slice(0, n).map(c => mcard(c)).join("")}</div><div class="hand-v">${h.filter(c => c.k !== "M").slice(0, 8).map(c => tile(c, 34)).join("")}</div></div>`; }
+
+function buildStatic() {
+  $("#headTiles").innerHTML = [{ k: "V", t: "cuir" }, { k: "P", t: "suas", axis: "h" }, { k: "P", t: "le", axis: "h" }, { k: "M", t: "PUT UP WITH", used: "PUT UP WITH" }].map(c => tile(c, 64)).join("");
+  // ---- card spec ----
+  const m0 = DATA.mcards[3];
+  const pr = (cls, word, extra = "") => `<div class="print ${cls}">${["n", "s", "e", "wst"].map(p => `<span class="w ${p}">${word}</span>`).join("")}${extra}</div>`;
+  $("#spec").innerHTML = [
+    `<figure>${pr("t-V", "cuir", `<span class="hub"></span>`)}<figcaption><b>Verb</b>The hub of every line. Word on all four sides; no stripe, because lines leave it in any direction. 22 cards.</figcaption></figure>`,
+    `<figure>${pr("t-A ax-h", "suas")}<figcaption><b>Adverb particle</b>Teal. Two-ended stripe along its line, word on all four sides. Lies across or down, never at an angle.</figcaption></figure>`,
+    `<figure>${pr("t-P ax-v", "le")}<figcaption><b>Preposition particle</b>Rust. Same stripe; shown here lying in a column. 42 particles in all, in the river, never in hands.</figcaption></figure>`,
+    `<figure><div class="print mean">${m0.map(g => `<div><b>${esc(g)}</b><i>${esc((ANS[g] || []).join(" / "))}</i></div>`).join("")}</div><figcaption><b>Meaning card</b>A larger square with three meanings and their answers. 36 cards; each meaning appears on three of them. Answers can be hidden in fluent mode.</figcaption></figure>`,
+    `<figure><div class="print t-W ax-h" style="border-style:dashed;display:grid;place-items:center"><span style="font:800 46px/1 var(--f-card)">*</span></div><figcaption><b>Wildcard</b>Dashed edge, stripe, no word. Stands in for any particle inside a line and stays there. 4 cards.</figcaption></figure>`
+  ].join("");
+  $("#sizes").innerHTML = `<div>${tile({ k: "V", t: "tabhair" }, 54)}<span>Hand · 54</span></div><div>${tile({ k: "P", t: "amach" }, 42)}<span>River · 42</span></div><div>${tile({ k: "P", t: "amach", axis: "h", owner: 0 }, 30)}<span>Table · 26–48</span></div><div>${mcard({ k: "M", t: DATA.mcards[7].join("|") })}<span>Meaning in hand</span></div><div>${tile({ k: "M", t: "X", used: "PUT UP WITH", owner: 1 }, 48)}<span>Meaning on table, zoomed</span></div>`;
+  const sd = [
+    { k: "V", t: "cuir", x: 0, y: 1, owner: 0 }, { k: "P", t: "ar", x: 1, y: 1, axis: "h", cross: true, owner: 0 }, { k: "M", t: "x", used: "PUT ON", x: 2, y: 1, axis: "h", owner: 0 },
+    { k: "V", t: "tabhair", x: 1, y: 0, owner: 1 }, { k: "M", t: "x", used: "MAKE (SOMEONE)", x: 1, y: 2, axis: "v", owner: 1 },
+    { k: "V", t: "lig", x: 0, y: 3, owner: 0 }, { k: "P", t: "amach", x: 1, y: 3, axis: "h", owner: 0 }, { k: "M", t: "x", used: "LET OUT", x: 2, y: 3, axis: "h", owner: 0 },
+    { k: "V", t: "fan", x: 3, y: 0, owner: 1 }, { k: "P", t: "le", x: 3, y: 1, axis: "v", owner: 1 }, { k: "M", t: "x", used: "WAIT FOR", x: 3, y: 2, axis: "v", owner: 1 }
+  ];
+  $("#straddleDemo").innerHTML = `<div style="overflow-x:auto">${boardHTML(sd, { s: 58, pad: 0 }).html}</div>`;
+  $("#swatches").innerHTML = [
+    ["Verb", "Heather", "verb"], ["Adverb", "Sea teal", "adv"], ["Preposition", "Bog rust", "prep"], ["Meaning", "Paper", "mean"], ["Wildcard", "Slate, dashed", "wild"]
+  ].map(([n, d, k]) => `<div class="sw" style="background:var(--${k}-f);border-color:var(--${k}-e);color:var(--${k}-t)"><b>${n}</b>${d}</div>`).join("") +
+    `<div class="sw" style="background:var(--gorse);border-color:var(--gorse);color:var(--gorse-ink)"><b>Gorse</b>You can use this now</div>` +
+    `<div class="sw" style="background:var(--you);border-color:var(--you);color:var(--surface)"><b>Player 1</b>Sea blue</div>` +
+    `<div class="sw" style="background:var(--bot);border-color:var(--bot);color:var(--surface)"><b>Player 2</b>Fuchsia</div>` +
+    `<div class="sw" style="background:var(--table);border-color:var(--line);color:var(--ink)"><b>Table</b>Sea mist / basalt</div>`;
+
+  // ---- screens ----
+  const mid = sampleGame(31, 18), early = sampleGame(31, 2);
+  let fin = null; for (let sd2 = 40; sd2 < 90; sd2++) { const g = sampleGame(sd2, 400); if (g.over && g.over.how === "out" && g.over.winner === 0 && g.lines.filter(l => l.p === 0).length >= 6) { fin = g; break; } }
+  const S = [];
+  S.push(phone(`<div class="scr" style="justify-content:center;gap:22px">
+    <div style="display:grid;gap:6px;justify-items:center"><div class="head-tiles">${tile({ k: "V", t: "bain" }, 44)}${tile({ k: "P", t: "amach", axis: "h" }, 44)}</div><div class="wordmark">Bain <i>amach</i></div><span class="badge">working title</span></div>
+    <div style="display:grid;gap:10px"><button class="btn primary">Gaeilge</button><button class="btn">English</button></div>
+    <p class="muted" style="text-align:center;font-size:12px">You can change this any time in Settings.</p></div>`,
+    "Choose language", "First launch only. Irish is the default, English one tap away."));
+  S.push(phone(`<div class="scr" style="gap:16px">
+    <div style="margin-top:20px;display:flex;gap:4px;justify-content:center">${[{ k: "V", t: "cuir" }, { k: "P", t: "suas", axis: "h" }, { k: "P", t: "le", axis: "h" }, { k: "M", t: "x", used: "PUT UP WITH" }].map(c => tile(c, 54)).join("")}</div>
+    <h2 style="font-size:22px">Build Irish compound verbs, one line at a time</h2>
+    <div style="display:grid;gap:10px">${["Take particles from the river: five piles everyone shares.", "Lay a verb, its particles and the meaning in one go.", "Empty your hand first to win."].map((t, i) => `<div class="row" style="align-items:start"><span class="badge">${i + 1}</span><span>${t}</span></div>`).join("")}</div>
+    <span class="spacer"></span><button class="btn gorse">Play the tutorial</button><button class="btn">Skip to Home</button></div>`,
+    "Welcome", "Three ideas, then straight into a guided game."));
+  S.push(phone(`<div class="tb">${statusStrip(12, 12, "Tutorial · 2 of 5")}${riverRow(early, { 1: "lit" })}
+    ${miniTable(early, 268, 260, { dim: true, over: `<div class="overlay" style="background:none;place-items:start center;padding:12px"><div class="sheet" style="box-shadow:0 12px 30px -12px rgba(0,0,0,.5);gap:8px"><span class="eyebrow">Step 2 of 5</span><p>Your meaning card says <b>REACH</b>, which is <span class="kbd">bain amach</span>. Tap the <span class="kbd">amach</span> that's glowing in the river.</p><div class="row"><span class="muted" style="font-size:12px">● ● ○ ○ ○</span><span class="spacer"></span><button class="btn small">Skip tutorial</button></div></div></div>` })}
+    ${handRow(early, 2)}</div>`,
+    "Tutorial game", "Scripted against one bot. Coach marks point at one thing at a time; the rest of the table dims."));
+  S.push(phone(`<div class="scr" style="gap:14px"><div class="row"><div class="wordmark">Bain <i>amach</i></div></div>
+    <div class="listrow" style="display:grid;gap:8px;padding:14px"><span class="eyebrow">Game in progress</span><b style="font-family:var(--f-card);font-size:16px">You vs 1 bot · turns</b><span class="muted">You 6 cards · Bot 8 cards · 14 lines on the table</span><button class="btn gorse">Continue</button></div>
+    <button class="btn primary">New game</button><button class="btn">Pass and play</button>
+    <div style="display:grid;gap:8px;margin-top:6px"><div class="listrow">Glossary<small>21 of 36 made</small></div><div class="listrow">How to play</div><div class="listrow">Settings</div></div></div>`,
+    "Home", "Continue is the primary action whenever a game is saved."));
+  S.push(phone(`<div class="scr" style="gap:14px"><div class="row"><span class="iconbtn" aria-hidden="true">‹</span><h3>New game</h3></div>
+    <div class="field"><label>Who's playing</label><div class="seg"><span class="on">Me vs bots</span><span>Pass and play</span></div></div>
+    <div class="field"><label>Mode</label><div class="seg"><span class="on">Turns</span><span>Race</span></div></div>
+    <div class="field"><label>Opponents</label><div class="seg"><span class="on">1</span><span>2</span><span>3</span></div><div class="seg"><span>Easy</span><span class="on">Normal</span><span>Hard</span></div></div>
+    <div class="field"><label>Answers on meaning cards</label><div class="seg"><span class="on">Shown</span><span>Hidden</span></div></div>
+    <div class="field"><label>Hints</label><div class="seg"><span>Off</span><span class="on">On request</span><span>After 20 s</span></div></div>
+    <span class="spacer"></span><button class="btn gorse">Deal</button></div>`,
+    "Game setup", "Race is unavailable in pass-and-play: it needs a screen per player."));
+  S.push(phone(`<div class="tb">${statusStrip(mid.hands[0].length, mid.hands[1].length, "Race · 0:47", false)}${riverRow(mid, { 2: "taken" })}
+    ${miniTable(mid, 268, 250, { over: `<div class="toast" style="top:12px;background:var(--bot);color:var(--surface)"><i>Taken</i><small>The bot grabbed that particle first. Pick again.</small></div>` })}
+    <div class="actionbar"><div class="msg">Your line was cancelled. Your cards are back in your hand.</div></div>${handRow(mid, 2)}</div>`,
+    "Race mode: taken", "Two players went for the same river card. The pile shakes, the loser's line resets, nothing is lost."));
+  S.push(phone(`<div class="scr" style="justify-content:center;gap:18px;text-align:center;background:var(--bot);color:var(--surface)">
+    <span class="eyebrow" style="color:var(--surface);opacity:.8">Player 2 of 2</span><h2 style="font-size:30px">Pass to Siobhán</h2>
+    <p style="opacity:.9">Phil laid <b>cuir suas le</b> · put up with</p>
+    <p style="opacity:.8;font-size:12.5px">Your hand stays hidden until you tap.</p>
+    <button class="btn" style="background:var(--surface);color:var(--ink)">I'm Siobhán, show my hand</button></div>`,
+    "Hand-over", "Pass-and-play only. Each player gets their own colour; the screen fills with it."));
+  S.push(phone(`<div class="tb">${statusStrip(mid.hands[0].length, mid.hands[1].length, "Paused", false)}${riverRow(mid)}${miniTable(mid, 268, 260)}${handRow(mid, 2)}</div>
+    <div class="overlay"><div class="sheet"><span class="eyebrow">Paused</span><button class="btn primary">Resume</button><button class="btn">How to play</button><button class="btn">Settings</button><button class="btn">Restart</button><button class="btn">Quit and save</button></div></div>`,
+    "Pause menu", "Quitting saves the game; Continue on Home picks it up."));
+  const mine = fin ? fin.lines.filter(l => l.p === 0) : [];
+  S.push(phone(`<div class="scr" style="gap:12px"><span class="eyebrow">Game over</span><h2 style="font-size:24px">You went out first</h2>
+    <div class="row"><div class="av p0"><i>You</i><span>0 cards</span></div><span class="spacer"></span><div class="av p1"><span>${fin ? fin.hands[1].length : 4} cards</span><i>Bot</i></div></div>
+    <div class="field"><label>Compounds you made</label><div style="display:grid;gap:6px">${mine.slice(0, 7).map(l => `<div class="listrow" style="padding:8px 10px"><b style="font-family:var(--f-card)">${esc(lineText(l))}</b><small>${esc(l.g.toLowerCase())}${l.wild ? " · wild" : ""}</small></div>`).join("")}</div></div>
+    <span class="spacer"></span><div class="row"><button class="btn" style="flex:1">Home</button><button class="btn gorse" style="flex:1">Play again</button></div></div>`,
+    "Recap", "Every compound you made, Irish first. Tap one for its glossary entry; Replay steps through the game."));
+  const byVerb = {}; COMP.forEach(c => (byVerb[c.v] = byVerb[c.v] || []).push(c));
+  const made = c => { let h = 0; for (const ch of c.v + c.g) h = (h * 31 + ch.charCodeAt(0)) % 97; return h % 5; };
+  S.push(phone(`<div class="scr" style="gap:10px"><div class="row"><span class="iconbtn" aria-hidden="true">‹</span><h3>Glossary</h3><span class="spacer"></span><span class="badge">21 of 36</span></div>
+    <div class="listrow" style="color:var(--ink-3)">Search Irish or English</div>
+    <div style="display:grid;gap:12px;overflow:hidden">${["cuir", "bain", "tabhair"].map(v => `<div style="display:grid;gap:5px"><span class="eyebrow">${v} · ${byVerb[v].length}</span>${byVerb[v].map(c => { const n = made(c); return `<div class="listrow" style="padding:7px 10px;${n ? "" : "background:none;border:1px dashed var(--line);box-shadow:none"}"><b style="font-family:var(--f-card)">${esc(c.v + " " + c.ps.join(" "))}</b><small>${esc(c.g.toLowerCase())} · ${n ? "×" + n : "not yet"}</small></div>`; }).join("")}</div>`).join("")}</div></div>`,
+    "Glossary", "Grouped by verb. Compounds not yet made show as outlines, not hidden. Counts here are sample progress."));
+  $("#screenGrid").innerHTML = S.join("");
+}
+
+buildStatic();
+$("#proto").addEventListener("click", onAct);
+$("#proto").addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.closest("[data-act]") && e.target.tagName !== "BUTTON") { e.preventDefault(); onAct(e); } });
+newGame(31);
+
+</script>

@@ -1,0 +1,43 @@
+/* Design tokens from the design board (design/bain-amach-design.html).
+   Card families: verb, adv (adverb particles), prep (preposition particles), mean (meaning), wild.
+   Each family: -f fill, -e edge/accent, -t text.  --gorse = "usable now" highlight, used for nothing else.
+   --you / --bot: player colours. TODO: players 3 and 4 need two more colours (plus initials/patterns; never colour alone).
+   Fonts: Bricolage Grotesque (card faces), Atkinson Hyperlegible (UI). Both OFL: self-host them for offline. */
+:root {
+  --table: #E3E8E4;      /* sea mist: the playing surface */
+  --page: #EEF1EE;
+  --surface: #F7F8F5;
+  --raised: #FFFFFF;
+  --ink: #172022;
+  --ink-2: #4B585A;
+  --ink-3: #7A8789;
+  --line: #C8D0CB;
+  --frame: #1C2426;
+  --verb-f: #E9E0F3; --verb-e: #5A4180; --verb-t: #34224D;
+  --adv-f: #D8EEEA; --adv-e: #1C6C66; --adv-t: #0D3D39;
+  --prep-f: #F6E1D3; --prep-e: #A04E27; --prep-t: #5B2810;
+  --mean-f: #FFFCF3; --mean-e: #75705F; --mean-t: #26241F;
+  --wild-f: #EEF2F7; --wild-e: #586D88; --wild-t: #283649;
+  --gorse: #E2A41F;      /* highlight: what you can use right now */
+  --gorse-soft: #F8E7B8;
+  --gorse-ink: #4E3500;
+  --you: #2C6CB3;
+  --bot: #B13F7B;
+  --good: #2F7D4A;
+  --lip: rgba(23, 32, 34, .18);
+  --scrim: rgba(18, 24, 26, .55);
+  --f-card: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --table: #172022; --page: #111819; --surface: #1C2527; --raised: #243032; --ink: #E5ECE8; --ink-2: #A9B5B1; --ink-3: #7D8A87; --line: #34413F; --frame: #05090A;
+  --verb-f: #382950; --verb-e: #B7A1D9; --verb-t: #F0E8FA; --adv-f: #11403C; --adv-e: #6CC7BE; --adv-t: #DCF4F0;
+  --prep-f: #4C2513; --prep-e: #E39166; --prep-t: #FBE5D8; --mean-f: #2A2924; --mean-e: #B4AE9C; --mean-t: #F3EFE4;
+  --wild-f: #1E2A38; --wild-e: #91A6C2; --wild-t: #DCE6F3; --gorse: #F2BF47; --gorse-soft: #4A3A12; --gorse-ink: #FFF1CC;
+  --you: #72A8E8; --bot: #E27DB2; --good: #6BC08A; --lip: rgba(0,0,0,.45); --scrim: rgba(0,0,0,.6); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --table: #172022; --page: #111819; --surface: #1C2527; --raised: #243032; --ink: #E5ECE8; --ink-2: #A9B5B1; --ink-3: #7D8A87; --line: #34413F; --frame: #05090A;
+  --verb-f: #382950; --verb-e: #B7A1D9; --verb-t: #F0E8FA; --adv-f: #11403C; --adv-e: #6CC7BE; --adv-t: #DCF4F0;
+  --prep-f: #4C2513; --prep-e: #E39166; --prep-t: #FBE5D8; --mean-f: #2A2924; --mean-e: #B4AE9C; --mean-t: #F3EFE4;
+  --wild-f: #1E2A38; --wild-e: #91A6C2; --wild-t: #DCE6F3; --gorse: #F2BF47; --gorse-soft: #4A3A12; --gorse-ink: #FFF1CC;
+  --you: #72A8E8; --bot: #E27DB2; --good: #6BC08A; --lip: rgba(0,0,0,.45); --scrim: rgba(0,0,0,.6); color-scheme: dark }

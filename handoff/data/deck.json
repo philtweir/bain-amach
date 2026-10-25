@@ -1,0 +1,738 @@
+{
+  "version": "2026-10-25",
+  "notes": "Compound list awaits Phil's Ulster check. Meanings are English glosses; answers are the Irish compounds. GIVE UP has two answers.",
+  "compounds": [
+    {
+      "id": "c01",
+      "verb": "bain",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "REACH",
+      "check_note": ""
+    },
+    {
+      "id": "c02",
+      "verb": "bain",
+      "particles": [
+        "as"
+      ],
+      "meaning": "GET FROM",
+      "check_note": ""
+    },
+    {
+      "id": "c03",
+      "verb": "bain",
+      "particles": [
+        "de"
+      ],
+      "meaning": "TAKE OFF",
+      "check_note": ""
+    },
+    {
+      "id": "c04",
+      "verb": "bain",
+      "particles": [
+        "le"
+      ],
+      "meaning": "CONCERN",
+      "check_note": "CONCERN / touch — pick one gloss"
+    },
+    {
+      "id": "c05",
+      "verb": "cuir",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "THROW UP",
+      "check_note": "THROW UP (vomit) — check register for learners"
+    },
+    {
+      "id": "c06",
+      "verb": "cuir",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "PUT ON",
+      "check_note": ""
+    },
+    {
+      "id": "c07",
+      "verb": "cuir",
+      "particles": [
+        "isteach",
+        "ar"
+      ],
+      "meaning": "APPLY FOR",
+      "check_note": ""
+    },
+    {
+      "id": "c08",
+      "verb": "cuir",
+      "particles": [
+        "suas",
+        "le"
+      ],
+      "meaning": "PUT UP WITH",
+      "check_note": ""
+    },
+    {
+      "id": "c09",
+      "verb": "cuir",
+      "particles": [
+        "síos",
+        "ar"
+      ],
+      "meaning": "DESCRIBE",
+      "check_note": ""
+    },
+    {
+      "id": "c10",
+      "verb": "cuir",
+      "particles": [
+        "as",
+        "do"
+      ],
+      "meaning": "DISTURB",
+      "check_note": "DISTURB / put out — check"
+    },
+    {
+      "id": "c11",
+      "verb": "tabhair",
+      "particles": [
+        "suas"
+      ],
+      "meaning": "GIVE UP",
+      "check_note": ""
+    },
+    {
+      "id": "c12",
+      "verb": "tabhair",
+      "particles": [
+        "faoi"
+      ],
+      "meaning": "ATTEMPT",
+      "check_note": ""
+    },
+    {
+      "id": "c13",
+      "verb": "tabhair",
+      "particles": [
+        "amach",
+        "do"
+      ],
+      "meaning": "SCOLD",
+      "check_note": ""
+    },
+    {
+      "id": "c14",
+      "verb": "tabhair",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "MAKE (SOMEONE)",
+      "check_note": "MAKE (SOMEONE) / also 'call' — pick one gloss"
+    },
+    {
+      "id": "c15",
+      "verb": "déan",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "FIGURE OUT",
+      "check_note": ""
+    },
+    {
+      "id": "c16",
+      "verb": "déan",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "HEAD FOR",
+      "check_note": ""
+    },
+    {
+      "id": "c17",
+      "verb": "éirigh",
+      "particles": [
+        "le"
+      ],
+      "meaning": "SUCCEED",
+      "check_note": ""
+    },
+    {
+      "id": "c18",
+      "verb": "éirigh",
+      "particles": [
+        "as"
+      ],
+      "meaning": "GIVE UP",
+      "check_note": ""
+    },
+    {
+      "id": "c19",
+      "verb": "éirigh",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "REBEL",
+      "check_note": "REBEL — check"
+    },
+    {
+      "id": "c20",
+      "verb": "tit",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "HAPPEN",
+      "check_note": ""
+    },
+    {
+      "id": "c21",
+      "verb": "tóg",
+      "particles": [
+        "suas"
+      ],
+      "meaning": "PICK UP",
+      "check_note": ""
+    },
+    {
+      "id": "c22",
+      "verb": "tóg",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "HOLD AGAINST",
+      "check_note": "HOLD AGAINST: ná tóg orm é — check"
+    },
+    {
+      "id": "c23",
+      "verb": "coinnigh",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "KEEP GOING",
+      "check_note": ""
+    },
+    {
+      "id": "c24",
+      "verb": "coinnigh",
+      "particles": [
+        "suas"
+      ],
+      "meaning": "KEEP UP",
+      "check_note": "KEEP UP — check sense"
+    },
+    {
+      "id": "c25",
+      "verb": "fan",
+      "particles": [
+        "le"
+      ],
+      "meaning": "WAIT FOR",
+      "check_note": ""
+    },
+    {
+      "id": "c26",
+      "verb": "fan",
+      "particles": [
+        "amach",
+        "ó"
+      ],
+      "meaning": "STAY AWAY FROM",
+      "check_note": "STAY AWAY FROM — check"
+    },
+    {
+      "id": "c27",
+      "verb": "lig",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "LET OUT",
+      "check_note": ""
+    },
+    {
+      "id": "c28",
+      "verb": "lig",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "PRETEND",
+      "check_note": "PRETEND sense: lig sé air — check gloss wording"
+    },
+    {
+      "id": "c29",
+      "verb": "lig",
+      "particles": [
+        "do"
+      ],
+      "meaning": "LEAVE ALONE",
+      "check_note": ""
+    },
+    {
+      "id": "c30",
+      "verb": "buail",
+      "particles": [
+        "le"
+      ],
+      "meaning": "MEET",
+      "check_note": ""
+    },
+    {
+      "id": "c31",
+      "verb": "buail",
+      "particles": [
+        "isteach"
+      ],
+      "meaning": "DROP IN",
+      "check_note": ""
+    },
+    {
+      "id": "c32",
+      "verb": "éist",
+      "particles": [
+        "le"
+      ],
+      "meaning": "LISTEN TO",
+      "check_note": ""
+    },
+    {
+      "id": "c33",
+      "verb": "amharc",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "LOOK AT",
+      "check_note": "Ulster 'look at'; breathnaigh ar elsewhere"
+    },
+    {
+      "id": "c34",
+      "verb": "fág",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "LEAVE OUT",
+      "check_note": ""
+    },
+    {
+      "id": "c35",
+      "verb": "seas",
+      "particles": [
+        "le"
+      ],
+      "meaning": "STAND BY",
+      "check_note": ""
+    },
+    {
+      "id": "c36",
+      "verb": "tar",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "COME ACROSS",
+      "check_note": "COME ACROSS (find) — check"
+    }
+  ],
+  "meaningCards": [
+    {
+      "id": "m01",
+      "meanings": [
+        "LISTEN TO",
+        "PUT ON",
+        "SUCCEED"
+      ]
+    },
+    {
+      "id": "m02",
+      "meanings": [
+        "STAND BY",
+        "LOOK AT",
+        "REACH"
+      ]
+    },
+    {
+      "id": "m03",
+      "meanings": [
+        "LEAVE OUT",
+        "KEEP UP",
+        "REBEL"
+      ]
+    },
+    {
+      "id": "m04",
+      "meanings": [
+        "TAKE OFF",
+        "PUT UP WITH",
+        "LET OUT"
+      ]
+    },
+    {
+      "id": "m05",
+      "meanings": [
+        "HAPPEN",
+        "GIVE UP",
+        "DISTURB"
+      ]
+    },
+    {
+      "id": "m06",
+      "meanings": [
+        "FIGURE OUT",
+        "REBEL",
+        "PICK UP"
+      ]
+    },
+    {
+      "id": "m07",
+      "meanings": [
+        "MEET",
+        "MAKE (SOMEONE)",
+        "PUT ON"
+      ]
+    },
+    {
+      "id": "m08",
+      "meanings": [
+        "LOOK AT",
+        "HEAD FOR",
+        "KEEP GOING"
+      ]
+    },
+    {
+      "id": "m09",
+      "meanings": [
+        "GIVE UP",
+        "CONCERN",
+        "PUT ON"
+      ]
+    },
+    {
+      "id": "m10",
+      "meanings": [
+        "TAKE OFF",
+        "DISTURB",
+        "LET OUT"
+      ]
+    },
+    {
+      "id": "m11",
+      "meanings": [
+        "STAND BY",
+        "PICK UP",
+        "REACH"
+      ]
+    },
+    {
+      "id": "m12",
+      "meanings": [
+        "HOLD AGAINST",
+        "TAKE OFF",
+        "THROW UP"
+      ]
+    },
+    {
+      "id": "m13",
+      "meanings": [
+        "PICK UP",
+        "WAIT FOR",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "id": "m14",
+      "meanings": [
+        "GIVE UP",
+        "GET FROM",
+        "LET OUT"
+      ]
+    },
+    {
+      "id": "m15",
+      "meanings": [
+        "SUCCEED",
+        "STAY AWAY FROM",
+        "ATTEMPT"
+      ]
+    },
+    {
+      "id": "m16",
+      "meanings": [
+        "DESCRIBE",
+        "COME ACROSS",
+        "MEET"
+      ]
+    },
+    {
+      "id": "m17",
+      "meanings": [
+        "SCOLD",
+        "PUT UP WITH",
+        "FIGURE OUT"
+      ]
+    },
+    {
+      "id": "m18",
+      "meanings": [
+        "DROP IN",
+        "APPLY FOR",
+        "STAY AWAY FROM"
+      ]
+    },
+    {
+      "id": "m19",
+      "meanings": [
+        "MAKE (SOMEONE)",
+        "WAIT FOR",
+        "LEAVE ALONE"
+      ]
+    },
+    {
+      "id": "m20",
+      "meanings": [
+        "STAND BY",
+        "SCOLD",
+        "LEAVE OUT"
+      ]
+    },
+    {
+      "id": "m21",
+      "meanings": [
+        "PRETEND",
+        "GET FROM",
+        "DESCRIBE"
+      ]
+    },
+    {
+      "id": "m22",
+      "meanings": [
+        "THROW UP",
+        "LISTEN TO",
+        "KEEP GOING"
+      ]
+    },
+    {
+      "id": "m23",
+      "meanings": [
+        "LOOK AT",
+        "HOLD AGAINST",
+        "PRETEND"
+      ]
+    },
+    {
+      "id": "m24",
+      "meanings": [
+        "DISTURB",
+        "SUCCEED",
+        "HEAD FOR"
+      ]
+    },
+    {
+      "id": "m25",
+      "meanings": [
+        "LEAVE OUT",
+        "COME ACROSS",
+        "GIVE UP"
+      ]
+    },
+    {
+      "id": "m26",
+      "meanings": [
+        "APPLY FOR",
+        "KEEP UP",
+        "LEAVE ALONE"
+      ]
+    },
+    {
+      "id": "m27",
+      "meanings": [
+        "GET FROM",
+        "DROP IN",
+        "GIVE UP"
+      ]
+    },
+    {
+      "id": "m28",
+      "meanings": [
+        "DROP IN",
+        "ATTEMPT",
+        "COME ACROSS"
+      ]
+    },
+    {
+      "id": "m29",
+      "meanings": [
+        "DESCRIBE",
+        "GIVE UP",
+        "STAY AWAY FROM"
+      ]
+    },
+    {
+      "id": "m30",
+      "meanings": [
+        "REACH",
+        "HAPPEN",
+        "SCOLD"
+      ]
+    },
+    {
+      "id": "m31",
+      "meanings": [
+        "HOLD AGAINST",
+        "FIGURE OUT",
+        "MAKE (SOMEONE)"
+      ]
+    },
+    {
+      "id": "m32",
+      "meanings": [
+        "KEEP UP",
+        "MEET",
+        "REBEL"
+      ]
+    },
+    {
+      "id": "m33",
+      "meanings": [
+        "HEAD FOR",
+        "CONCERN",
+        "THROW UP"
+      ]
+    },
+    {
+      "id": "m34",
+      "meanings": [
+        "KEEP GOING",
+        "WAIT FOR",
+        "PRETEND"
+      ]
+    },
+    {
+      "id": "m35",
+      "meanings": [
+        "PUT UP WITH",
+        "CONCERN",
+        "LEAVE ALONE"
+      ]
+    },
+    {
+      "id": "m36",
+      "meanings": [
+        "LISTEN TO",
+        "APPLY FOR",
+        "HAPPEN"
+      ]
+    }
+  ],
+  "verbs": {
+    "base": {
+      "cuir": 3,
+      "bain": 2,
+      "lig": 2,
+      "tabhair": 2,
+      "éirigh": 2,
+      "amharc": 1,
+      "buail": 1,
+      "coinnigh": 1,
+      "déan": 1,
+      "fan": 1,
+      "fág": 1,
+      "seas": 1,
+      "tar": 1,
+      "tit": 1,
+      "tóg": 1,
+      "éist": 1
+    },
+    "pack3to4": {
+      "bain": 2,
+      "cuir": 3,
+      "tabhair": 2,
+      "déan": 1,
+      "éirigh": 1,
+      "tóg": 1,
+      "coinnigh": 1,
+      "fan": 1,
+      "lig": 1,
+      "buail": 1
+    },
+    "baseTotal": 22,
+    "withPackTotal": 36
+  },
+  "particles": [
+    {
+      "word": "ar",
+      "type": "preposition",
+      "copies": 10
+    },
+    {
+      "word": "amach",
+      "type": "adverb",
+      "copies": 9
+    },
+    {
+      "word": "le",
+      "type": "preposition",
+      "copies": 7
+    },
+    {
+      "word": "suas",
+      "type": "adverb",
+      "copies": 4
+    },
+    {
+      "word": "as",
+      "type": "preposition",
+      "copies": 3
+    },
+    {
+      "word": "do",
+      "type": "preposition",
+      "copies": 3
+    },
+    {
+      "word": "isteach",
+      "type": "adverb",
+      "copies": 2
+    },
+    {
+      "word": "de",
+      "type": "preposition",
+      "copies": 1
+    },
+    {
+      "word": "faoi",
+      "type": "preposition",
+      "copies": 1
+    },
+    {
+      "word": "síos",
+      "type": "adverb",
+      "copies": 1
+    },
+    {
+      "word": "ó",
+      "type": "preposition",
+      "copies": 1
+    }
+  ],
+  "wildcards": 4,
+  "riverPiles": 5,
+  "starterVerbs": 4,
+  "loneVerbDraw": 2,
+  "setup": {
+    "2": {
+      "verbs": "base",
+      "handSize": 12,
+      "meaningsInHand": 3
+    },
+    "3": {
+      "verbs": "base+pack3to4",
+      "handSize": 12,
+      "meaningsInHand": 3
+    },
+    "4": {
+      "verbs": "base+pack3to4",
+      "handSize": 10,
+      "meaningsInHand": 3
+    }
+  }
+}
