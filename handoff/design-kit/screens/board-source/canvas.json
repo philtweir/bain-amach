@@ -1,0 +1,648 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-25T15:45:00Z"
+ },
+ "title": "Bain Amach screens",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1920,
+   "h": 800,
+   "title": "Screen flow"
+  },
+  "Language.dc.html": {
+   "x": 0,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Choose language"
+  },
+  "Welcome.dc.html": {
+   "x": 470,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Welcome"
+  },
+  "Tutorial.dc.html": {
+   "x": 940,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Tutorial, step 2 of 6"
+  },
+  "Home.dc.html": {
+   "x": 1410,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Home, saved game"
+  },
+  "HomeFirst.dc.html": {
+   "x": 1880,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Home, first visit"
+  },
+  "HomeReturning.dc.html": {
+   "x": 2350,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Home, install nudge and update"
+  },
+  "Setup.dc.html": {
+   "x": 2820,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Setup, solo"
+  },
+  "SetupPass.dc.html": {
+   "x": 3290,
+   "y": 1120,
+   "w": 390,
+   "h": 844,
+   "title": "Setup, pass-and-play"
+  },
+  "GameTable.dc.html": {
+   "x": 0,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Table, opening deal"
+  },
+  "Build1.dc.html": {
+   "x": 470,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Line builder: meaning picked"
+  },
+  "Build2.dc.html": {
+   "x": 940,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Line builder: two ways to finish"
+  },
+  "Build3.dc.html": {
+   "x": 1410,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Line builder: choose a spot (long-press)"
+  },
+  "Made.dc.html": {
+   "x": 1880,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Line made: the reward moment"
+  },
+  "Alone.dc.html": {
+   "x": 2350,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Lone verb"
+  },
+  "Bot.dc.html": {
+   "x": 2820,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Bot playing"
+  },
+  "Stall.dc.html": {
+   "x": 3290,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Stall"
+  },
+  "Pause.dc.html": {
+   "x": 3760,
+   "y": 2660,
+   "w": 390,
+   "h": 844,
+   "title": "Pause menu"
+  },
+  "Hidden.dc.html": {
+   "x": 0,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Answers hidden: building"
+  },
+  "Wrong.dc.html": {
+   "x": 470,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Answers hidden: wrong line"
+  },
+  "Race.dc.html": {
+   "x": 940,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Race"
+  },
+  "Taken.dc.html": {
+   "x": 1410,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Race: taken"
+  },
+  "Lockout.dc.html": {
+   "x": 1880,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Race: lockout"
+  },
+  "Dense.dc.html": {
+   "x": 2350,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Dense board, zoomed out"
+  },
+  "Empty.dc.html": {
+   "x": 2820,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Empty piles, final stalls"
+  },
+  "WentOut.dc.html": {
+   "x": 3290,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Game end: went out"
+  },
+  "Fewest.dc.html": {
+   "x": 3760,
+   "y": 4200,
+   "w": 390,
+   "h": 844,
+   "title": "Game end: fewest cards"
+  },
+  "HandOver.dc.html": {
+   "x": 0,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Pass-and-play hand-over"
+  },
+  "Recap.dc.html": {
+   "x": 470,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Recap, fewest cards"
+  },
+  "RecapOut.dc.html": {
+   "x": 940,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Recap, went out, hints used"
+  },
+  "Glossary.dc.html": {
+   "x": 1410,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Glossary"
+  },
+  "GlossaryEmpty.dc.html": {
+   "x": 1880,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Glossary, empty"
+  },
+  "Rules.dc.html": {
+   "x": 2350,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Rules"
+  },
+  "Settings.dc.html": {
+   "x": 2820,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Settings"
+  },
+  "NightTable.dc.html": {
+   "x": 3290,
+   "y": 5740,
+   "w": 390,
+   "h": 844,
+   "title": "Night table (dark)"
+  },
+  "TableTablet.dc.html": {
+   "x": 0,
+   "y": 7280,
+   "w": 1180,
+   "h": 820,
+   "title": "Table, tablet landscape"
+  },
+  "SetupTablet.dc.html": {
+   "x": 1260,
+   "y": 7280,
+   "w": 1180,
+   "h": 820,
+   "title": "Setup, tablet landscape"
+  },
+  "RecapTablet.dc.html": {
+   "x": 2520,
+   "y": 7280,
+   "w": 1180,
+   "h": 820,
+   "title": "Recap, tablet landscape"
+  },
+  "Motion.dc.html": {
+   "x": 0,
+   "y": 8790,
+   "w": 1400,
+   "h": 900,
+   "title": "Motion notes"
+  },
+  "Icon.dc.html": {
+   "x": 1480,
+   "y": 8790,
+   "w": 1400,
+   "h": 900,
+   "title": "App icon and splash"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Language.dc.html",
+  "Welcome.dc.html",
+  "Tutorial.dc.html",
+  "Home.dc.html",
+  "HomeFirst.dc.html",
+  "HomeReturning.dc.html",
+  "Setup.dc.html",
+  "SetupPass.dc.html",
+  "GameTable.dc.html",
+  "Build1.dc.html",
+  "Build2.dc.html",
+  "Build3.dc.html",
+  "Made.dc.html",
+  "Alone.dc.html",
+  "Bot.dc.html",
+  "Stall.dc.html",
+  "Pause.dc.html",
+  "Hidden.dc.html",
+  "Wrong.dc.html",
+  "Race.dc.html",
+  "Taken.dc.html",
+  "Lockout.dc.html",
+  "Dense.dc.html",
+  "Empty.dc.html",
+  "WentOut.dc.html",
+  "Fewest.dc.html",
+  "HandOver.dc.html",
+  "Recap.dc.html",
+  "RecapOut.dc.html",
+  "Glossary.dc.html",
+  "GlossaryEmpty.dc.html",
+  "Rules.dc.html",
+  "Settings.dc.html",
+  "NightTable.dc.html",
+  "TableTablet.dc.html",
+  "SetupTablet.dc.html",
+  "RecapTablet.dc.html",
+  "Motion.dc.html",
+  "Icon.dc.html"
+ ],
+ "notes": {
+  "t1": {
+   "x": 0,
+   "y": 880,
+   "text": "First launch, home and setup",
+   "kind": "title1",
+   "maxW": 3680
+  },
+  "t2": {
+   "x": 0,
+   "y": 2420,
+   "text": "Game table: turns, answers shown",
+   "kind": "title1",
+   "maxW": 4150
+  },
+  "t3": {
+   "x": 0,
+   "y": 3960,
+   "text": "Game table: answers hidden, race, endgame",
+   "kind": "title1",
+   "maxW": 4150
+  },
+  "t4": {
+   "x": 0,
+   "y": 5500,
+   "text": "Pass-and-play, recap and reference",
+   "kind": "title1",
+   "maxW": 3680
+  },
+  "t5": {
+   "x": 0,
+   "y": 7040,
+   "text": "Tablet landscape",
+   "kind": "title1",
+   "maxW": 3700
+  },
+  "t6": {
+   "x": 0,
+   "y": 8550,
+   "text": "Motion, app icon and splash",
+   "kind": "title1",
+   "maxW": 2880
+  },
+  "n-lang": {
+   "x": 0,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "First launch only. Irish is preselected; English is one tap. The choice sets UI language, not the cards: card words are always Irish. Changeable later in Settings."
+  },
+  "n-welcome": {
+   "x": 470,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "Shows a real line being laid (static). 'Play the tutorial' is primary; 'Skip to a game' goes to Setup with learner defaults (turns, 1 easy bot, answers shown, hints on request)."
+  },
+  "n-tut": {
+   "x": 940,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "A scripted game against one bot. Six steps: meaning card, verb, river, placement, bot turn, stall. Scrim dims everything except the spotlit zone, which stays tappable; the next step starts when the player does the thing, or taps Next. Skip ends it; replay from Rules or Settings."
+  },
+  "n-home": {
+   "x": 1410,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "With a saved game, Continue is primary and shows mode, opponents and card counts. New game opens Setup prefilled with the last settings. Glossary shows progress (compounds made of 36)."
+  },
+  "n-homefirst": {
+   "x": 1880,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "First visit after the tutorial: no saved game, glossary empty. New game is primary."
+  },
+  "n-homeret": {
+   "x": 2350,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "Install nudge appears once, after the first finished game; dismiss hides it for good. iOS shows the Add to Home Screen steps instead of a native prompt. The update banner appears only here and on Recap, never mid-game; Restart reloads with the saved game intact."
+  },
+  "n-setup": {
+   "x": 2820,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "One screen, no wizard. Opponent rows add or remove bots (1 to 3), each with its own difficulty. Deck size updates with player count: 104 for 2 players, 118 for 3 or 4. Play is always enabled; defaults are valid."
+  },
+  "n-setuppass": {
+   "x": 3290,
+   "y": 1996,
+   "w": 390,
+   "size": "s",
+   "text": "Pass-and-play: Race is disabled with its reason under it. Players have editable names and pick colours; colour plus pattern plus initial stay unique. Bots can join (mixed tables)."
+  },
+  "n-deal": {
+   "x": 0,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Zones top to bottom: status strip, river (in its sunken channel), board, hand tray. The table is felt: a mid-tone baize with a lamp-pool glow at the centre and a fine grain, texture only. The board opens on the area around the latest play, at 64px cards; pan and pinch to see more, double-tap or Fit to frame it all. The face-up meaning pile sits at the start of the meanings lane, next to the cards it swaps with. Tray lanes scroll sideways."
+  },
+  "n-b1": {
+   "x": 470,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Tap 1: a meaning card. It lifts and every card that can finish one of its meanings rings in lit blue and pulses: table verbs with a free arm, hand verbs, river tops, the wildcard. Everything else dims. Starting from a verb or a river card works the same way."
+  },
+  "n-b2": {
+   "x": 940,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Tap 2: a verb. When the line is complete it lays itself at the best spot: no confirm, no placement step. Only when the verb fits two meanings does the tray show both and ask for one more tap on a particle."
+  },
+  "n-b3": {
+   "x": 1410,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Optional: long-press the last card instead of tapping to choose the spot yourself. The best spot shows as a ringed preview; other legal spots are dashed outlines. Tap a spot to move the preview, tap the preview to lay it."
+  },
+  "n-made": {
+   "x": 1880,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Every line you lay: cards fly in (200ms each, 60ms apart) and get a gorse ring that fades; the compound pops large over the board for 640ms with gorse rays, then settles into the toast. First time ever: a New badge and the glossary count. Any tap dismisses it at once. Bots get the toast only."
+  },
+  "n-alone": {
+   "x": 2350,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Tap a verb in hand: it lifts and its best spot is ringed. The header asks the question and the button carries the cost (draw 2); no dialog. Disabled once both draw piles are empty."
+  },
+  "n-bot": {
+   "x": 2820,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Bot avatar pulses; its line draws in card by card at 420ms so the eye can follow. The board pans to it unless the player has panned in the last 3 seconds. Your controls stay visible but inactive in turn mode."
+  },
+  "n-stall": {
+   "x": 3290,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Turn mode: a full round of passes. Race: every human tapped Stuck and no bot can play. Each pile's top slides under (600ms) and the next top lands; a turn mark sits on each pile for 2s. Everyone draws 1; drawn cards fly to the hand and avatars show +1."
+  },
+  "n-pause": {
+   "x": 3760,
+   "y": 3536,
+   "w": 390,
+   "size": "s",
+   "text": "Bottom sheet over a scrim. Race clocks and bots stop while it is open. Quit saves the game; Restart asks once, in the sheet, because it throws away the game."
+  },
+  "n-hidden": {
+   "x": 0,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Answers hidden: meaning cards show dotted rules instead of Irish. Nothing lights. Tapped cards take the ink selection ring and appear in 'Your line'. The ringed spot is just where it will go. Lay it checks the line."
+  },
+  "n-wrong": {
+   "x": 470,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Not quite: cards shake once (320ms), hand cards return to the hand, river cards to the top of their pile. A soft ink toast, never red: a compound that doesn’t exist, or a real compound not on this card. Turn mode: draw 1, turn over, counts as a pass."
+  },
+  "n-race": {
+   "x": 940,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Race: no turns, a game clock instead. Stuck is a toggle; avatars show who is stuck. Starting a line (tapping a hand card) cancels your Stuck; inspecting table cards does not. Hidden answers by default for fluent players."
+  },
+  "n-taken": {
+   "x": 1410,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Another player took a card your line needed. The card shows dashed for 600ms with a 'Taken' toast naming who, then fades; your line clears. Your hand cards stay in your hand."
+  },
+  "n-lockout": {
+   "x": 1880,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Wrong line in race: the same soft toast, plus a 3s lockout on laying lines. The ring drains on the Wait button. Stuck and Lay alone stay available."
+  },
+  "n-dense": {
+   "x": 2350,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Below 32px a cell, cards show their type glyph only. Pinch to zoom in; words return above 32px. Taps at this size select the nearest valid target. Fit frames the whole board."
+  },
+  "n-empty": {
+   "x": 2820,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Both draw piles at 0. Lay alone is disabled. Draw and pass becomes Pass. The tray header counts final stalls; when the count reaches the deepest river pile, the game ends on fewest cards."
+  },
+  "n-out": {
+   "x": 3290,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "Going out: the last card lands, strong haptic, the board dims and the result card rises. See recap is primary; Board lets players look at the final table first."
+  },
+  "n-fewest": {
+   "x": 3760,
+   "y": 5076,
+   "w": 390,
+   "size": "s",
+   "text": "The common ending. Standings show everyone's count, fewest first; ties share the win and say so. Same buttons as going out."
+  },
+  "n-hand": {
+   "x": 0,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "Pass-and-play only. The hand tray is replaced by a cover in the next player's colour and pattern; the board stays visible since it is public. The hand appears only when the named player taps. Shown after every turn."
+  },
+  "n-recap": {
+   "x": 470,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "Result first, then counts, then every compound made in this game in play order with its meaning and who laid it. Tap a compound to open it in the glossary. Up to three missed lines come last, labelled as such. Replay this game re-runs the seed."
+  },
+  "n-recapout": {
+   "x": 940,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "A game won with hints shows the 'Hints used' mark next to the result. Pass-and-play recaps name each player."
+  },
+  "n-gloss": {
+   "x": 1410,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "36 compounds grouped by verb. Each row: compound, meaning, times made, last seen. Rows not yet made sit greyed with their meaning. Room for one example sentence per compound, empty in v1."
+  },
+  "n-glossempty": {
+   "x": 1880,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "Before any compound is made: the list still shows every compound so learners can study; the empty state is a one-line header, not a blank screen."
+  },
+  "n-rules": {
+   "x": 2350,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "One scrolling page with the five plays as numbered sections, each with a small diagram made from real card components. Replay the tutorial at the top."
+  },
+  "n-settings": {
+   "x": 2820,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "Everything from the handoff's Settings list. Reset glossary progress asks once, inline. Reduced motion: follow the system, or always on."
+  },
+  "n-night": {
+   "x": 3290,
+   "y": 6616,
+   "w": 390,
+   "size": "s",
+   "text": "Dark theme follows the system. Card faces keep their colours; their edges lighten so they separate from the night table."
+  },
+  "n-tablet": {
+   "x": 0,
+   "y": 8132,
+   "w": 560,
+   "size": "s",
+   "text": "Board centre, river down the left, opponents across the top, hand along the bottom in one lane. For pass-and-play the tray changes owner while board and river stay put; type and colours are sized to read at arm's length."
+  },
+  "n-setuptab": {
+   "x": 1260,
+   "y": 8132,
+   "w": 560,
+   "size": "s",
+   "text": "Same controls as phone setup, in two columns: game options left, players right."
+  },
+  "n-recaptab": {
+   "x": 2520,
+   "y": 8132,
+   "w": 560,
+   "size": "s",
+   "text": "Result and standings left; the compound list right, scrollable."
+  }
+ },
+ "designSystems": [
+  {
+   "title": "Bain Amach",
+   "namespace": "bainamach",
+   "artifact": "https://claude.ai/artifact/JuW6kkNhJFYBaXAZ4J1bHp",
+   "version": "1792954958-3ed8",
+   "copiedAt": "2026-10-25T19:21:00Z"
+  }
+ ]
+}

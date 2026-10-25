@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game table</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div data-theme="{{theme}}" style="font-family: var(--font-ui); color: var(--ink)">
+
+<sc-if value="{{isPhone}}" hint-placeholder-val="{{true}}">
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+
+  <div style="flex: none; height: 56px; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 16px">
+    <div style="display: flex; gap: 8px; flex: 1; min-width: 0; align-items: center">
+      <sc-for list="{{avatars}}" as="a" hint-placeholder-count="1">
+        <span class="{{a.cls}}" aria-label="{{a.label}}"><span class="ba-disc">{{a.init}}</span><span class="ba-cnt">{{a.n}}</span><sc-if value="{{a.tag}}" hint-placeholder-val="{{false}}"><span class="ba-tag" style="position: absolute; top: -8px; right: -4px; padding: 1px 6px; border-radius: 999px; background: var(--ink); color: var(--surface); font-size: 10px; line-height: 14px">{{a.tag}}</span></sc-if></span>
+      </sc-for>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 15px; line-height: 18px; white-space: nowrap; font-variant-numeric: tabular-nums">
+      <sc-if value="{{isRace}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></sc-if>
+      <sc-if value="{{isTurns}}" hint-placeholder-val="{{true}}"><span class="{{statusCls}}" style="width: 10px; height: 10px; border-radius: 50%; background: var(--p)"></span></sc-if>
+      <span>{{statusText}}</span>
+    </div>
+    <button class="ba-icon-btn" type="button" aria-label="Pause"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></button>
+  </div>
+
+  <div class="ba-riverbed" style="flex: none; display: flex; justify-content: space-between; margin: 4px 15px 8px; padding: 10px 10px 6px; position: relative; z-index: {{riverZ}}" role="list" aria-label="River">
+    <sc-for list="{{river}}" as="p" hint-placeholder-count="5">
+      <div class="{{p.pcls}}" style="position: relative" role="listitem">
+        <div class="ba-stack">
+          <sc-if value="{{p.has}}" hint-placeholder-val="{{true}}"><div class="{{p.cls}}"><span class="{{p.wcls}}">{{p.word}}</span></div></sc-if>
+        </div>
+        <span class="ba-left">{{p.n}}</span>
+        <sc-if value="{{p.turned}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: -6px; right: -6px; z-index: 3; width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--surface); display: grid; place-items: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></span></sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="{{boardCls}}" style="flex: 1; min-height: 0; background-size: {{gridSize}}px {{gridSize}}px; background-position: {{gridOff}}px {{gridOff}}px">
+    <sc-for list="{{ghosts}}" as="g" hint-placeholder-count="0">
+      <div class="{{g.cls}}" style="left: {{g.left}}px; top: {{g.top}}px"></div>
+    </sc-for>
+    <sc-for list="{{board}}" as="c" hint-placeholder-count="6">
+      <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px; opacity: {{c.op}}" aria-label="{{c.label}}">
+        <sc-if value="{{c.word}}" hint-placeholder-val="{{true}}"><span class="{{c.wcls}}">{{c.word}}</span></sc-if>
+        <sc-if value="{{c.en}}" hint-placeholder-val="{{false}}"><span class="ba-en">{{c.en}}</span></sc-if>
+        <sc-if value="{{c.stands}}" hint-placeholder-val="{{false}}"><span class="ba-stands">{{c.stands}}</span></sc-if>
+        <sc-if value="{{c.cross}}" hint-placeholder-val="{{false}}"><i class="ba-cross"></i></sc-if>
+        <sc-if value="{{c.own}}" hint-placeholder-val="{{false}}"><i class="{{c.ownCls}}"></i></sc-if>
+      </div>
+    </sc-for>
+
+    <button class="ba-icon-btn" type="button" aria-label="Fit board" style="position: absolute; right: 12px; top: 10px; background: var(--surface); box-shadow: var(--shadow-card)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+
+    <sc-if value="{{made}}" hint-placeholder-val="{{false}}">
+      <div style="position: absolute; left: 0; right: 0; top: 74px; display: flex; justify-content: center; z-index: 4">
+        <div class="ba-made" role="status"><sc-if value="{{made.isNew}}" hint-placeholder-val="{{true}}"><span class="ba-new">New</span></sc-if><div class="ba-ga">{{made.ga}}</div><div class="ba-en">{{made.en}}</div><sc-if value="{{made.progress}}" hint-placeholder-val="{{true}}"><div class="ba-progress">{{made.progress}}</div></sc-if></div>
+      </div>
+    </sc-if>
+
+    <div style="position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start">
+      <sc-for list="{{toasts}}" as="t" hint-placeholder-count="0">
+        <sc-if value="{{t.isMade}}" hint-placeholder-val="{{false}}"><div class="{{t.cls}}" role="status"><span class="ba-dot"></span><div><div class="ba-ga">{{t.ga}}</div><div class="ba-en">{{t.en}}</div></div></div></sc-if>
+        <sc-if value="{{t.isSoft}}" hint-placeholder-val="{{false}}"><div class="ba-toast ba-toast-soft" role="status"><span class="ba-ico ba-ico-retry"></span><div><div class="ba-msg">Not quite: <i>{{t.a}}</i>{{t.b}}</div><div class="ba-en">{{t.sub}}</div></div></div></sc-if>
+        <sc-if value="{{t.isQuiet}}" hint-placeholder-val="{{false}}"><div class="ba-toast ba-toast-quiet" role="status"><span class="ba-ico ba-ico-taken"></span><div><div style="font-weight: 700; font-size: 16px; line-height: 20px">{{t.msg}}</div><div class="ba-en">{{t.sub}}</div></div></div></sc-if>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{showTray}}" hint-placeholder-val="{{true}}">
+  <div class="ba-tray" style="flex: none; padding: 12px 16px 30px; display: flex; flex-direction: column; gap: 6px; position: relative; z-index: 2">
+    <div style="display: flex; align-items: center; gap: 8px; min-height: 44px">
+      <div style="flex: 1; min-width: 0">
+        <div style="font-weight: 700; font-size: 16px; line-height: 20px">{{handTitle}}</div>
+        <sc-if value="{{handSub}}" hint-placeholder-val="{{false}}"><div style="font-size: 14px; line-height: 18px; color: var(--ink-muted)">{{handSub}}</div></sc-if>
+      </div>
+      <sc-for list="{{actions}}" as="b" hint-placeholder-count="1">
+        <button class="{{b.cls}}" type="button" disabled="{{b.disabled}}" aria-pressed="{{b.pressed}}" style="min-height: 46px; padding: 0 14px 3px; font-size: 15px"><sc-if value="{{b.ring}}" hint-placeholder-val="{{false}}"><span class="ba-ring" style="--left: 66%"></span></sc-if>{{b.label}}<sc-if value="{{b.cost}}" hint-placeholder-val="{{false}}"><span class="ba-cost">· {{b.cost}}</span></sc-if></button>
+      </sc-for>
+    </div>
+    <sc-if value="{{hasCands}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; gap: 6px">
+        <sc-for list="{{cands}}" as="k" hint-placeholder-count="2">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 6px 10px; border-radius: 12px; background: var(--table)"><span style="font-family: var(--font-card); font-weight: 800; font-size: 16px; line-height: 19px">{{k.ga}}</span><span style="font-size: 13px; line-height: 17px; color: var(--ink-muted)">{{k.note}}</span></div>
+        </sc-for>
+      </div>
+    </sc-if>
+    <sc-if value="{{hasPreview}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 12px; background: var(--table); min-height: 36px">
+        <span style="font-weight: 700; font-size: 12px; line-height: 14px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin-right: 2px">Your line</span>
+        <sc-for list="{{preview}}" as="it" hint-placeholder-count="3">
+          <sc-if value="{{it.isMean}}" hint-placeholder-val="{{false}}"><span style="padding: 6px 8px; border-radius: 7px; background: var(--meaning-paper); color: var(--meaning-ink); box-shadow: inset 0 0 0 1px var(--meaning-edge); font-weight: 700; font-size: 11px; line-height: 12px; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap">{{it.en}}</span></sc-if>
+          <sc-if value="{{it.isCard}}" hint-placeholder-val="{{true}}"><div class="{{it.cls}}" style="--s: 38px; --fs: 11px"><span class="{{it.wcls}}">{{it.word}}</span></div></sc-if>
+          <sc-if value="{{it.isGap}}" hint-placeholder-val="{{false}}"><span style="width: 38px; height: 38px; box-sizing: border-box; border-radius: 8px; border: 2px dashed var(--ink-muted); display: grid; place-items: center; font-family: var(--font-card); font-weight: 800; font-size: 11px; color: var(--ink-muted)">{{it.word}}</span></sc-if>
+        </sc-for>
+      </div>
+    </sc-if>
+    <div style="display: flex; gap: 8px; padding: 12px 4px 4px; margin: 0 -4px; overflow: hidden; align-items: flex-end">
+      <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-right: 10px; border-right: 1px solid var(--line)">
+        <sc-if value="{{dock.en}}" hint-placeholder-val="{{true}}"><div class="ba-pile"><div class="ba-stack"><div class="ba-card ba-meaning ba-river" aria-label="Face-up meaning card"><span class="ba-en">{{dock.en}}</span></div></div></div></sc-if>
+        <sc-if value="{{dock.none}}" hint-placeholder-val="{{false}}"><div style="width: 60px; height: 66px; box-sizing: border-box; border-radius: 10px; border: 2px dashed var(--line)"></div></sc-if>
+        <span style="font-weight: 700; font-size: 13px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: tabular-nums; white-space: nowrap">Face up · {{dock.m}}</span>
+      </div>
+      <sc-for list="{{handMeanings}}" as="m" hint-placeholder-count="2">
+        <div class="{{m.cls}}" aria-label="Meaning card">
+          <sc-for list="{{m.rows}}" as="r" hint-placeholder-count="3"><div class="ba-m"><span class="ba-en">{{r.en}}</span><span class="{{r.gcls}}">{{r.ga}}</span></div></sc-for>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 8px; padding: 12px 4px 8px; margin: 0 -4px -8px; overflow: hidden">
+      <sc-for list="{{handCards}}" as="c" hint-placeholder-count="5">
+        <div class="{{c.cls}}" aria-label="{{c.label}}"><sc-if value="{{c.word}}" hint-placeholder-val="{{true}}"><span class="{{c.wcls}}">{{c.word}}</span></sc-if><sc-if value="{{c.star}}" hint-placeholder-val="{{false}}"><span class="ba-star"></span></sc-if></div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{isHandover}}" hint-placeholder-val="{{false}}">
+  <div class="ba-tray" style="flex: none; height: 330px; box-sizing: border-box; padding: 28px 16px 34px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; position: relative; z-index: 2">
+    <span class="{{ho.cls}}" style="width: 76px; height: 76px; border-radius: 50%; background: var(--pat), var(--p); color: var(--on-player); display: grid; place-items: center; font-family: var(--font-card); font-weight: 800; font-size: 32px; line-height: 1; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2)">{{ho.init}}</span>
+    <div style="font-family: var(--font-card); font-weight: 800; font-size: 30px; line-height: 34px; letter-spacing: -0.01em">Pass to {{ho.name}}</div>
+    <div style="font-size: 16px; line-height: 22px; color: var(--ink-muted); max-width: 300px">{{ho.prev}}, look away. {{ho.name}}, tap when you have the phone.</div>
+    <button class="ba-btn ba-btn-primary" type="button" style="width: 100%; margin-top: 6px">Show my hand</button>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{isPause}}" hint-placeholder-val="{{false}}">
+    <div class="ba-scrim" style="position: absolute; inset: 0; z-index: 5"></div>
+    <div class="ba-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 10px 16px 34px; display: flex; flex-direction: column; gap: 10px">
+      <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line)"></div>
+      <div style="font-family: var(--font-card); font-weight: 800; font-size: 26px; line-height: 30px; margin-top: 4px">Paused</div>
+      <div style="font-size: 15px; line-height: 20px; color: var(--ink-muted); margin-bottom: 4px">Turns against Bot B · answers shown · hints on request</div>
+      <button class="ba-btn ba-btn-primary" type="button">Resume</button>
+      <button class="ba-btn ba-btn-secondary" type="button">Rules</button>
+      <button class="ba-btn ba-btn-secondary" type="button">Settings</button>
+      <div style="display: flex; gap: 10px">
+        <button class="ba-btn ba-btn-secondary" type="button" style="flex: 1">Restart</button>
+        <button class="ba-btn ba-btn-secondary" type="button" style="flex: 1">Save and quit</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isEnd}}" hint-placeholder-val="{{false}}">
+    <div class="ba-scrim" style="position: absolute; inset: 0; z-index: 5"></div>
+    <div style="position: absolute; left: 16px; right: 16px; top: 170px; z-index: 6; padding: 24px; border-radius: 24px; background: var(--surface-raised); box-shadow: var(--shadow-lift), inset 0 -5px 0 var(--line); display: flex; flex-direction: column; gap: 12px">
+      <div style="font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted)">{{end.eyebrow}}</div>
+      <div style="font-family: var(--font-card); font-weight: 800; font-size: 38px; line-height: 40px; letter-spacing: -0.02em">{{end.title}}</div>
+      <div style="font-size: 16px; line-height: 22px; color: var(--ink-muted)">{{end.sub}}</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin: 4px 0 6px">
+        <sc-for list="{{end.rows}}" as="r" hint-placeholder-count="2">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 14px; background: var(--surface)">
+            <span class="{{r.cls}}" style="width: 34px; height: 34px; border-radius: 50%; background: var(--pat), var(--p); color: var(--on-player); display: grid; place-items: center; font-family: var(--font-card); font-weight: 800; font-size: 15px">{{r.init}}</span>
+            <span style="flex: 1; font-weight: 700; font-size: 16px">{{r.name}}</span>
+            <span style="font-size: 15px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{r.cards}}</span>
+            <sc-if value="{{r.win}}" hint-placeholder-val="{{false}}"><span style="padding: 3px 10px; border-radius: 999px; background: var(--verb); color: var(--on-verb); font-family: var(--font-card); font-weight: 800; font-size: 13px; line-height: 18px">{{r.win}}</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <button class="ba-btn ba-btn-primary" type="button">See recap</button>
+      <button class="ba-btn ba-btn-quiet" type="button">Look at the board</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isTutorial}}" hint-placeholder-val="{{false}}">
+    <div class="ba-scrim" style="position: absolute; left: 0; right: 0; top: 0; height: 107px; z-index: 5"></div>
+    <div class="ba-scrim" style="position: absolute; left: 0; right: 0; top: 213px; bottom: 0; z-index: 5"></div>
+    <div style="position: absolute; left: 16px; right: 16px; top: 230px; z-index: 7; padding: 18px; border-radius: 20px; background: var(--surface-raised); box-shadow: var(--shadow-lift); display: flex; flex-direction: column; gap: 8px">
+      <div style="position: absolute; top: -8px; left: 40px; width: 16px; height: 16px; transform: rotate(45deg); background: var(--surface-raised)"></div>
+      <div style="font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted)">Step 2 of 6</div>
+      <div style="font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">This is the river</div>
+      <div style="font-size: 16px; line-height: 22px">Particles come only from here, never from your hand. You can take the top card of any pile. Tap <b>síos</b>.</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px">
+        <button class="ba-btn ba-btn-quiet" type="button" style="padding: 0">Skip tutorial</button>
+        <button class="ba-btn ba-btn-primary" type="button">Next</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isTablet}}" hint-placeholder-val="{{false}}">
+<div class="ba-felt" style="position: relative; width: 1180px; height: 820px; overflow: hidden; background: var(--table); display: flex; flex-direction: column">
+  <div style="height: 24px; flex: none"></div>
+  <div style="flex: none; height: 64px; display: flex; align-items: center; gap: 14px; padding: 0 16px 0 24px">
+    <div style="display: flex; gap: 14px; flex: 1; align-items: center">
+      <sc-for list="{{avatars}}" as="a" hint-placeholder-count="3">
+        <span class="{{a.cls}}" style="font-size: 18px; padding: 4px 12px 4px 4px" aria-label="{{a.label}}"><span class="ba-disc" style="width: 42px; height: 42px; font-size: 18px">{{a.init}}</span><span style="font-weight: 700">{{a.name}}</span><span class="ba-cnt">{{a.n}}</span></span>
+      </sc-for>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px"><span class="{{statusCls}}" style="width: 12px; height: 12px; border-radius: 50%; background: var(--p)"></span>{{statusText}}</div>
+    <button class="ba-icon-btn" type="button" aria-label="Pause"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg></button>
+  </div>
+  <div style="flex: 1; min-height: 0; display: flex">
+    <div class="ba-riverbed" style="flex: none; width: 88px; margin: 4px 10px 12px 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 0 8px" role="list" aria-label="River">
+      <sc-for list="{{river}}" as="p" hint-placeholder-count="5">
+        <div class="{{p.pcls}}" role="listitem">
+          <div class="ba-stack"><sc-if value="{{p.has}}" hint-placeholder-val="{{true}}"><div class="{{p.cls}}"><span class="{{p.wcls}}">{{p.word}}</span></div></sc-if></div>
+          <span class="ba-left">{{p.n}}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div class="{{boardCls}}" style="flex: 1; min-width: 0; border-radius: 20px 0 0 0; background-size: 66px 66px; background-position: 9px 9px">
+      <sc-for list="{{boardTab}}" as="c" hint-placeholder-count="6">
+        <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px; opacity: {{c.op}}" aria-label="{{c.label}}">
+          <sc-if value="{{c.word}}" hint-placeholder-val="{{true}}"><span class="{{c.wcls}}">{{c.word}}</span></sc-if>
+          <sc-if value="{{c.en}}" hint-placeholder-val="{{false}}"><span class="ba-en">{{c.en}}</span></sc-if>
+          <sc-if value="{{c.cross}}" hint-placeholder-val="{{false}}"><i class="ba-cross"></i></sc-if>
+          <sc-if value="{{c.own}}" hint-placeholder-val="{{false}}"><i class="{{c.ownCls}}"></i></sc-if>
+        </div>
+      </sc-for>
+      <sc-if value="{{hasCands}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; left: 20px; top: 16px; width: 300px; box-sizing: border-box; padding: 14px; border-radius: 16px; background: var(--surface-raised); box-shadow: var(--shadow-lift); display: flex; flex-direction: column; gap: 6px">
+          <div style="font-weight: 700; font-size: 18px; line-height: 22px">{{handSub}}</div>
+          <sc-for list="{{cands}}" as="k" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; padding: 8px 10px; border-radius: 12px; background: var(--surface)"><span style="font-family: var(--font-card); font-weight: 800; font-size: 18px; line-height: 22px">{{k.ga}}</span><span style="font-size: 14px; line-height: 18px; color: var(--ink-muted)">{{k.note}}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  <div class="ba-tray" style="flex: none; padding: 14px 24px 22px; display: flex; flex-direction: column; gap: 6px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="flex: 1; font-weight: 700; font-size: 18px">{{handTitle}}</div>
+      <sc-for list="{{actions}}" as="b" hint-placeholder-count="1">
+        <button class="{{b.cls}}" type="button" disabled="{{b.disabled}}">{{b.label}}<sc-if value="{{b.cost}}" hint-placeholder-val="{{false}}"><span class="ba-cost">· {{b.cost}}</span></sc-if></button>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: flex-end; padding-top: 10px">
+      <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-right: 10px; border-right: 1px solid var(--line)">
+        <div class="ba-pile"><div class="ba-stack"><div class="ba-card ba-meaning ba-river"><span class="ba-en">{{dock.en}}</span></div></div></div>
+        <span style="font-weight: 700; font-size: 13px; color: var(--ink-muted); font-variant-numeric: tabular-nums">Face up · {{dock.m}}</span>
+      </div>
+      <sc-for list="{{handMeanings}}" as="m" hint-placeholder-count="2">
+        <div class="{{m.cls}}">
+          <sc-for list="{{m.rows}}" as="r" hint-placeholder-count="3"><div class="ba-m"><span class="ba-en">{{r.en}}</span><span class="{{r.gcls}}">{{r.ga}}</span></div></sc-for>
+        </div>
+      </sc-for>
+      <div style="width: 1px; align-self: stretch; background: var(--line); margin: 0 4px"></div>
+      <sc-for list="{{handCards}}" as="c" hint-placeholder-count="5">
+        <div class="{{c.cls}}" style="--s: 84px; --fs: 24px" aria-label="{{c.label}}"><sc-if value="{{c.word}}" hint-placeholder-val="{{true}}"><span class="{{c.wcls}}">{{c.word}}</span></sc-if><sc-if value="{{c.star}}" hint-placeholder-val="{{false}}"><span class="ba-star"></span></sc-if></div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scene":{"editor":"enum","options":["deal","build1","build2","build3","made","alone","bot","stall","pause","hidden","wrong","race","taken","lockout","dense","empty","out","fewest","tutorial","handover"],"default":"deal"},"device":{"editor":"enum","options":["phone","tablet"],"default":"phone"},"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const scene = this.props.scene ?? 'deal';
+  const device = this.props.device ?? 'phone';
+  const theme = this.props.theme ?? 'light';
+
+  const TYPE = { verb: 'ba-verb', adv: 'ba-adverb', prep: 'ba-preposition', wild: 'ba-wild', mean: 'ba-meaning' };
+  const KIND = { verb: 'Verb', adv: 'Adverb', prep: 'Preposition', wild: 'Wildcard', mean: 'Meaning card' };
+  const wcls = (w) => { const n = Array.from(w || '').length; return 'ba-word' + (n >= 7 ? ' ba-xl' : n >= 5 ? ' ba-l' : ''); };
+  const cardCls = (c, size) => 'ba-card ' + TYPE[c.t] + (size === 'table' ? ' ba-table' : size === 'river' ? ' ba-river' : '') + (c.v ? ' ba-v' : '') + (c.lit ? ' is-lit' : '') + (c.sel ? ' is-selected' : '') + (c.dim ? ' is-dim' : '') + (c.taken ? ' is-taken' : '') + (c.shake ? ' is-shake' : '') + (c.fresh ? ' is-fresh' : '');
+  const label = (c) => KIND[c.t] + ': ' + (c.t === 'mean' ? c.en : (c.w || ('stands for ' + (c.stands || 'any particle'))));
+
+  // ---------- board ----------
+  const D = { r: [1, 0], l: [-1, 0], d: [0, 1], u: [0, -1] };
+  const V = (w, x, y, own) => ({ t: 'verb', w, x, y, own });
+  const line = (x, y, dir, verb, parts, en, own) => {
+    const [dx, dy] = D[dir]; const out = [];
+    if (verb) out.push({ t: 'verb', w: verb, x, y, own });
+    let cx = x, cy = y;
+    parts.forEach((p) => {
+      cx += dx; cy += dy; const [k, w] = p.split(':');
+      out.push({ t: k === 'A' ? 'adv' : k === 'P' ? 'prep' : 'wild', w: k === 'W' ? '' : w, stands: k === 'W' ? w : '', x: cx, y: cy, v: dy !== 0, own });
+    });
+    out.push({ t: 'mean', en, x: cx + dx, y: cy + dy, own });
+    return out;
+  };
+  const merge = (...lists) => {
+    const m = new Map();
+    lists.flat().forEach((c) => { const k = c.x + ',' + c.y; m.set(k, Object.assign({}, m.get(k) || {}, c)); });
+    return Array.from(m.values()).filter((c) => c.t);
+  };
+  const tag = (list, extra) => list.map((c) => Object.assign(c, extra));
+  const starters = [V('cuir', 0, 1), V('tabhair', 0, 3), V('bain', 4, 2), V('éirigh', 6, 4)];
+  const mid = merge(starters,
+    line(0, 1, 'r', null, ['A:suas', 'P:le'], 'Put up with', 'p2'),
+    line(4, 2, 'd', null, ['A:amach'], 'Achieve', 'p1'),
+    [{ t: 'verb', w: 'éist', x: 2, y: 0, own: 'p1' }, { t: 'mean', en: 'Listen to', x: 2, y: 2, own: 'p1' }, { x: 2, y: 1, cross: true }],
+    line(0, 3, 'r', null, ['A:suas'], 'Give up', 'p2'));
+  const at = (list, x, y, extra) => list.map((c) => (c.x === x && c.y === y ? Object.assign({}, c, extra) : c));
+  const describe = (own) => line(0, 4, 'r', 'cuir', ['A:síos', 'P:ar'], 'Describe', own);
+  const botLine = () => line(4, 2, 'u', null, ['P:as'], 'Get from', 'p2');
+
+  const dense = merge(
+    [V('cuir', 1, 1), V('bain', 8, 1), V('tabhair', 2, 7), V('éirigh', 9, 8)],
+    line(1, 1, 'r', null, ['A:suas', 'P:le'], 'Put up with', 'p2'),
+    line(8, 1, 'd', null, ['A:amach'], 'Achieve', 'p1'),
+    line(1, 1, 'd', null, ['A:síos', 'P:ar'], 'Describe', 'p3'),
+    [{ t: 'verb', w: 'éist', x: 3, y: 0, own: 'p1' }, { t: 'mean', en: 'Listen to', x: 3, y: 2, own: 'p1' }, { x: 3, y: 1, cross: true }],
+    line(2, 7, 'r', null, ['A:suas'], 'Give up', 'p4'),
+    line(9, 8, 'l', null, ['P:as'], 'Give up', 'p2'),
+    line(8, 1, 'r', null, ['A:amach'], 'Achieve', 'p3'),
+    line(5, 4, 'r', 'fan', ['A:amach', 'P:ó'], 'Stay away from', 'p1'),
+    line(5, 10, 'u', 'fág', ['A:amach'], 'Leave out', 'p4'),
+    line(12, 5, 'l', 'cuir', ['A:isteach', 'P:ar'], 'Interfere with', 'p2'),
+    line(2, 10, 'r', 'bain', ['P:as'], 'Get from', 'p3'),
+    line(7, 3, 'l', 'éist', ['P:le'], 'Listen to', 'p1'),
+    line(11, 10, 'u', 'tabhair', ['W:suas'], 'Give up', 'p3'),
+    line(12, 1, 'd', 'fág', ['A:amach'], 'Leave out', 'p2'),
+    line(0, 11, 'r', 'éirigh', ['P:as'], 'Give up', 'p1'),
+    line(6, 11, 'r', 'cuir', ['A:suas', 'P:le'], 'Put up with', 'p3'),
+    [V('fan', 0, 8, 'p2'), V('cuir', 9, 6, 'p4'), V('bain', 12, 8, 'p1')]
+  );
+
+  // ---------- hand ----------
+  const M = {
+    m1: [['Describe', 'cuir síos ar'], ['Interfere with', 'cuir isteach ar'], ['Get from', 'bain as']],
+    m2: [['Stay away from', 'fan amach ó'], ['Leave out', 'fág amach'], ['Give up', 'éirigh as']],
+    m3: [['Achieve', 'bain amach'], ['Listen to', 'éist le'], ['Put up with', 'cuir suas le']],
+  };
+  const hm = (key, o) => Object.assign({ key }, o || {});
+  const hc = (w, o) => Object.assign({ t: w === '*' ? 'wild' : 'verb', w: w === '*' ? '' : w }, o || {});
+  const openHand = { m: [hm('m1'), hm('m2'), hm('m3')], c: ['cuir', 'fan', 'éist', 'fág', 'tabhair', '*', 'bain', 'éirigh', 'cuir'].map((w) => hc(w)) };
+  const midHand = () => ({ m: [hm('m1'), hm('m2')], c: ['cuir', 'fan', 'éist', '*', 'fág', 'tabhair', 'éirigh'].map((w) => hc(w)) });
+
+  const R = (t, w, n, o) => Object.assign({ t, w, n }, o || {});
+  const river0 = () => [R('adv', 'síos', 8), R('prep', 'ar', 9), R('adv', 'amach', 7), R('prep', 'as', 5), R('prep', 'le', 6)];
+  const riverRace = () => [R('adv', 'amach', 6), R('prep', 'ar', 9), R('adv', 'suas', 7), R('prep', 'ó', 5), R('prep', 'faoi', 4)];
+
+  const bot = (n, o) => Object.assign({ p: 'p2', i: 'B', name: 'Bot B', n }, o || {});
+
+  // ---------- scenes ----------
+  let s = {
+    mode: 'turns', answers: 'shown', avatars: [bot(9)], status: { text: 'Your turn', p: 'p1' },
+    river: river0(), board: mid, ghosts: [], hand: midHand(), handTitle: 'Your hand · 9', handSub: '',
+    dock: { en: 'Take off', m: 21 }, cands: [], toasts: [], made: null, actions: [{ k: 'sec', label: 'Draw and pass' }],
+    preview: null, overlay: null, pitch: 66, zoomed: false,
+  };
+  const dimAllBut = (list, keep) => list.map((c, i) => (keep.includes(i) ? c : Object.assign({}, c, { dim: true })));
+
+  if (scene === 'deal' || scene === 'tutorial') {
+    s.board = merge(starters); s.hand = openHand; s.handTitle = 'Your hand · 12'; s.avatars = [bot(12)];
+    s.dock = { en: 'Take off', m: 29 };
+    s.handSub = 'Tap a meaning card to start a line';
+    if (scene === 'tutorial') { s.handSub = ''; s.overlay = 'tutorial'; s.river = river0().map((p, i) => (i === 0 ? Object.assign(p, { lit: true }) : p)); }
+  }
+  if (scene === 'build1') {
+    s.hand.m = [hm('m1', { sel: true }), hm('m2', { dim: true })];
+    s.hand.c = dimAllBut(s.hand.c, [0, 3]).map((c, i) => (i === 0 || i === 3 ? Object.assign({}, c, { lit: true }) : c));
+    s.board = at(at(mid, 0, 1, { lit: true }), 4, 2, { lit: true });
+    s.river = river0().map((p) => (['síos', 'ar', 'as'].includes(p.w) ? Object.assign(p, { lit: true }) : Object.assign(p, { dim: true })));
+    s.handTitle = 'Pick a verb'; s.handSub = 'Lit cards finish a meaning on this card';
+    s.actions = [{ k: 'quiet', label: 'Cancel' }];
+  }
+  if (scene === 'build2') {
+    s.hand.m = [hm('m1', { sel: true }), hm('m2', { dim: true })];
+    s.hand.c = dimAllBut(s.hand.c, [0, 3]).map((c, i) => (i === 0 ? Object.assign({}, c, { sel: true }) : i === 3 ? Object.assign({}, c, { lit: true }) : c));
+    s.river = river0().map((p) => (['síos', 'ar'].includes(p.w) ? Object.assign(p, { lit: true }) : Object.assign(p, { dim: true })));
+    s.handTitle = 'Two ways to finish'; s.handSub = 'Tap a lit particle. The line lays itself.';
+    s.cands = [{ ga: 'cuir síos ar', note: 'describe · síos is showing' }, { ga: 'cuir isteach ar', note: 'interfere with · your wildcard' }];
+    s.actions = [{ k: 'quiet', label: 'Cancel' }];
+  }
+  if (scene === 'build3') {
+    s.hand.m = [hm('m1', { sel: true }), hm('m2', { dim: true })];
+    s.hand.c = dimAllBut(s.hand.c, [0]).map((c, i) => (i === 0 ? Object.assign({}, c, { sel: true }) : c));
+    s.river = river0().map((p) => (['síos', 'ar'].includes(p.w) ? Object.assign(p, { sel: true }) : Object.assign(p, { dim: true })));
+    s.board = merge(mid, tag(describe(null), { op: 0.62 }));
+    s.ghosts = [[0, 4, 1], [1, 4, 1], [2, 4, 1], [3, 4, 1], [3, 0, 0], [4, 0, 0], [5, 0, 0]].map(([x, y, sg]) => ({ x, y, sg }));
+    s.handTitle = 'Choose a spot'; s.handSub = 'You held the last card, so you choose. Tap the ringed line to lay it.';
+    s.actions = [{ k: 'quiet', label: 'Cancel' }];
+  }
+  if (scene === 'made') {
+    s.board = merge(mid, tag(describe('p1'), { fresh: true }));
+    s.river = [R('adv', 'isteach', 7), R('prep', 'do', 8), R('adv', 'amach', 7), R('prep', 'as', 5), R('prep', 'le', 6)];
+    s.hand = { m: [hm('m2')], c: ['fan', 'éist', '*', 'fág', 'tabhair', 'éirigh'].map((w) => hc(w)) };
+    s.handTitle = 'Your hand · 7';
+    s.avatars = [bot(9, { turn: true })]; s.status = { text: "B's turn", p: 'p2' };
+    s.made = { ga: 'cuir síos ar', en: 'Describe', isNew: true, progress: '15 of 36 compounds made' };
+    s.actions = [{ k: 'sec', label: 'Draw and pass', disabled: true }];
+  }
+  if (scene === 'alone') {
+    s.hand.c = s.hand.c.map((c, i) => (i === 1 ? Object.assign({}, c, { sel: true }) : c));
+    s.ghosts = [{ x: 3, y: 3, sg: 1 }, { x: 3, y: 2, sg: 0 }, { x: 1, y: 0, sg: 0 }];
+    s.board = merge(mid, [{ t: 'verb', w: 'fan', x: 3, y: 3, op: 0.62 }]);
+    s.handTitle = 'Lay fan alone?'; s.handSub = 'A lone verb costs 2 cards';
+    s.actions = [{ k: 'quiet', label: 'Cancel' }, { k: 'pri', label: 'Lay alone', cost: 'draw 2' }];
+  }
+  if (scene === 'bot') {
+    s.board = merge(mid, botLine().map((c) => (c.t === 'mean' ? Object.assign(c, { op: 0.5 }) : Object.assign(c, { fresh: true }))));
+    s.avatars = [bot(8, { turn: true, playing: true })]; s.status = { text: 'B is playing', p: 'p2' };
+    s.toasts = [{ kind: 'made', ga: 'bain as', en: 'get from · B', p: 'p2' }];
+    s.actions = [{ k: 'sec', label: 'Draw and pass', disabled: true }];
+  }
+  if (scene === 'stall') {
+    s.river = [R('adv', 'isteach', 8, { turned: true }), R('prep', 'do', 9, { turned: true }), R('adv', 'síos', 7, { turned: true }), R('prep', 'faoi', 5, { turned: true }), R('prep', 'ó', 6, { turned: true })];
+    s.avatars = [bot(10, { tag: '+1' })];
+    s.hand.c = s.hand.c.concat([hc('bain', { sel: true })]);
+    s.handTitle = 'Your hand · 10'; s.handSub = 'You drew bain';
+    s.toasts = [{ kind: 'quiet', msg: 'No one can play', sub: 'Everyone draws 1. The river turns.' }];
+  }
+  if (scene === 'pause') { s.overlay = 'pause'; }
+  if (scene === 'hidden' || scene === 'wrong') {
+    s.answers = 'hidden';
+    s.hand.m = [hm('m1', { sel: scene === 'hidden' }), hm('m2', { sel: scene === 'wrong' })];
+    if (scene === 'hidden') {
+      s.hand.c = s.hand.c.map((c, i) => (i === 0 ? Object.assign({}, c, { sel: true }) : c));
+      s.river = river0().map((p) => (['síos', 'ar'].includes(p.w) ? Object.assign(p, { sel: true }) : p));
+      s.preview = [{ en: 'Describe' }, { t: 'verb', w: 'cuir' }, { t: 'adv', w: 'síos' }, { t: 'prep', w: 'ar' }];
+      s.board = merge(mid, tag(describe(null), { op: 0.62 }));
+      s.handTitle = 'Ready to lay'; s.handSub = 'Nothing lights up with answers hidden';
+      s.actions = [{ k: 'quiet', label: 'Clear' }, { k: 'pri', label: 'Lay it' }];
+    } else {
+      s.hand.c = s.hand.c.map((c, i) => (i === 0 ? Object.assign({}, c, { shake: true }) : c));
+      s.river = [R('adv', 'síos', 8), R('prep', 'ar', 9), R('adv', 'amach', 7), R('prep', 'faoi', 5, { shake: true }), R('prep', 'le', 6)];
+      s.preview = [{ en: 'Interfere with' }, { t: 'verb', w: 'cuir' }, { t: 'prep', w: 'faoi' }];
+      s.toasts = [{ kind: 'soft', a: 'cuir', b: ' doesn’t take faoi', sub: 'Turn over. You draw 1.' }];
+      s.avatars = [bot(9, { turn: true })]; s.status = { text: "B's turn", p: 'p2' };
+      s.handTitle = 'Your hand · 10';
+      s.actions = [{ k: 'pri', label: 'Lay it', disabled: true }];
+    }
+  }
+  if (scene === 'race' || scene === 'taken' || scene === 'lockout' || scene === 'dense') {
+    s.mode = 'race'; s.answers = 'hidden'; s.status = { text: scene === 'dense' ? '6:48' : '2:14' };
+    s.avatars = [bot(10), { p: 'p3', i: 'C', name: 'Bot C', n: 7, playing: scene === 'taken' }, { p: 'p4', i: 'D', name: 'Bot D', n: 8, tag: 'Stuck' }];
+    s.river = riverRace(); s.dock = { en: 'Take off', m: 18 };
+    s.actions = [{ k: 'stuck', label: 'Stuck' }, { k: 'sec', label: 'Lay alone', cost: 'draw 2' }];
+    s.hand = { m: [hm('m2', { sel: scene === 'race' }), hm('m3', { sel: scene === 'lockout' })], c: ['fan', 'cuir', '*', 'éist', 'tabhair'].map((w) => hc(w)) };
+    s.handTitle = 'Your hand · 7';
+    if (scene === 'race') {
+      s.hand.c = s.hand.c.map((c, i) => (i === 0 ? Object.assign({}, c, { sel: true }) : c));
+      s.river = s.river.map((p) => (p.w === 'amach' || p.w === 'ó' ? Object.assign(p, { sel: true }) : p));
+      s.preview = [{ en: 'Stay away from' }, { t: 'verb', w: 'fan' }, { t: 'adv', w: 'amach' }, { t: 'prep', w: 'ó' }];
+      s.actions = [{ k: 'stuck', label: 'Stuck' }, { k: 'pri', label: 'Lay it' }];
+    }
+    if (scene === 'taken') {
+      s.river = s.river.map((p, i) => (i === 0 ? Object.assign(p, { taken: true }) : p));
+      s.board = merge(mid, tag(line(4, 2, 'u', null, ['A:amach'], 'Achieve', 'p3'), { fresh: true }));
+      s.toasts = [{ kind: 'quiet', msg: 'Taken', sub: 'C took amach first. Your line was cleared.' }];
+      s.handSub = 'Start again from any card';
+    }
+    if (scene === 'lockout') {
+      s.hand.c = s.hand.c.map((c, i) => (i === 1 ? Object.assign({}, c, { shake: true }) : c));
+      s.preview = [{ en: 'Put up with' }, { t: 'verb', w: 'cuir' }, { t: 'adv', w: 'suas' }, { gap: 'le?' }];
+      s.toasts = [{ kind: 'soft', a: 'cuir suas', b: ' isn’t on this card', sub: 'You can lay again in 3 seconds.' }];
+      s.actions = [{ k: 'stuck', label: 'Stuck' }, { k: 'pri', label: 'Wait', disabled: true, ring: true }];
+    }
+    if (scene === 'dense') {
+      s.board = dense; s.zoomed = true; s.pitch = 28;
+      s.avatars = [bot(3), { p: 'p3', i: 'C', name: 'Bot C', n: 5 }, { p: 'p4', i: 'D', name: 'Bot D', n: 2 }];
+      s.hand = { m: [hm('m2')], c: ['tabhair', '*', 'éist'].map((w) => hc(w)) }; s.handTitle = 'Your hand · 4';
+      s.handSub = 'Zoomed out: pinch to read the words';
+      s.dock = { en: 'Leave out', m: 6 };
+    }
+  }
+  if (scene === 'empty') {
+    s.dock = { en: '', m: 0 };
+    s.river = [R('adv', 'síos', 3), { empty: true }, R('adv', 'amach', 2), { empty: true }, R('prep', 'le', 1)];
+    s.board = merge(mid, describe('p1'), botLine());
+    s.hand = { m: [hm('m2')], c: ['fág', 'tabhair'].map((w) => hc(w)) };
+    s.avatars = [bot(4)];
+    s.handTitle = 'Final stalls: 3 of 9'; s.handSub = 'Nothing left to draw. Fewest cards wins after 9.';
+    s.actions = [{ k: 'sec', label: 'Lay alone', disabled: true }, { k: 'sec', label: 'Pass' }];
+  }
+  if (scene === 'out' || scene === 'fewest') {
+    s.board = merge(mid, describe('p1'), botLine());
+    s.hand = { m: [], c: [] }; s.overlay = 'end';
+    s.handTitle = scene === 'out' ? 'Your hand · 0' : 'Your hand · 2';
+    s.end = scene === 'out'
+      ? { eyebrow: 'Game over', title: 'You went out', sub: 'You laid your last card. B was left holding 3.', rows: [{ p: 'p1', i: 'Y', name: 'You', cards: '0 cards', win: 'Wins' }, { p: 'p2', i: 'B', name: 'Bot B', cards: '3 cards' }] }
+      : { eyebrow: 'No more plays', title: 'Fewest cards wins', sub: '9 stalls in a row with no line laid.', rows: [{ p: 'p1', i: 'Y', name: 'You', cards: '2 cards', win: 'Wins' }, { p: 'p2', i: 'B', name: 'Bot B', cards: '4 cards' }] };
+  }
+  if (scene === 'handover') {
+    s.overlay = 'handover';
+    s.avatars = [{ p: 'p1', i: 'S', name: 'Siobhán', n: 7 }, { p: 'p2', i: 'C', name: 'Ciarán', n: 8, turn: true }];
+    s.status = { text: "Ciarán's turn", p: 'p2' };
+    s.ho = { p: 'p2', init: 'C', name: 'Ciarán', prev: 'Siobhán' };
+  }
+  if (device === 'tablet') {
+    s.avatars = [{ p: 'p1', i: 'S', name: 'Siobhán', n: 9, turn: true }, { p: 'p2', i: 'C', name: 'Ciarán', n: 10 }, { p: 'p3', i: 'É', name: 'Éabha', n: 8 }];
+    s.status = { text: "Siobhán's turn", p: 'p1' };
+    s.handTitle = 'Siobhán’s hand · 9';
+  }
+
+  // ---------- shape for the template ----------
+  const P = s.pitch, O = s.zoomed ? 8 : 6;
+  const toBoard = (list, ox, oy) => list.map((c) => ({
+    cls: cardCls(c, 'table'), word: c.t === 'mean' ? '' : c.w || '', wcls: wcls(c.w), en: c.t === 'mean' ? c.en : '',
+    stands: c.stands || '', cross: !!c.cross, own: !!c.own, ownCls: 'ba-own ba-' + (c.own || 'p1'),
+    left: ox + c.x * P, top: oy + c.y * P, op: c.op ?? 1, label: label(c),
+  }));
+  const riverOut = s.river.map((p) => (p.empty ? { pcls: 'ba-pile is-empty', has: false, n: 0 } : {
+    pcls: 'ba-pile', has: true, n: p.n, cls: cardCls(p, 'river'), word: p.w, wcls: wcls(p.w), turned: !!p.turned,
+  }));
+  const hidden = s.answers === 'hidden';
+  const handMeanings = s.hand.m.map((m) => ({
+    cls: 'ba-card ba-meaning' + (m.sel ? ' is-selected' : '') + (m.dim ? ' is-dim' : ''),
+    rows: M[m.key].map(([en, ga]) => ({ en, ga, gcls: 'ba-ga' + (hidden ? ' is-hidden' : '') })),
+  }));
+  const handCards = s.hand.c.map((c) => ({ cls: cardCls(c, 'hand'), word: c.w, wcls: wcls(c.w), star: c.t === 'wild', label: label(c) }));
+  const actions = s.actions.map((a) => ({
+    cls: 'ba-btn ' + (a.k === 'pri' ? 'ba-btn-primary' : a.k === 'quiet' ? 'ba-btn-quiet' : a.k === 'stuck' ? 'ba-btn-stuck' : 'ba-btn-secondary'),
+    label: a.label, cost: a.cost || '', disabled: !!a.disabled, pressed: a.k === 'stuck' ? false : undefined, ring: !!a.ring,
+  }));
+  const preview = (s.preview || []).map((it) => (it.en ? { isMean: true, en: it.en } : it.gap ? { isGap: true, word: it.gap } : { isCard: true, cls: cardCls(it, 'table'), word: it.w, wcls: wcls(it.w) }));
+  const toasts = s.toasts.map((t) => Object.assign({ isMade: t.kind === 'made', isSoft: t.kind === 'soft', isQuiet: t.kind === 'quiet', cls: 'ba-toast ba-' + (t.p || 'p1') }, t));
+  const avatars = s.avatars.map((a) => ({
+    cls: 'ba-avatar ba-' + a.p + (a.turn ? ' is-turn' : '') + (a.playing ? ' is-playing' : ''),
+    init: a.i, n: a.n, tag: a.tag || '', name: a.name, label: a.name + ', ' + a.n + ' cards' + (a.tag === 'Stuck' ? ', stuck' : ''),
+  }));
+  const end = s.end ? Object.assign({}, s.end, { rows: s.end.rows.map((r) => Object.assign({ cls: 'ba-' + r.p, init: r.i }, r)) }) : { rows: [] };
+
+  return {
+    theme, isPhone: device !== 'tablet', isTablet: device === 'tablet',
+    isRace: s.mode === 'race', isTurns: s.mode !== 'race',
+    statusText: s.status.text, statusCls: 'ba-' + (s.status.p || 'p1'),
+    avatars, river: riverOut, riverZ: s.overlay === 'tutorial' ? 6 : 1,
+    boardCls: 'ba-board' + (s.zoomed ? ' ba-zoomed' : ''), gridSize: P, gridOff: O - 1,
+    board: toBoard(s.board, O, O), boardTab: toBoard(s.board, 360, 40),
+    ghosts: s.ghosts.map((g) => ({ cls: 'ba-ghost' + (g.sg ? ' is-suggested' : ''), left: O + g.x * P, top: O + g.y * P })),
+    dock: { en: s.dock.en, none: !s.dock.en, m: s.dock.m },
+    cands: s.cands, hasCands: s.cands.length > 0, toasts, made: s.made,
+    showTray: s.overlay !== 'handover', isHandover: s.overlay === 'handover',
+    ho: s.ho ? { cls: 'ba-' + s.ho.p, init: s.ho.init, name: s.ho.name, prev: s.ho.prev } : {},
+    handTitle: s.handTitle, handSub: s.handSub, actions,
+    hasPreview: !!s.preview, preview, handMeanings, handCards,
+    isPause: s.overlay === 'pause', isEnd: s.overlay === 'end', isTutorial: s.overlay === 'tutorial', end,
+  };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+
+  <sc-if value="{{update}}" hint-placeholder-val="{{false}}">
+    <div style="margin: 4px 16px 0; padding: 8px 8px 8px 14px; border-radius: 14px; background: var(--ink); color: var(--surface); display: flex; align-items: center; gap: 10px">
+      <span style="flex: 1; font-weight: 700; font-size: 14px; line-height: 18px">New version ready</span>
+      <button class="ba-btn" type="button" style="min-height: 36px; padding: 0 14px; background: var(--surface); color: var(--ink); font-size: 14px">Restart</button>
+    </div>
+  </sc-if>
+
+  <div style="display: flex; align-items: center; padding: 8px 8px 0 20px; gap: 4px">
+    <div style="flex: 1; font-family: var(--font-card); font-weight: 800; font-size: 34px; line-height: 38px; letter-spacing: -0.02em">Bain Amach</div>
+    <button class="ba-icon-btn" type="button" aria-label="Rules"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 5.5h7a2.5 2.5 0 0 1 2.5 2.5v11a2.5 2.5 0 0 0-2.5-2.5h-7zM21.5 5.5h-7A2.5 2.5 0 0 0 12 8v11a2.5 2.5 0 0 1 2.5-2.5h7z"/></svg></button>
+    <button class="ba-icon-btn" type="button" aria-label="Settings"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2.2"/><circle cx="8" cy="17" r="2.2"/></svg></button>
+  </div>
+
+  <div style="position: relative; height: 150px; margin: 14px 16px 10px" aria-hidden="true">
+    <div class="ba-card ba-table ba-verb" style="position: absolute; left: 0; top: 26px"><span class="ba-word ba-xl">tabhair</span></div>
+    <div class="ba-card ba-table ba-adverb" style="position: absolute; left: 66px; top: 26px"><span class="ba-word">suas</span></div>
+    <div class="ba-card ba-meaning" style="position: absolute; left: 140px; top: 0">
+      <div class="ba-m is-used"><span class="ba-en">Give up</span><span class="ba-ga">tabhair suas</span></div>
+      <div class="ba-m"><span class="ba-en">Achieve</span><span class="ba-ga">bain amach</span></div>
+      <div class="ba-m"><span class="ba-en">Listen to</span><span class="ba-ga">éist le</span></div>
+    </div>
+    <div style="position: absolute; left: 0; top: 124px; font-size: 14px; line-height: 18px; color: var(--ink-muted)">tabhair + suas = give up</div>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 0 16px">
+    <sc-if value="{{install}}" hint-placeholder-val="{{false}}">
+      <div style="padding: 14px 16px; border-radius: 18px; background: var(--surface-raised); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 8px">
+        <div style="font-weight: 700; font-size: 16px; line-height: 22px">Keep Bain Amach on your home screen</div>
+        <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">It opens full screen and plays offline. On iPhone: tap <b>Share</b> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-label="Share icon" role="img" style="vertical-align: -2px"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7"/></svg>, then <b>Add to Home Screen</b>.</div>
+        <div style="display: flex; justify-content: flex-end"><button class="ba-btn ba-btn-quiet" type="button" style="min-height: 40px">Not now</button></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{saved}}" hint-placeholder-val="{{true}}">
+      <div style="padding: 16px; border-radius: 18px; background: var(--surface-raised); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: flex-start; gap: 12px">
+          <div style="flex: 1">
+            <div style="font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted)">Game in progress</div>
+            <div style="font-weight: 700; font-size: 17px; line-height: 22px; margin-top: 2px">Turns against Bot B</div>
+            <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">Answers shown · saved 2 hours ago</div>
+          </div>
+          <div style="display: flex; gap: 6px">
+            <span class="ba-avatar ba-p1" aria-label="You, 7 cards"><span class="ba-disc">Y</span><span class="ba-cnt">7</span></span>
+          </div>
+        </div>
+        <button class="ba-btn ba-btn-primary" type="button">Continue</button>
+      </div>
+    </sc-if>
+
+    <button class="{{newCls}}" type="button">New game</button>
+
+    <div style="padding: 14px 16px; border-radius: 18px; background: var(--surface); display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: baseline; gap: 8px">
+        <div style="flex: 1; font-weight: 700; font-size: 16px">Glossary</div>
+        <div style="font-size: 14px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{made}} of 36 made</div>
+      </div>
+      <div style="height: 8px; border-radius: 4px; background: var(--table-grid); overflow: hidden"><div style="height: 100%; width: {{pct}}%; background: var(--adverb); border-radius: 4px"></div></div>
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">{{glossNote}}</div>
+    </div>
+
+    <sc-if value="{{last}}" hint-placeholder-val="{{false}}">
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted); text-align: center">Last game: you went out with B holding 3 cards.</div>
+    </sc-if>
+  </div>
+  <div style="height: 34px; flex: none"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["saved","first","returning"],"default":"saved"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const v = this.props.variant ?? 'saved';
+  const made = v === 'first' ? 0 : v === 'returning' ? 17 : 14;
+  return {
+    saved: v === 'saved', install: v === 'returning', update: v === 'returning', last: v === 'returning',
+    newCls: 'ba-btn ' + (v === 'saved' ? 'ba-btn-secondary' : 'ba-btn-primary'),
+    made, pct: Math.round((made / 36) * 100),
+    glossNote: made === 0 ? 'Every compound is listed already. Make one in a game to start your record.' : 'Last made: cuir síos ar, describe.',
+  };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>App icon and splash</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1400px; height: 900px; box-sizing: border-box; padding: 56px 64px; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: baseline; gap: 20px">
+    <div style="font-family: var(--font-card); font-weight: 800; font-size: 36px; line-height: 40px; letter-spacing: -0.02em">App icon and splash</div>
+    <div style="font-size: 16px; line-height: 22px; color: var(--ink-muted); max-width: 760px">One laid line on a peat ground: verb, particle, meaning. No letters, so it holds at 48px and needs no change when the game is named. The splash wordmark is a placeholder.</div>
+  </div>
+
+  <div style="display: flex; gap: 48px; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div style="width: 240px; height: 240px; border-radius: 54px; background: var(--card-back); display: flex; align-items: center; justify-content: center; gap: 6px" role="img" aria-label="App icon, 1024px master">
+        <div style="position: relative; width: 62px; height: 62px; border-radius: 10px; background: var(--verb); box-shadow: inset 0 -4px 0 rgba(0,0,0,0.18)"><div style="position: absolute; left: 24px; top: 0; width: 14px; height: 5px; background: var(--verb-edge)"></div><div style="position: absolute; left: 24px; bottom: 0; width: 14px; height: 5px; background: var(--verb-edge)"></div><div style="position: absolute; left: 0; top: 24px; width: 5px; height: 14px; background: var(--verb-edge)"></div></div>
+        <div style="position: relative; width: 62px; height: 62px; border-radius: 10px; background: var(--adverb); box-shadow: inset 0 -4px 0 rgba(0,0,0,0.18); overflow: hidden"><div style="position: absolute; left: 0; right: 0; top: 22px; height: 18px; background: var(--meaning-paper); opacity: 0.35"></div></div>
+        <div style="width: 62px; height: 62px; border-radius: 10px; background: var(--meaning-paper); box-shadow: inset 0 -4px 0 rgba(0,0,0,0.12)"></div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">Master, 1024px</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div style="width: 120px; height: 120px; border-radius: 27px; background: var(--card-back); display: flex; align-items: center; justify-content: center; gap: 3px" role="img" aria-label="App icon, 180px">
+        <div style="width: 31px; height: 31px; border-radius: 5px; background: var(--verb)"></div>
+        <div style="position: relative; width: 31px; height: 31px; border-radius: 5px; background: var(--adverb); overflow: hidden"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 9px; background: var(--meaning-paper); opacity: 0.35"></div></div>
+        <div style="width: 31px; height: 31px; border-radius: 5px; background: var(--meaning-paper)"></div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">iOS, 180px</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div style="width: 60px; height: 60px; border-radius: 14px; background: var(--card-back); display: flex; align-items: center; justify-content: center; gap: 2px" role="img" aria-label="App icon, 48px">
+        <div style="width: 15px; height: 15px; border-radius: 3px; background: var(--verb)"></div>
+        <div style="width: 15px; height: 15px; border-radius: 3px; background: var(--adverb)"></div>
+        <div style="width: 15px; height: 15px; border-radius: 3px; background: var(--meaning-paper)"></div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">48px</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div style="position: relative; width: 160px; height: 160px; background: var(--card-back); display: flex; align-items: center; justify-content: center; gap: 4px" role="img" aria-label="Maskable icon with safe zone">
+        <div style="width: 34px; height: 34px; border-radius: 6px; background: var(--verb)"></div>
+        <div style="width: 34px; height: 34px; border-radius: 6px; background: var(--adverb)"></div>
+        <div style="width: 34px; height: 34px; border-radius: 6px; background: var(--meaning-paper)"></div>
+        <div style="position: absolute; left: 16px; top: 16px; width: 128px; height: 128px; box-sizing: border-box; border-radius: 50%; border: 2px dashed var(--meaning-paper); opacity: 0.6"></div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">Maskable, 80% safe zone</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div style="width: 160px; height: 160px; border-radius: 36px; background: var(--surface-raised); display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: inset 0 0 0 1px var(--line)" role="img" aria-label="Monochrome icon">
+        <div style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 6px; background: var(--ink)"></div>
+        <div style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 6px; border: 3px solid var(--ink); position: relative"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 6px; background: var(--ink)"></div></div>
+        <div style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 6px; border: 3px solid var(--ink)"></div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">Monochrome, one ink</div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 40px; align-items: flex-start">
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div data-theme="light" style="width: 180px; height: 390px; border-radius: 28px; background: var(--table); box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px">
+        <div style="width: 72px; height: 72px; border-radius: 16px; background: var(--card-back); display: flex; align-items: center; justify-content: center; gap: 2px"><div style="width: 18px; height: 18px; border-radius: 3px; background: var(--verb)"></div><div style="width: 18px; height: 18px; border-radius: 3px; background: var(--adverb)"></div><div style="width: 18px; height: 18px; border-radius: 3px; background: var(--meaning-paper)"></div></div>
+        <div style="font-family: var(--font-card); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; color: var(--ink)">Bain Amach</div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">Splash, light · background table</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
+      <div data-theme="dark" style="width: 180px; height: 390px; border-radius: 28px; background: var(--table); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px">
+        <div style="width: 72px; height: 72px; border-radius: 16px; background: var(--card-back); box-shadow: inset 0 0 0 1px var(--line); display: flex; align-items: center; justify-content: center; gap: 2px"><div style="width: 18px; height: 18px; border-radius: 3px; background: var(--verb)"></div><div style="width: 18px; height: 18px; border-radius: 3px; background: var(--adverb)"></div><div style="width: 18px; height: 18px; border-radius: 3px; background: var(--meaning-paper)"></div></div>
+        <div style="font-family: var(--font-card); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; color: var(--ink)">Bain Amach</div>
+      </div>
+      <div style="font-size: 13px; color: var(--ink-muted)">Splash, dark · background night table</div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; border-radius: 18px; background: var(--surface-raised); font-size: 14px; line-height: 21px">
+      <div style="font-weight: 700; font-size: 16px">Manifest values</div>
+      <div><b>theme_color</b> · light #dce3e0 (table), dark #141b1a (night table)</div>
+      <div><b>background_color</b> · same as theme_color, so the splash matches the first frame</div>
+      <div><b>display</b> · standalone · <b>orientation</b> · any (phone portrait is the designed default)</div>
+      <div><b>icons</b> · 48, 72, 96, 144, 192, 512 png; 512 maskable; monochrome 512; 180 apple-touch-icon</div>
+      <div style="color: var(--ink-muted)">The icon has no letters, so naming the game changes only the splash wordmark.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

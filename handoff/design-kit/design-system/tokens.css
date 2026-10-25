@@ -1,0 +1,136 @@
+/* Bain Amach — generated from tokens.json */
+:root, [data-theme="light"] {
+  --table: #bfd3cc;
+  --table-glow: #d6e5e0;
+  --table-grain: #8fa9a1;
+  --table-grid: #a9c1b9;
+  --river-bed: #b2c9c2;
+  --surface: #eff3f1;
+  --surface-raised: #ffffff;
+  --line: #b4c0bb;
+  --ink: #17201e;
+  --ink-muted: #4b5955;
+  --action: #17201e;
+  --on-action: #ffffff;
+  --focus: #1a5fd0;
+  --lit: #1a5fd0;
+  --alert: #b3261e;
+  --alert-soft: #f9e3e0;
+  --verb: #e8b32e;
+  --verb-edge: #a87a12;
+  --verb-notch: #c08c14;
+  --on-verb: #2a1f06;
+  --adverb: #4a3568;
+  --adverb-edge: #2f2045;
+  --adverb-notch: #7d68a0;
+  --on-adverb: #ffffff;
+  --preposition: #e2d5ee;
+  --preposition-edge: #b9a4cf;
+  --preposition-notch: #b49bcb;
+  --on-preposition: #2b1638;
+  --meaning-paper: #f7f8f4;
+  --meaning-edge: #9aa7a2;
+  --meaning-ink: #17201e;
+  --meaning-answer: #5a3826;
+  --wild: #c9d2ce;
+  --wild-edge: #5d6b67;
+  --on-wild: #17201e;
+  --card-back: #4a3226;
+  --player-1: #c0472a;
+  --player-2: #2f5fa6;
+  --player-3: #567a1e;
+  --player-4: #a3346a;
+  --on-player: #ffffff;
+  --shadow-card: 0 1px 0 rgba(10,20,18,0.20), 0 2px 5px rgba(10,20,18,0.14);
+  --shadow-lift: 0 10px 22px rgba(10,20,18,0.24);
+  --shadow-sheet: 0 -6px 24px rgba(10,20,18,0.16);
+}
+[data-theme="dark"] {
+  --table: #121a19;
+  --table-glow: #1c2a28;
+  --table-grain: #34504a;
+  --table-grid: #2a3a37;
+  --river-bed: #0d2523;
+  --surface: #1c2523;
+  --surface-raised: #27312f;
+  --line: #3b4845;
+  --ink: #e8eeec;
+  --ink-muted: #a2b0ac;
+  --action: #e8eeec;
+  --on-action: #141b1a;
+  --focus: #8db8ff;
+  --lit: #8db8ff;
+  --alert: #ff9a8c;
+  --alert-soft: #3a1f1c;
+  --verb: #e8b32e;
+  --verb-edge: #c08f1c;
+  --verb-notch: #c08c14;
+  --on-verb: #2a1f06;
+  --adverb: #4a3568;
+  --adverb-edge: #8a74ab;
+  --adverb-notch: #7d68a0;
+  --on-adverb: #ffffff;
+  --preposition: #e2d5ee;
+  --preposition-edge: #b9a4cf;
+  --preposition-notch: #b49bcb;
+  --on-preposition: #2b1638;
+  --meaning-paper: #f7f8f4;
+  --meaning-edge: #9aa7a2;
+  --meaning-ink: #17201e;
+  --meaning-answer: #5a3826;
+  --wild: #c9d2ce;
+  --wild-edge: #8a9894;
+  --on-wild: #17201e;
+  --card-back: #4a3226;
+  --player-1: #e0704f;
+  --player-2: #6f9be0;
+  --player-3: #8db04a;
+  --player-4: #d76c9f;
+  --on-player: #141b1a;
+  --shadow-card: 0 1px 0 rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.45);
+  --shadow-lift: 0 10px 24px rgba(0,0,0,0.6);
+  --shadow-sheet: 0 -6px 24px rgba(0,0,0,0.55);
+}
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-card-sm: 9px;
+  --radius-card-md: 10px;
+  --radius-card-lg: 13px;
+  --radius-control: 16px;
+  --radius-sheet: 24px;
+  --radius-round: 999px;
+  --card-hand: 76px;
+  --card-meaning-w: 200px;
+  --card-meaning-h: 116px;
+  --card-river: 60px;
+  --card-table: 64px;
+  --touch-min: 44px;
+  --control-height: 52px;
+  --dur-snap: 120ms;
+  --dur-place: 200ms;
+  --dur-celebrate: 640ms;
+  --dur-bot: 420ms;
+  --dur-stall: 600ms;
+  --dur-pulse: 1200ms;
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --font-card: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --font-ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.card-hand { font-family: var(--font-card); font-size: 22px; line-height: 1; font-weight: 800; }
+.card-river { font-family: var(--font-card); font-size: 18px; line-height: 1; font-weight: 800; }
+.card-table { font-family: var(--font-card); font-size: 16px; line-height: 1; font-weight: 800; }
+.answer { font-family: var(--font-card); font-size: 16px; line-height: 19px; font-weight: 800; }
+.celebrate { font-family: var(--font-card); font-size: 34px; line-height: 36px; font-weight: 800; letter-spacing: -0.02em; }
+.display { font-family: var(--font-card); font-size: 44px; line-height: 44px; font-weight: 800; letter-spacing: -0.02em; }
+.title { font-family: var(--font-card); font-size: 24px; line-height: 28px; font-weight: 800; letter-spacing: -0.01em; }
+.body { font-family: var(--font-ui); font-size: 16px; line-height: 22px; font-weight: 400; }
+.label { font-family: var(--font-ui); font-size: 16px; line-height: 20px; font-weight: 700; }
+.meaning { font-family: var(--font-ui); font-size: 12px; line-height: 14px; font-weight: 700; letter-spacing: 0.05em; }
+.caption { font-family: var(--font-ui); font-size: 14px; line-height: 19px; font-weight: 400; }
+.count { font-family: var(--font-ui); font-size: 16px; line-height: 18px; font-weight: 700; }

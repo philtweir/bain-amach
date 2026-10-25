@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Motion notes</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 1400px; height: 900px; box-sizing: border-box; padding: 56px 64px; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: baseline; gap: 20px">
+    <div style="font-family: var(--font-card); font-weight: 800; font-size: 36px; line-height: 40px; letter-spacing: -0.02em">Motion</div>
+    <div style="font-size: 16px; line-height: 22px; color: var(--ink-muted); max-width: 820px">Quick and physical, never slow enough to cost a race. Every moment has a reduced-motion fallback, and no information is carried by motion alone.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px">
+    <sc-for list="{{moments}}" as="m" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 18px; background: var(--surface-raised)">
+        <div style="font-weight: 700; font-size: 18px; line-height: 24px">{{m.title}}</div>
+        <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted); min-height: 80px">{{m.what}}</div>
+        <div style="display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--table-grid); padding-top: 10px">
+          <sc-for list="{{m.specs}}" as="s" hint-placeholder-count="4">
+            <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px"><span style="flex: none; width: 76px; color: var(--ink-muted)">{{s.k}}</span><span style="font-weight: 700">{{s.v}}</span></div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px; padding: 22px 24px; border-radius: 18px; background: var(--surface)">
+    <div style="display: flex; align-items: baseline; gap: 16px">
+      <div style="font-weight: 700; font-size: 18px">Line placement timeline</div>
+      <div style="font-size: 14px; color: var(--ink-muted)">cuir síos ar · four cards 60ms apart, 200ms each on ease-snap, then the line-made pop</div>
+    </div>
+    <div style="position: relative; height: 196px">
+      <sc-for list="{{ticks}}" as="t" hint-placeholder-count="6">
+        <div style="position: absolute; left: {{t.x}}px; top: 0; bottom: 22px; width: 1px; background: var(--table-grid)"></div>
+        <div style="position: absolute; left: {{t.lx}}px; bottom: 0; width: 60px; text-align: center; font-size: 12px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{t.label}}</div>
+      </sc-for>
+      <sc-for list="{{bars}}" as="b" hint-placeholder-count="5">
+        <div style="position: absolute; left: 0; top: {{b.y}}px; width: 150px; font-size: 13px; line-height: 28px; font-weight: 700">{{b.name}}</div>
+        <div style="position: absolute; left: {{b.x}}px; top: {{b.y}}px; width: {{b.w}}px; height: 28px; border-radius: 6px; background: {{b.fill}}; box-shadow: inset 0 0 0 1px var(--line)"></div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+  const sp = (pairs) => pairs.map(([k, v]) => ({ k, v }));
+  const moments = [
+    { title: 'Line made', what: 'Cards fly in and get a gorse ring; the compound pops large over the board with gorse rays, holds, then settles into the toast. Any tap dismisses it.',
+      specs: sp([['Duration', 'dur-place 200ms per card, then dur-celebrate 640ms'], ['Easing', 'ease-snap in, ease-out out'], ['Haptic', 'light per card, strong on the pop'], ['Reduced', 'no rays; 120ms fades']]) },
+    { title: 'River take', what: 'The top card lifts 8px and leaves; the next card rises into place and the count ticks down.',
+      specs: sp([['Duration', 'lift 120ms, settle 160ms'], ['Easing', 'ease-out'], ['Haptic', 'none'], ['Reduced', 'crossfade of the top card']]) },
+    { title: 'Stall rotation', what: 'Each pile’s top card slides down and under; the next lands. A turn mark sits on each pile for 2s. Drawn cards fly to hands.',
+      specs: sp([['Duration', 'dur-stall 600ms'], ['Easing', 'ease-out'], ['Haptic', 'light, once'], ['Reduced', 'crossfade and the turn mark']]) },
+    { title: 'Bot play', what: 'The bot’s avatar pulses; its line draws in card by card. The board pans to it unless you panned in the last 3s.',
+      specs: sp([['Duration', 'dur-bot 420ms per card'], ['Easing', 'ease-snap'], ['Haptic', 'none'], ['Reduced', 'cards fade in one by one']]) },
+    { title: 'Win', what: 'The last card lands, the board dims, and the result card rises. No confetti: the compound list is the reward.',
+      specs: sp([['Duration', 'dim 300ms, rise 320ms'], ['Easing', 'ease-out'], ['Haptic', 'strong, once'], ['Reduced', 'fade, 120ms']]) },
+  ];
+  const X0 = 170, PX = 1;
+  const ticks = [0, 200, 400, 600, 800, 1000].map((ms) => ({ x: X0 + ms * PX, lx: X0 + ms * PX - 30, label: ms + 'ms' }));
+  const bar = (name, start, dur, fill, i) => ({ name, x: X0 + start * PX, w: dur * PX, y: 4 + i * 34, fill });
+  const bars = [
+    bar('Verb · cuir', 0, 200, 'var(--verb)', 0),
+    bar('Adverb · síos', 60, 200, 'var(--adverb)', 1),
+    bar('Preposition · ar', 120, 200, 'var(--preposition)', 2),
+    bar('Meaning card', 180, 200, 'var(--meaning-paper)', 3),
+    bar('Line made → toast', 380, 640, 'var(--card-back)', 4),
+  ];
+  return { moments, ticks, bars };
+}
+}
+</script>
+</body>
+</html>

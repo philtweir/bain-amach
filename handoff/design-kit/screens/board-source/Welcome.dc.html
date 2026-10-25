@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column; padding: 47px 20px 34px; box-sizing: border-box; gap: 14px">
+  <div style="flex: 1"></div>
+  <div style="font-family: var(--font-card); font-weight: 800; font-size: 56px; line-height: 54px; letter-spacing: -0.03em">Bain<br>Amach</div>
+  <div style="font-size: 18px; line-height: 26px; max-width: 320px">Build Irish compound verbs, card by card. Empty your hand first to win.</div>
+  <div class="ba-board" style="height: 190px; border-radius: 18px; margin: 8px 0; background-position: 9px 9px; box-shadow: inset 0 0 0 1px var(--table-grid)" aria-label="Example line: cuir, suas, le, put up with">
+    <div style="position: absolute; left: 14px; top: 16px; font-family: var(--font-card); font-weight: 800; font-size: 18px; color: var(--ink)">cuir suas le</div>
+    <div class="ba-card ba-table ba-verb" style="left: 10px; top: 56px"><span class="ba-word">cuir</span></div>
+    <div class="ba-card ba-table ba-adverb" style="left: 76px; top: 56px"><span class="ba-word">suas</span></div>
+    <div class="ba-card ba-table ba-preposition" style="left: 142px; top: 56px"><span class="ba-word">le</span></div>
+    <div class="ba-card ba-table ba-meaning" style="left: 208px; top: 56px"><span class="ba-en">Put up with</span></div>
+    <div style="position: absolute; left: 14px; top: 136px; right: 14px; font-size: 15px; line-height: 20px; color: var(--ink-muted)">A verb, its particles, and the meaning they make.</div>
+  </div>
+  <div style="flex: 1"></div>
+  <button class="ba-btn ba-btn-primary" type="button" style="min-height: 52px; font-size: 17px">Play the tutorial</button>
+  <button class="ba-btn ba-btn-secondary" type="button">Skip to a game</button>
+  <div style="font-size: 13px; line-height: 18px; color: var(--ink-muted); text-align: center">The tutorial is one short game against a bot, about 3 minutes.</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

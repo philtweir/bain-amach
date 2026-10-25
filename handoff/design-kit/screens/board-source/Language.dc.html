@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ga">
+<head>
+<meta charset="utf-8">
+<title>Choose language</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column; padding: 47px 20px 34px; box-sizing: border-box; gap: 16px">
+  <div style="flex: 1"></div>
+  <div style="display: flex; gap: 4px" aria-hidden="true">
+    <div class="ba-card ba-river ba-verb"><span class="ba-word">bain</span></div>
+    <div class="ba-card ba-river ba-adverb"><span class="ba-word ba-l">amach</span></div>
+  </div>
+  <div style="font-family: var(--font-card); font-weight: 800; font-size: 34px; line-height: 38px; letter-spacing: -0.02em">Cén teanga?</div>
+  <div style="font-size: 17px; line-height: 24px; color: var(--ink-muted); margin-top: -10px">Which language?</div>
+  <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">Cards are always in Irish. This sets the menus and help. You can change it later in Settings.</div>
+  <div role="radiogroup" aria-label="Language" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px">
+    <button type="button" role="radio" aria-checked="true" style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-radius: 16px; border: 0; background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 2.5px var(--ink); text-align: left; cursor: pointer">
+      <span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 18px; line-height: 22px">Gaeilge</span><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">Irish · default</span></span>
+      <span style="width: 22px; height: 22px; border-radius: 50%; background: var(--ink); box-shadow: inset 0 0 0 6px var(--surface-raised), 0 0 0 2px var(--ink)"></span>
+    </button>
+    <button type="button" role="radio" aria-checked="false" style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-radius: 16px; border: 0; background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); text-align: left; cursor: pointer">
+      <span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 18px; line-height: 22px">English</span><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">Béarla</span></span>
+      <span style="width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--line)"></span>
+    </button>
+  </div>
+  <div style="flex: 1"></div>
+  <button class="ba-btn ba-btn-primary" type="button" style="min-height: 52px; font-size: 17px">Ar aghaidh · Continue</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+/* Load order: fonts.css, tokens.css, components.css. Theme: set data-theme="light" or "dark" on the root; follow prefers-color-scheme in the app. */
+/* Bain Amach components. Plain CSS; every colour comes from tokens.css. Prefix: ba- */
+
+body { margin: 0; font-family: var(--font-ui); background: var(--table); color: var(--ink); -webkit-font-smoothing: antialiased; }
+.ba-row { display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-end; padding: var(--space-4); }
+.ba-col { display: flex; flex-direction: column; gap: var(--space-2); align-items: center; }
+.ba-note { font: 400 13px/17px var(--font-ui); color: var(--ink-muted); text-align: center; }
+
+/* ---------- Card: shared ---------- */
+/* A card is a thick square tile: a 1px edge, a highlight on top, 4px of thickness underneath. */
+.ba-card {
+  --s: var(--card-hand); --r: var(--radius-card-lg); --fs: 22px; --glyph: 14px;
+  --n-long: 22%; --n-short: 6%; --n-round: 9%;
+  --rest: inset 0 0 0 1px var(--edge), inset 0 -3px 0 rgba(0,0,0,0.16), 0 1px 1px rgba(10,20,18,0.28), 0 3px 8px rgba(10,20,18,0.2);
+  position: relative; flex: none; width: var(--s); height: var(--s); border-radius: var(--r);
+  display: grid; place-items: center; isolation: isolate; overflow: hidden; box-sizing: border-box;
+  font-family: var(--font-card); font-weight: 800; font-size: var(--fs); line-height: 1;
+  font-variation-settings: "opsz" 24; letter-spacing: -0.01em;
+  box-shadow: var(--rest);
+  transition: transform var(--dur-snap) var(--ease-snap), box-shadow var(--dur-snap) var(--ease-out), opacity var(--dur-snap);
+  background-repeat: no-repeat;
+  user-select: none;
+}
+.ba-card.ba-river { --s: var(--card-river); --r: var(--radius-card-md); --fs: 18px; }
+.ba-card.ba-table { --s: var(--card-table); --r: var(--radius-card-sm); --fs: 16px; }
+.ba-card .ba-word { position: relative; z-index: 2; padding: 0 4px; text-align: center; white-space: nowrap; }
+/* word length steps, set by the app from the character count: 5–6 → ba-l, 7+ → ba-xl */
+.ba-card .ba-word.ba-l { font-size: 0.88em; letter-spacing: -0.02em; }
+.ba-card .ba-word.ba-xl { font-size: 0.76em; letter-spacing: -0.03em; }
+
+/* type glyph: only in glyph (zoomed-out) mode, where words are hidden; colour and notches carry type elsewhere */
+.ba-card::after {
+  content: ""; position: absolute; z-index: 3; display: none; width: var(--glyph); height: var(--glyph);
+  background: currentColor; opacity: 0.8;
+  -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat;
+}
+
+/* ---------- Notches: where lines join ----------
+   Verb: four square notches (a hub, lines leave in any direction).
+   Adverb: two square notches on the ends of its line. Preposition: two round notches.
+   Wildcard: two square notches and a dashed border. A vertical line turns the notches; the word stays upright. */
+.ba-verb {
+  background-color: var(--verb); color: var(--on-verb); --edge: var(--verb-edge); --notch: var(--verb-notch);
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><circle cx='12' cy='12' r='4.2'/><path d='M12 1.8v5.2M12 17v5.2M1.8 12H7M17 12h5.2'/></svg>");
+  background-image: linear-gradient(var(--notch), var(--notch)), linear-gradient(var(--notch), var(--notch)), linear-gradient(var(--notch), var(--notch)), linear-gradient(var(--notch), var(--notch));
+  background-size: var(--n-long) var(--n-short), var(--n-long) var(--n-short), var(--n-short) var(--n-long), var(--n-short) var(--n-long);
+  background-position: 50% 0, 50% 100%, 0 50%, 100% 50%;
+}
+.ba-adverb, .ba-wild {
+  background-image: linear-gradient(var(--notch), var(--notch)), linear-gradient(var(--notch), var(--notch));
+  background-size: var(--n-short) var(--n-long), var(--n-short) var(--n-long);
+  background-position: 0 50%, 100% 50%;
+}
+.ba-adverb.ba-v, .ba-wild.ba-v { background-size: var(--n-long) var(--n-short), var(--n-long) var(--n-short); background-position: 50% 0, 50% 100%; }
+.ba-adverb { background-color: var(--adverb); color: var(--on-adverb); --edge: var(--adverb-edge); --notch: var(--adverb-notch);
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12h17M14 6l6 6-6 6'/></svg>"); }
+.ba-preposition { background-color: var(--preposition); color: var(--on-preposition); --edge: var(--preposition-edge); --notch: var(--preposition-notch);
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M19 5h-7a7 7 0 0 0 0 14h7'/></svg>");
+  background-image: radial-gradient(circle at 0 50%, var(--notch) 0 var(--n-round), transparent calc(var(--n-round) + 0.5%)), radial-gradient(circle at 100% 50%, var(--notch) 0 var(--n-round), transparent calc(var(--n-round) + 0.5%)); }
+.ba-preposition.ba-v { background-image: radial-gradient(circle at 50% 0, var(--notch) 0 var(--n-round), transparent calc(var(--n-round) + 0.5%)), radial-gradient(circle at 50% 100%, var(--notch) 0 var(--n-round), transparent calc(var(--n-round) + 0.5%)); }
+.ba-wild { background-color: var(--wild); color: var(--on-wild); --edge: transparent; --notch: var(--wild-edge);
+  outline: 2px dashed var(--wild-edge); outline-offset: -5px;
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9'/></svg>"); }
+/* a wildcard in the hand shows its asterisk large; on the table, the particle it stands for */
+.ba-wild .ba-star { position: relative; z-index: 2; width: 40%; height: 40%; background: currentColor; opacity: 0.55;
+  -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+.ba-wild .ba-stands { position: relative; z-index: 2; font-style: italic; font-weight: 700; font-size: 0.86em; }
+
+/* ---------- Meaning card ---------- */
+/* In the hand it is a wide card, so all three meanings read at full size. On the table and the pile it is square. */
+.ba-meaning {
+  --edge: var(--meaning-edge); --rest: inset 0 0 0 1px rgba(23,32,30,0.18), inset 0 -3px 0 rgba(0,0,0,0.1), 0 1px 1px rgba(10,20,18,0.28), 0 3px 8px rgba(10,20,18,0.2);
+  width: var(--card-meaning-w); height: var(--card-meaning-h);
+  background: var(--meaning-paper); color: var(--meaning-ink);
+  display: flex; flex-direction: column; place-items: stretch; padding: 6px 12px; gap: 0;
+}
+.ba-meaning::after { display: none; }
+.ba-meaning .ba-m { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1px; border-top: 1px solid var(--meaning-edge); }
+.ba-meaning .ba-m:first-child { border-top: 0; }
+.ba-meaning .ba-en { font: 700 12px/14px var(--font-ui); letter-spacing: 0.05em; text-transform: uppercase; color: var(--meaning-ink); }
+.ba-meaning .ba-ga { font: 800 16px/19px var(--font-card); color: var(--meaning-answer); letter-spacing: -0.01em; }
+.ba-meaning .ba-ga.is-hidden { color: transparent; background: repeating-linear-gradient(90deg, var(--meaning-edge) 0 5px, transparent 5px 9px) left center / 60% 2px no-repeat; }
+.ba-meaning .ba-m.is-used .ba-en { color: var(--meaning-answer); }
+.ba-meaning.ba-table, .ba-meaning.ba-river { width: var(--s); height: var(--s); padding: 4px; justify-content: center; }
+.ba-meaning.ba-table .ba-en, .ba-meaning.ba-river .ba-en { font-size: 11px; line-height: 12px; letter-spacing: 0.03em; text-align: center; }
+
+/* ---------- States ---------- */
+.ba-card.is-selected { transform: translateY(-8px); box-shadow: var(--rest), 0 0 0 2.5px var(--ink), var(--shadow-lift); }
+.ba-card.is-lit { box-shadow: var(--rest), 0 0 0 2.5px var(--lit), 0 0 12px 3px color-mix(in srgb, var(--lit) 35%, transparent); animation: ba-pulse var(--dur-pulse) ease-in-out infinite; }
+/* dimmed cards wash out but stay opaque, so piles and felt never show through */
+.ba-card.is-dim { filter: grayscale(1) contrast(0.45) brightness(1.3); }
+[data-theme="dark"] .ba-card.is-dim { filter: grayscale(1) contrast(0.5) brightness(0.55); }
+.ba-card:focus-visible { outline: none; box-shadow: var(--rest), 0 0 0 2.5px var(--table), 0 0 0 5px var(--focus); }
+@keyframes ba-pulse { 50% { box-shadow: var(--rest), 0 0 0 2.5px var(--lit), 0 0 18px 6px color-mix(in srgb, var(--lit) 45%, transparent); } }
+.ba-card.is-shake { animation: ba-shake 320ms ease-in-out 1; }
+@keyframes ba-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+/* a card just laid: a quick pop and a gorse glow that fades */
+.ba-card.is-fresh { box-shadow: var(--rest), 0 0 0 2.5px var(--verb), 0 0 14px 3px color-mix(in srgb, var(--verb) 40%, transparent); }
+@media (prefers-reduced-motion: reduce) { .ba-card, .ba-card.is-lit, .ba-card.is-shake { animation: none; transition: opacity var(--dur-snap); } }
+
+/* crossing marker: a particle shared by two crossing lines */
+.ba-cross { position: absolute; z-index: 4; right: 6px; top: 6px; width: 9px; height: 9px; transform: rotate(45deg);
+  background: var(--ink); box-shadow: 0 0 0 1.5px var(--meaning-paper); }
+.ba-card:not(.ba-table) .ba-cross { width: 12px; height: 12px; }
+
+/* ownership marker: corner triangle in player colour, used only by the recap */
+.ba-own { position: absolute; z-index: 3; right: 0; bottom: 0; width: 0; height: 0; border-style: solid; border-width: 0 0 12px 12px; border-color: transparent transparent var(--p) transparent; }
+
+/* ---------- Player tokens ---------- */
+.ba-p1 { --p: var(--player-1); --pat: none; }
+.ba-p2 { --p: var(--player-2); --pat: repeating-linear-gradient(45deg, rgba(255,255,255,0.28) 0 3px, transparent 3px 7px); }
+.ba-p3 { --p: var(--player-3); --pat: radial-gradient(rgba(255,255,255,0.35) 1.4px, transparent 1.6px) 0 0 / 7px 7px; }
+.ba-p4 { --p: var(--player-4); --pat: repeating-linear-gradient(135deg, transparent 0 4px, rgba(255,255,255,0.3) 4px 6px), repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,255,255,0.3) 4px 6px); }
+
+.ba-avatar { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border-radius: var(--radius-round); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--line); font: 700 16px/18px var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink); position: relative; }
+.ba-avatar .ba-disc { width: 34px; height: 34px; border-radius: 50%; background: var(--pat), var(--p); color: var(--on-player); display: grid; place-items: center; font: 800 15px/1 var(--font-card); }
+.ba-avatar .ba-cnt { min-width: 2ch; text-align: right; }
+.ba-avatar .ba-cnt::before { content: ""; display: inline-block; width: 9px; height: 12px; margin-right: 4px; border-radius: 2px; background: var(--ink-muted); vertical-align: -1px; }
+.ba-avatar.is-turn { box-shadow: inset 0 0 0 2.5px var(--p); }
+.ba-avatar.is-turn::after { content: ""; position: absolute; left: 50%; bottom: -8px; width: 22px; height: 4px; margin-left: -11px; border-radius: 2px; background: var(--p); }
+.ba-avatar.is-playing .ba-disc { animation: ba-bot 900ms ease-in-out infinite; }
+@keyframes ba-bot { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--p) 30%, transparent); } }
+.ba-avatar .ba-tag { font: 700 11px/14px var(--font-ui); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); }
+@media (prefers-reduced-motion: reduce) { .ba-avatar.is-playing .ba-disc { animation: none; box-shadow: 0 0 0 3px var(--p); } }
+
+/* ---------- River pile ---------- */
+.ba-pile { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ba-pile .ba-stack { position: relative; width: var(--card-river); height: calc(var(--card-river) + 6px); }
+.ba-pile .ba-stack::before, .ba-pile .ba-stack::after { content: ""; position: absolute; left: 0; right: 0; height: var(--card-river); border-radius: var(--radius-card-md); background: var(--card-back); box-shadow: var(--shadow-card); }
+.ba-pile .ba-stack::before { top: 6px; opacity: 0.55; }
+.ba-pile .ba-stack::after { top: 3px; opacity: 0.85; }
+.ba-pile .ba-stack > .ba-card { position: absolute; top: 0; left: 0; z-index: 1; }
+.ba-pile .ba-left { font: 700 14px/16px var(--font-ui); font-variant-numeric: tabular-nums; color: var(--ink); }
+.ba-pile.is-empty .ba-stack::before, .ba-pile.is-empty .ba-stack::after { display: none; }
+.ba-pile.is-empty .ba-stack { border-radius: var(--radius-card-md); height: var(--card-river); outline: 2px dashed var(--line); outline-offset: -2px; }
+
+/* ---------- Buttons: same physical edge as the cards ---------- */
+.ba-btn { font: 700 16px/20px var(--font-ui); min-height: var(--control-height); padding: 0 18px 3px; border-radius: var(--radius-control); border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform var(--dur-snap) var(--ease-out), box-shadow var(--dur-snap) var(--ease-out); box-sizing: border-box; }
+.ba-btn-primary { background: var(--action); color: var(--on-action); box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3), 0 2px 6px rgba(10,20,18,0.16); }
+.ba-btn-secondary { background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line), inset 0 -3px 0 var(--line); }
+.ba-btn-primary:active, .ba-btn-secondary:active { transform: translateY(2px); }
+.ba-btn-quiet { background: transparent; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; padding-bottom: 0; }
+.ba-btn[disabled], .ba-btn.is-disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.ba-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ba-btn .ba-cost { font-weight: 400; opacity: 0.8; }
+.ba-btn-stuck { background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line), inset 0 -4px 0 var(--line); }
+.ba-btn-stuck[aria-pressed="true"] { background: var(--ink); color: var(--surface); box-shadow: inset 0 -4px 0 rgba(0,0,0,0.32); }
+.ba-btn-stuck[aria-pressed="true"]::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.ba-btn .ba-ring { width: 22px; height: 22px; border-radius: 50%; background: conic-gradient(currentColor var(--left, 60%), transparent 0); -webkit-mask: radial-gradient(circle, transparent 6px, #000 7px); mask: radial-gradient(circle, transparent 6px, #000 7px); opacity: 0.8; }
+
+/* segmented control (setup) */
+.ba-seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; gap: 3px; border-radius: var(--radius-control); background: var(--table-grid); }
+.ba-seg button { font: 700 15px/20px var(--font-ui); min-height: 44px; padding: 0 14px; border: 0; border-radius: 13px; background: transparent; color: var(--ink-muted); cursor: pointer; }
+.ba-seg button[aria-pressed="true"] { background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-card), inset 0 -2px 0 var(--line); }
+.ba-seg button[disabled] { opacity: 0.4; }
+
+/* ---------- Toasts ---------- */
+.ba-toast { display: flex; align-items: center; gap: 10px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-control); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-lift); max-width: 360px; }
+.ba-toast .ba-ga { font: 800 20px/22px var(--font-card); letter-spacing: -0.01em; }
+.ba-toast .ba-en { font: 400 14px/19px var(--font-ui); color: var(--ink-muted); }
+.ba-toast .ba-dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--pat), var(--p); }
+/* soft: a wrong line in play. Ink, not red: it's a game, not an error */
+.ba-toast-soft { background: var(--surface-raised); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line), var(--shadow-lift); }
+.ba-toast-soft .ba-msg, .ba-toast-alert .ba-msg { font: 700 16px/20px var(--font-ui); }
+.ba-toast-soft .ba-msg i, .ba-toast-alert .ba-msg i { font-family: var(--font-card); font-weight: 800; font-style: normal; }
+.ba-toast-soft .ba-ico { color: var(--ink-muted); }
+/* alert: real errors only (a save failed, an update could not load) */
+.ba-toast-alert { background: var(--alert-soft); color: var(--alert); box-shadow: inset 0 0 0 1.5px var(--alert), var(--shadow-card); }
+.ba-toast .ba-ico { flex: none; width: 22px; height: 22px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+.ba-ico-no { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><circle cx='12' cy='12' r='9'/><path d='M6 18 18 6'/></svg>"); }
+.ba-ico-taken { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M12 7v6M12 17h.01'/><circle cx='12' cy='12' r='9'/></svg>"); }
+.ba-ico-retry { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M4 12a8 8 0 1 0 2.3-5.7M4 4v5h5'/></svg>"); }
+.ba-toast-quiet { background: var(--ink); color: var(--surface); }
+.ba-toast-quiet .ba-en { color: inherit; opacity: 0.75; }
+
+/* ---------- Line made: the reward moment (dur-celebrate, then it settles into a toast) ---------- */
+.ba-made { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 26px 18px; border-radius: 22px; background: var(--meaning-paper); color: var(--meaning-ink); box-shadow: inset 0 0 0 1px var(--meaning-edge), inset 0 -5px 0 rgba(0,0,0,0.1), 0 16px 40px rgba(0,0,0,0.28); text-align: center; isolation: isolate; }
+.ba-made::before { content: ""; position: absolute; z-index: -1; left: 50%; top: 50%; width: 320px; height: 320px; margin: -160px 0 0 -160px; border-radius: 50%;
+  background: repeating-conic-gradient(var(--verb) 0deg 5deg, transparent 5deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 36%, #000 40%, transparent 66%); mask: radial-gradient(circle, transparent 36%, #000 40%, transparent 66%); opacity: 0.4; }
+.ba-made .ba-ga { font: 800 34px/36px var(--font-card); letter-spacing: -0.02em; color: var(--meaning-answer); }
+.ba-made .ba-en { font: 700 13px/16px var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; }
+.ba-made .ba-new { position: absolute; top: -12px; right: -10px; padding: 4px 10px; border-radius: 999px; background: var(--verb); color: var(--on-verb); font: 800 13px/16px var(--font-card); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.2); transform: rotate(6deg); }
+.ba-made .ba-progress { font: 400 13px/17px var(--font-ui); color: var(--ink-muted); }
+@media (prefers-reduced-motion: reduce) { .ba-made::before { display: none; } }
+
+
+/* ---------- Felt: the table surface ----------
+   Put .ba-felt on any full-screen container whose background is var(--table) (it must be positioned).
+   A lamp-pool glow draws the eye to the middle; a soft felt grain gives texture with no shapes to catch the eye. */
+.ba-felt { isolation: isolate; }
+.ba-felt::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse 85% 60% at 50% 42%, var(--table-glow), transparent 70%), radial-gradient(ellipse 120% 90% at 50% 45%, transparent 60%, rgba(0,0,0,0.07) 100%); }
+.ba-felt::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--table-grain); opacity: 0.55;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%27256%27 height=%27256%27><filter id=%27g%27><feTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 seed=%279%27 stitchTiles=%27stitch%27/><feColorMatrix values=%270 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 -0.36%27/></filter><rect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23g)%27/></svg>") 0 0 / 256px 256px repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%27256%27 height=%27256%27><filter id=%27g%27><feTurbulence type=%27fractalNoise%27 baseFrequency=%270.8%27 numOctaves=%272%27 seed=%279%27 stitchTiles=%27stitch%27/><feColorMatrix values=%270 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 -0.36%27/></filter><rect width=%27100%25%27 height=%27100%25%27 filter=%27url(%23g)%27/></svg>") 0 0 / 256px 256px repeat; }
+/* the river: a sunken channel behind the five piles */
+.ba-riverbed { background: var(--river-bed); border-radius: 20px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+
+/* ---------- Board ---------- */
+.ba-board { position: relative; overflow: hidden; background: transparent; }
+.ba-board > .ba-card { position: absolute; }
+/* placement targets: shown only when the player long-presses to choose a spot */
+.ba-ghost { position: absolute; width: var(--card-table); height: var(--card-table); box-sizing: border-box; border-radius: var(--radius-card-sm); border: 2px dashed var(--ink-muted); }
+.ba-ghost.is-suggested { border: 3px solid var(--lit); }
+/* zoomed below 32px a cell: words give way to the type glyph */
+.ba-zoomed > .ba-card { --s: 26px; --r: 5px; padding: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.ba-zoomed .ba-word, .ba-zoomed .ba-en, .ba-zoomed .ba-stands, .ba-zoomed .ba-own, .ba-zoomed .ba-cross { display: none; }
+.ba-zoomed > .ba-card::after, .ba-zoomed > .ba-meaning.ba-table::after { display: block; top: 50%; left: 50%; width: 12px; height: 12px; transform: translate(-50%, -50%); }
+/* race collision: the target another player took */
+.ba-card.is-taken { opacity: 0.35; box-shadow: none; outline: 2px dashed var(--ink); outline-offset: 2px; }
+
+/* ---------- Hand tray, sheets, scrim ---------- */
+.ba-tray { background: var(--surface); border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; box-shadow: var(--shadow-sheet); }
+.ba-sheet { background: var(--surface-raised); border-radius: var(--radius-sheet) var(--radius-sheet) 0 0; box-shadow: var(--shadow-sheet); }
+.ba-scrim { background: rgba(8, 14, 13, 0.55); }
+.ba-icon-btn { width: 44px; height: 44px; border-radius: 12px; border: 0; background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+.ba-icon-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ba-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--radius-round); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-card); font: 700 14px/18px var(--font-ui); }

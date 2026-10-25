@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game setup</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: {{topInset}}px; flex: none"></div>
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 16px 4px 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back to Home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div style="font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">New game</div>
+  </div>
+
+  <div style="flex: 1; min-height: 0; display: flex; flex-wrap: wrap; gap: 20px {{colGap}}px; padding: 8px {{pad}}px 0; align-content: flex-start">
+    <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">Players</div>
+        <div class="ba-seg" role="group" aria-label="Players"><button type="button" aria-pressed="{{solo}}">Solo</button><button type="button" aria-pressed="{{pass}}">Pass-and-play</button></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">Mode</div>
+        <div class="ba-seg" role="group" aria-label="Mode"><button type="button" aria-pressed="false" disabled="{{pass}}">Race</button><button type="button" aria-pressed="true">Turns</button></div>
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">{{modeNote}}</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">Answers on meaning cards</div>
+        <div class="ba-seg" role="group" aria-label="Answers"><button type="button" aria-pressed="true">Shown</button><button type="button" aria-pressed="false">Hidden</button></div>
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">Hidden turns off line highlighting too. A wrong line costs your turn.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">Hints</div>
+        <div class="ba-seg" role="group" aria-label="Hints"><button type="button" aria-pressed="false">Off</button><button type="button" aria-pressed="true">On request</button><button type="button" aria-pressed="false">After 20s</button></div>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+      <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">{{peopleLabel}}</div>
+      <sc-for list="{{people}}" as="p" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border-radius: 14px; background: var(--surface)">
+          <span class="{{p.cls}}" style="flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--pat), var(--p); color: var(--on-player); display: grid; place-items: center; font-family: var(--font-card); font-weight: 800; font-size: 15px">{{p.init}}</span>
+          <sc-if value="{{p.human}}" hint-placeholder-val="{{false}}">
+            <label for="{{p.id}}" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Player name</label>
+            <input id="{{p.id}}" value="{{p.name}}" style="flex: 1; min-width: 0; height: 40px; box-sizing: border-box; padding: 0 10px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface-raised); color: var(--ink); font: 700 15px var(--font-ui)">
+          </sc-if>
+          <sc-if value="{{p.bot}}" hint-placeholder-val="{{true}}">
+            <span style="flex: 1; min-width: 0; font-weight: 700; font-size: 15px">{{p.name}}</span>
+            <div class="ba-seg" role="group" aria-label="Difficulty" style="padding: 2px"><button type="button" aria-pressed="{{p.easy}}" style="min-height: 36px; padding: 0 9px; font-size: 13px">Easy</button><button type="button" aria-pressed="{{p.normal}}" style="min-height: 36px; padding: 0 9px; font-size: 13px">Normal</button><button type="button" aria-pressed="{{p.hard}}" style="min-height: 36px; padding: 0 9px; font-size: 13px">Hard</button></div>
+          </sc-if>
+          <button class="ba-icon-btn" type="button" aria-label="Remove {{p.name}}" disabled="{{p.fixed}}" style="width: 36px; height: 36px; opacity: {{p.rmOp}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+      </sc-for>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap">
+        <sc-for list="{{adds}}" as="a" hint-placeholder-count="1"><button class="ba-btn ba-btn-secondary" type="button" style="min-height: 44px; font-size: 14px">+ {{a}}</button></sc-for>
+      </div>
+      <div style="flex: 1"></div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 10px 2px 0; font-size: 13px; line-height: 18px; color: var(--ink-muted)">
+        <span class="ba-card ba-river" style="--s: 28px; --glyph: 0px; background: var(--card-back); --edge: var(--card-back)" aria-hidden="true"></span>
+        <span>{{deckNote}}</span>
+      </div>
+      <button class="ba-btn ba-btn-primary" type="button" style="min-height: 52px; font-size: 17px">Play</button>
+    </div>
+  </div>
+  <div style="height: {{bottomInset}}px; flex: none"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["solo","pass"],"default":"solo"},"device":{"editor":"enum","options":["phone","tablet"],"default":"phone"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const v = this.props.variant ?? 'solo';
+  const tab = (this.props.device ?? 'phone') === 'tablet';
+  const pass = v === 'pass';
+  const people = pass
+    ? [
+        { cls: 'ba-p1', init: 'S', name: 'Siobhán', human: true, id: 'name-1', fixed: true },
+        { cls: 'ba-p2', init: 'C', name: 'Ciarán', human: true, id: 'name-2', fixed: true },
+        { cls: 'ba-p3', init: 'É', name: 'Éabha', human: true, id: 'name-3' },
+      ]
+    : [
+        { cls: 'ba-p2', init: 'B', name: 'Bot B', bot: true, easy: true, normal: false, hard: false, fixed: true },
+      ];
+  people.forEach((p) => { p.rmOp = p.fixed ? 0.3 : 1; p.bot = !!p.bot; p.human = !!p.human; });
+  const n = pass ? 3 : 2;
+  return {
+    w: tab ? 1180 : 390, h: tab ? 820 : 844, topInset: tab ? 24 : 47, bottomInset: tab ? 24 : 34,
+    pad: tab ? 40 : 16, colGap: tab ? 56 : 20,
+    solo: !pass, pass,
+    modeNote: pass ? 'Race needs a screen for each player. It comes with online play.' : 'Turns: one play each, at your own pace.',
+    peopleLabel: pass ? 'Players' : 'Opponents',
+    people, adds: pass ? ['Player', 'Bot'] : ['Bot'],
+    deckNote: n >= 3 ? 'Deck: 118 cards, with the 14-card verb pack for 3 or 4 players.' : 'Deck: 104 cards for 2 players. Hands of 12.',
+  };
+}
+}
+</script>
+</body>
+</html>

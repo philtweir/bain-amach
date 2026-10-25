@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 16px 0 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div style="flex: 1; font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">Settings</div>
+  </div>
+  <div style="flex: 1; min-height: 0; overflow: hidden; padding: 8px 16px 0; display: flex; flex-direction: column; gap: 16px">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); padding-left: 4px">{{g.title}}</div>
+        <div style="border-radius: 16px; background: var(--surface-raised); overflow: hidden">
+          <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
+            <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px 6px 14px; border-top: {{r.border}}">
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 15px; line-height: 20px; color: {{r.color}}">{{r.label}}</span><sc-if value="{{r.note}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 16px; color: var(--ink-muted)">{{r.note}}</span></sc-if></span>
+              <sc-if value="{{r.seg}}" hint-placeholder-val="{{false}}">
+                <div class="ba-seg" role="group" aria-label="{{r.label}}" style="padding: 2px"><sc-for list="{{r.seg}}" as="o" hint-placeholder-count="2"><button type="button" aria-pressed="{{o.on}}" style="min-height: 34px; padding: 0 9px; font-size: 13px">{{o.t}}</button></sc-for></div>
+              </sc-if>
+              <sc-if value="{{r.toggle}}" hint-placeholder-val="{{false}}">
+                <button type="button" role="switch" aria-checked="{{r.on}}" aria-label="{{r.label}}" style="width: 52px; height: 32px; border-radius: 16px; border: 0; padding: 3px; background: {{r.track}}; display: flex; justify-content: {{r.justify}}; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 50%; background: var(--surface-raised); box-shadow: var(--shadow-card)"></span></button>
+              </sc-if>
+              <sc-if value="{{r.link}}" hint-placeholder-val="{{false}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--ink-muted)"><path d="M9 6l6 6-6 6"/></svg></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const seg = (opts, on) => opts.map((t, i) => ({ t, on: i === on }));
+  const groups = [
+    { title: 'Language', rows: [{ label: 'Menus and help', seg: seg(['Gaeilge', 'English'], 0) }] },
+    { title: 'New game defaults', rows: [
+      { label: 'Answers', seg: seg(['Shown', 'Hidden'], 0) },
+      { label: 'Hints', seg: seg(['Off', 'On request', 'After 20s'], 1) },
+      { label: 'Bot speed in race', seg: seg(['Slow', 'Normal', 'Fast'], 1) },
+    ] },
+    { title: 'Feel', rows: [
+      { label: 'Sound', toggle: true, on: true },
+      { label: 'Haptics', note: 'Not available on iPhone', toggle: true, on: true },
+      { label: 'Reduced motion', seg: seg(['System', 'Always'], 0) },
+    ] },
+    { title: 'Learning', rows: [
+      { label: 'Replay the tutorial', link: true },
+      { label: 'Reset glossary progress', note: 'Asks once before clearing', link: true, danger: true },
+      { label: 'Credits', link: true },
+    ] },
+  ];
+  groups.forEach((g) => g.rows.forEach((r, i) => {
+    r.border = i === 0 ? '0' : '1px solid var(--table-grid)';
+    r.color = r.danger ? 'var(--alert)' : 'var(--ink)';
+    r.seg = r.seg || null; r.toggle = !!r.toggle; r.link = !!r.link; r.note = r.note || '';
+    r.track = r.on ? 'var(--ink)' : 'var(--line)'; r.justify = r.on ? 'flex-end' : 'flex-start';
+  }));
+  return { groups };
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rules</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 16px 0 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div style="flex: 1; font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">Rules</div>
+  </div>
+  <div style="flex: 1; min-height: 0; overflow: hidden; padding: 8px 16px 0; display: flex; flex-direction: column; gap: 14px">
+    <div style="font-size: 15px; line-height: 22px">Build compound verbs as lines of cards on the table. The first to empty their hand wins. On your turn, make one of these plays:</div>
+    <button class="ba-btn ba-btn-secondary" type="button">Replay the tutorial</button>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: var(--surface-raised)">
+      <div style="font-weight: 700; font-size: 16px">1 · A full line</div>
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">A meaning card from your hand, a verb from the table or your hand, and every particle it needs from the tops of the river.</div>
+      <div style="display: flex; gap: 2px; align-items: center" aria-label="cuir, síos, ar, describe">
+        <div class="ba-card ba-table ba-verb"><span class="ba-word">cuir</span></div>
+        <div class="ba-card ba-table ba-adverb"><span class="ba-word">síos</span></div>
+        <div class="ba-card ba-table ba-preposition"><span class="ba-word">ar</span></div>
+        <div class="ba-card ba-table ba-meaning"><span class="ba-en">Describe</span></div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: var(--surface-raised)">
+      <div style="font-weight: 700; font-size: 16px">2 · A line through a particle</div>
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">Lay your verb on one side of a particle already down and your meaning on the other. It gets a crossing mark.</div>
+      <div style="position: relative; height: 196px" aria-label="éist through le to listen to">
+        <div class="ba-card ba-table ba-verb" style="position: absolute; left: 0; top: 66px"><span class="ba-word">cuir</span></div>
+        <div class="ba-card ba-table ba-adverb" style="position: absolute; left: 66px; top: 66px"><span class="ba-word">suas</span></div>
+        <div class="ba-card ba-table ba-preposition" style="position: absolute; left: 132px; top: 66px"><span class="ba-word">le</span><i class="ba-cross"></i></div>
+        <div class="ba-card ba-table ba-meaning" style="position: absolute; left: 198px; top: 66px"><span class="ba-en">Put up with</span></div>
+        <div class="ba-card ba-table ba-verb" style="position: absolute; left: 132px; top: 0"><span class="ba-word">éist</span></div>
+        <div class="ba-card ba-table ba-meaning" style="position: absolute; left: 132px; top: 132px"><span class="ba-en">Listen to</span></div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: var(--surface-raised)">
+      <div style="font-weight: 700; font-size: 16px">3 · A lone verb</div>
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">Lay one verb on the table, then draw 2 cards. Not allowed once both draw piles are empty.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: var(--surface-raised)">
+      <div style="font-weight: 700; font-size: 16px">4 · Swap a meaning card</div>
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">Trade a meaning card from your hand for the face-up one.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
