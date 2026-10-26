@@ -8,6 +8,8 @@ Wikisource texts are public domain or freely licensed; check each work's own pag
 Usage:
   python3 tools/phrasal/fetch_wikisource.py --out DIR
 
+Fetched wikitext is cached in DIR, so an interrupted run picks up where it stopped.
+
 It is slow on purpose: the API rate-limits shared addresses hard, so it batches 50 titles a
 request, pauses between requests and honours Retry-After.
 """
@@ -27,6 +29,8 @@ import urllib.request
 API = "https://wikisource.org/w/api.php"
 UA = "bain-amach-research/0.1 (https://github.com/philtweir/bain-amach)"
 PAUSE = 2.0
+# Old and Middle Irish are no use for modern compounds, and their scans are most of the page count.
+SKIP_CATEGORIES = {"Category:Sean-Ghaeilge", "Category:Meán-Ghaeilge"}
 
 
 def q(**p):
@@ -49,7 +53,7 @@ def members(root: str):
     seen, pages, todo = set(), {}, [root]
     while todo:
         c = todo.pop()
-        if c in seen:
+        if c in seen or c in SKIP_CATEGORIES:
             continue
         seen.add(c)
         cont: dict = {}
@@ -66,16 +70,26 @@ def members(root: str):
     return pages
 
 
-def wikitext(titles: list[str]) -> dict[str, str]:
-    out = {}
-    for i in range(0, len(titles), 50):
-        batch = titles[i : i + 50]
+def wikitext(titles: list[str], cache_path: str) -> dict[str, str]:
+    """Fetch in batches of 50, keeping everything fetched in a cache file so a rerun resumes."""
+    out: dict[str, str] = {}
+    if os.path.exists(cache_path):
+        with open(cache_path, encoding="utf-8") as fh:
+            out = json.load(fh)
+    todo = [t for t in titles if t not in out]
+    print(f"  {len(titles) - len(todo)} cached, {len(todo)} to fetch", file=sys.stderr)
+    for i in range(0, len(todo), 50):
+        batch = todo[i : i + 50]
         d = q(action="query", prop="revisions", rvprop="content", rvslots="main", titles="|".join(batch), redirects="1")
         for p in d["query"]["pages"]:
             revs = p.get("revisions")
-            if revs:
-                out[p["title"]] = revs[0]["slots"]["main"]["content"]
-        print(f"  {min(i + 50, len(titles))}/{len(titles)}", file=sys.stderr)
+            out[p["title"]] = revs[0]["slots"]["main"]["content"] if revs else ""
+        for t in batch:  # missing pages and redirects: don't ask again
+            out.setdefault(t, "")
+        with open(cache_path + ".tmp", "w", encoding="utf-8") as fh:
+            json.dump(out, fh, ensure_ascii=False)
+        os.replace(cache_path + ".tmp", cache_path)
+        print(f"  {min(i + 50, len(todo))}/{len(todo)}", file=sys.stderr)
     return out
 
 
@@ -119,10 +133,10 @@ def main():
     print("listing…", file=sys.stderr)
     pages = members(a.root)
     print(f"{len(pages)} pages; fetching…", file=sys.stderr)
-    wt = wikitext(sorted(pages))
+    wt = {t: w for t, w in wikitext(sorted(pages), f"{a.out}/cache-pages.json").items() if t in pages and w}
     scans = sorted({t for w in wt.values() for m in PAGES_TAG.finditer(w) for t in page_titles(m.group(1))})
     print(f"{len(scans)} scan pages transcluded; fetching…", file=sys.stderr)
-    scan_wt = wikitext(scans) if scans else {}
+    scan_wt = wikitext(scans, f"{a.out}/cache-scans.json") if scans else {}
     n = 0
     with open(f"{a.out}/wikisource-ga.jsonl", "w", encoding="utf-8") as fh:
         for title, w in sorted(wt.items()):
