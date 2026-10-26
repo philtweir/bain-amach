@@ -105,6 +105,8 @@ export class Controller {
   elapsed = signal(0);
   /** A meaning card another player has just put down, popped up in full view for a moment. */
   shown = signal<{ id: number; x: number; y: number; by: number } | null>(null);
+  /** The line picked so far can only be finished with a wildcard the player hasn't tapped yet. */
+  needWild = signal<{ compound: string; n: number } | null>(null);
   /** A table meaning card being looked at: shows all three of its meanings. */
   peek = signal<{ x: number; y: number } | null>(null);
   /** Ask the board to bring these cells into view. */
@@ -615,6 +617,7 @@ export class Controller {
   clearSelection() {
     batch(() => {
       this.sel.value = emptySelection();
+      this.needWild.value = null;
       this.peek.value = null;
       this.picks.value = [];
       this.spot.value = null;
@@ -851,8 +854,16 @@ export class Controller {
     const sel = this.sel.value;
     if (this.tutorialHook?.('afterPick', sel) === false) return;
     if (!hasMeaning(sel) || (!sel.verb && !sel.cross)) return;
-    const ws = ways(this.gs.value, this.viewer.value, sel);
-    if (!ws.length) return this.bad(key);
+    const all = ways(this.gs.value, this.viewer.value, sel);
+    if (!all.length) return this.bad(key);
+    // Never spend a wildcard the player hasn't tapped: they're precious late in the game.
+    const ws = all.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
+    if (!ws.length) {
+      const need = all.reduce((a, w) => Math.min(a, w.src.filter((x) => 'wild' in x).length - sel.wild.length), 9);
+      this.needWild.value = { compound: compoundText(COMPOUND_BY_ID[all[0].c]), n: Math.max(1, need) };
+      return;
+    }
+    this.needWild.value = null;
     const cs = distinctCompounds(ws);
     if (cs.length !== 1) return; // the tray offers the choice
     const way = preferredWay(ws)!;
@@ -867,7 +878,13 @@ export class Controller {
 
   /** Two ways to finish: the player picked one compound. */
   chooseCompound(cid: string) {
-    const ws = this.ways.value.filter((w) => w.c === cid);
+    const sel = this.sel.value;
+    const all = this.ways.value.filter((w) => w.c === cid);
+    const ws = all.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
+    if (!ws.length && all.length) {
+      this.needWild.value = { compound: compoundText(COMPOUND_BY_ID[cid]), n: 1 };
+      return;
+    }
     const way = preferredWay(ws);
     if (!way) return;
     const pls = placements(this.gs.value, way, this.focus);

@@ -370,3 +370,15 @@ describe('swap refresh', () => {
     expect(r.state.mpile[0].id).toBe(mine.id);
   });
 });
+
+describe('wildcards in the line builder', () => {
+  it('the wildcard the player tapped is the one used, whichever of several it is', () => {
+    const m = M(findMeaningCard('LISTEN TO'));
+    const ev = V('éist');
+    const w1 = W(), w2 = W();
+    const s = fixture({ piles: [['ar'], ['do'], ['amach'], ['suas'], ['as']], hands: [[m, ev, w1, w2], [V('tóg')]] });
+    const ws = ways(s, 0, { ...emptySelection(), meaning: m.id, verb: { hand: ev.id }, wild: [w2.id] });
+    expect(ws.length).toBeGreaterThan(0);
+    expect(ws.every((w) => w.src.some((x) => 'wild' in x && x.wild === w2.id))).toBe(true);
+  });
+});

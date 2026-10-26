@@ -8,13 +8,14 @@ const SLOP = 10;
 interface PressState {
   timer: ReturnType<typeof setTimeout> | null;
   fired: boolean;
+  mouse: boolean;
   x0: number;
   y0: number;
 }
 const states = new WeakMap<EventTarget, PressState>();
 const get = (el: EventTarget) => {
   let s = states.get(el);
-  if (!s) states.set(el, (s = { timer: null, fired: false, x0: 0, y0: 0 }));
+  if (!s) states.set(el, (s = { timer: null, fired: false, mouse: false, x0: 0, y0: 0 }));
   return s;
 };
 
@@ -27,10 +28,12 @@ export function press(onTap: () => void, onLong?: () => void) {
     onPointerDown: (e: JSX.TargetedPointerEvent<HTMLElement>) => {
       const s = get(e.currentTarget);
       s.fired = false;
+      s.mouse = e.pointerType === 'mouse';
       s.x0 = e.clientX;
       s.y0 = e.clientY;
       clear(s);
-      if (onLong)
+      // Long-press is for touch and pens; with a mouse, right-click does the same (see onContextMenu).
+      if (onLong && e.pointerType !== 'mouse')
         s.timer = setTimeout(() => {
           s.fired = true;
           s.timer = null;
@@ -43,7 +46,11 @@ export function press(onTap: () => void, onLong?: () => void) {
     },
     onPointerUp: (e: JSX.TargetedPointerEvent<HTMLElement>) => clear(get(e.currentTarget)),
     onPointerCancel: (e: JSX.TargetedPointerEvent<HTMLElement>) => clear(get(e.currentTarget)),
-    onContextMenu: (e: Event) => e.preventDefault(),
+    onContextMenu: (e: MouseEvent) => {
+      e.preventDefault();
+      // Right-click: only when a mouse started this press (touch long-press has its own timer).
+      if (onLong && get(e.currentTarget as EventTarget).mouse) onLong();
+    },
     onClick: (e: JSX.TargetedMouseEvent<HTMLElement>) => {
       const s = get(e.currentTarget);
       clear(s);

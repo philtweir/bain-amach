@@ -67,6 +67,9 @@ without the refill was too swingy (91–95% go out, fewer lines).
 | 6 | Placing a line | Ghost line, "Lay it" or tap the ghost; "Other spot" cycles | No placement step: the line lays itself at the best spot; long-press the last card to choose a spot (ringed preview, dashed outlines) | Design kit. The best spot is the one nearest where you're looking. |
 | 7 | Hint timing | Hints on request | Off / on request / after 20 s | All three; "after 20 s" lights a verb after 20 s with no play |
 
+| 8 | Spending wildcards | — | — | Never automatic. A line that can only be finished with a wildcard waits ("Use your wildcard?") until the player taps one; the tapped wildcard is the one spent. Bots are unaffected. (Phil, after playtesting) |
+| 9 | Choosing a spot with a mouse | — | Long-press | Long-press is touch and pen only; with a mouse, right-click the last card does the same, so a slow click never switches into spot-choosing. |
+
 ## Numbers the brief left to the build (playtest these)
 
 - **Bot difficulty.** Chance of spotting lines through a particle already down: easy 25%, normal 60%, hard 100%. Race reaction delay: easy 5.2–9 s, normal 3.2–6 s, hard 1.8–3.6 s, divided by the bot-speed setting (slow ×0.6, fast ×1.6). In `src/engine/bot.ts`.

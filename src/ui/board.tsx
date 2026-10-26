@@ -169,6 +169,7 @@ export function Board({ c }: { c: Controller }) {
     pinch0: { d: 1, z: 1, wx: 0, wy: 0 },
     long: null as ReturnType<typeof setTimeout> | null,
     longFired: false,
+    mouse: false,
     lastTap: { t: 0, x: 0, y: 0, empty: false },
   });
 
@@ -224,6 +225,7 @@ export function Board({ c }: { c: Controller }) {
     if ((e.target as HTMLElement).closest('.board-fit')) return;
     const st = g.current;
     touched.current = true;
+    st.mouse = e.pointerType === 'mouse';
     vp.current!.setPointerCapture(e.pointerId);
     st.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
     stopAnim();
@@ -234,7 +236,8 @@ export function Board({ c }: { c: Controller }) {
       st.vel = { x: 0, y: 0 };
       st.longFired = false;
       if (st.long) clearTimeout(st.long);
-      st.long = setTimeout(() => {
+      // Long-press is a touch gesture; a mouse uses right-click (onContextMenu below).
+      if (e.pointerType !== 'mouse') st.long = setTimeout(() => {
         if (st.mode !== 'tap') return;
         const h = hit(st.start.x, st.start.y);
         if (h?.kind === 'card') {
@@ -513,7 +516,12 @@ export function Board({ c }: { c: Controller }) {
   }
 
   return (
-    <div class="board ba-board" ref={vp} onScroll={(e) => ((e.currentTarget.scrollTop = 0), (e.currentTarget.scrollLeft = 0))} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onContextMenu={(e) => e.preventDefault()} role="application" aria-label={t('a11y.board', { n: s.board.length })}>
+    <div class="board ba-board" ref={vp} onScroll={(e) => ((e.currentTarget.scrollTop = 0), (e.currentTarget.scrollLeft = 0))} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onContextMenu={(e) => {
+        e.preventDefault();
+        if (!g.current.mouse) return; // touch long-press is handled by its own timer
+        const h = hit(e.clientX, e.clientY);
+        if (h?.kind === 'card') c.tapTable(h.x, h.y, true);
+      }} role="application" aria-label={t('a11y.board', { n: s.board.length })}>
       <div class="board-world" ref={world}>
         {cards}
         {ghosts}

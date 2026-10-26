@@ -96,7 +96,9 @@ function crossPlacements(g: Ctx, bx: number, by: number, i: number, L: number): 
 export function ways(s: GameState, p: number, sel: Selection): Way[] {
   const g = view(s);
   const hand = s.hands[p];
-  const wildIds = hand.filter((c) => c.k === 'W').map((c) => c.id);
+  // Wildcards the player tapped come first, so the one they chose is the one used.
+  const allWild = hand.filter((c) => c.k === 'W').map((c) => c.id);
+  const wildIds = [...sel.wild.filter((w) => allWild.includes(w)), ...allWild.filter((w) => !sel.wild.includes(w))];
   const meaningCards = sel.onto ? [] : hand.filter((c) => c.k === 'M' && (sel.meaning === undefined || c.id === sel.meaning));
   const out: Way[] = [];
   const handVerbs = hand.filter((c) => c.k === 'V');

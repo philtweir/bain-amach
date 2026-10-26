@@ -303,6 +303,11 @@ function Header({ c }: { c: Controller }) {
           {t('table.layAlone')} <span class="ba-cost">· {t('table.draw2')}</span>
         </button>,
       );
+  } else if (c.needWild.value && canAct) {
+    const nw = c.needWild.value;
+    title = t('table.needWildTitle');
+    sub = t(nw.n > 1 ? 'table.needWildSub2' : 'table.needWildSub', { compound: nw.compound, n: nw.n });
+    actions.push(cancel);
   } else if (choices.length > 1 && canAct) {
     title = t('table.twoWays');
     sub = t('table.twoWaysSub');

@@ -48,8 +48,14 @@ export async function playTurn(page: Page): Promise<'line' | 'pass'> {
     if (tapped) {
       const choice = page.locator('.choice');
       if (await choice.count()) await choice.first().click();
+      // A line that needs a wildcard waits for the player to tap one, as a player would.
+      for (let i = 0; i < 2 && ((await page.locator('.th-title').textContent()) ?? '') === 'Use your wildcard?'; i++) {
+        const wild = page.locator('.tray .lane-v .ba-wild.is-lit');
+        if (!(await wild.count())) break;
+        await wild.first().click();
+      }
       const title = (await page.locator('.th-title').textContent()) ?? '';
-      if (!/Pick a verb|Two ways|Choose a spot/.test(title)) return 'line';
+      if (!/Pick a verb|Two ways|Choose a spot|Use your wildcard/.test(title)) return 'line';
     }
     const cancel = page.getByRole('button', { name: 'Cancel' });
     if (await cancel.count()) await cancel.click();
