@@ -126,6 +126,7 @@ export function Navigator({ render, swipeBack }: { render: (e: Entry) => Compone
   const swipe = useRef<{ x0: number; t0: number; id: number; dx: number; v: number; lastX: number; lastT: number; w: number; active: boolean } | null>(null);
   const underRef = useRef<HTMLDivElement | null>(null);
   const topRef = useRef<HTMLDivElement | null>(null);
+  const dimRef = useRef<HTMLDivElement | null>(null);
   const swiping = signalSwiping.value;
 
   useLayoutEffect(() => {
@@ -138,15 +139,20 @@ export function Navigator({ render, swipeBack }: { render: (e: Entry) => Compone
     }
     const anims: Animation[] = [];
     const opts: KeyframeAnimationOptions = { duration: DUR, easing: EASE, fill: 'both' };
+    const dim = dimRef.current;
+    // Only transform and opacity animate, so the slide runs on the compositor (iOS can't composite a
+    // filter, and repainting a whole screen every frame is what made it feel sticky).
     if (tr.kind === 'fade') {
       anims.push(b.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, easing: 'ease-out', fill: 'both' }));
       anims.push(a.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 220, fill: 'both' }));
     } else if (tr.kind === 'push') {
       anims.push(b.animate([{ transform: 'translate3d(100%,0,0)' }, { transform: 'translate3d(0,0,0)' }], opts));
-      anims.push(a.animate([{ transform: 'translate3d(0,0,0)', filter: 'brightness(1)' }, { transform: 'translate3d(-28%,0,0)', filter: 'brightness(0.92)' }], opts));
+      anims.push(a.animate([{ transform: 'translate3d(0,0,0)' }, { transform: 'translate3d(-28%,0,0)' }], opts));
+      if (dim) anims.push(dim.animate([{ opacity: 0 }, { opacity: 1 }], opts));
     } else {
       anims.push(a.animate([{ transform: 'translate3d(0,0,0)' }, { transform: 'translate3d(100%,0,0)' }], opts));
-      anims.push(b.animate([{ transform: 'translate3d(-28%,0,0)', filter: 'brightness(0.92)' }, { transform: 'translate3d(0,0,0)', filter: 'brightness(1)' }], opts));
+      anims.push(b.animate([{ transform: 'translate3d(-28%,0,0)' }, { transform: 'translate3d(0,0,0)' }], opts));
+      if (dim) anims.push(dim.animate([{ opacity: 1 }, { opacity: 0 }], opts));
     }
     let done = false;
     const finish = () => {
@@ -182,10 +188,8 @@ export function Navigator({ render, swipeBack }: { render: (e: Entry) => Compone
     sw.dx = dx;
     const p = Math.min(1, dx / sw.w);
     if (topRef.current) topRef.current.style.transform = `translate3d(${dx}px,0,0)`;
-    if (underRef.current) {
-      underRef.current.style.transform = `translate3d(${-28 * (1 - p)}%,0,0)`;
-      underRef.current.style.filter = `brightness(${0.92 + 0.08 * p})`;
-    }
+    if (underRef.current) underRef.current.style.transform = `translate3d(${-28 * (1 - p)}%,0,0)`;
+    if (dimRef.current) dimRef.current.style.opacity = String(1 - p);
   };
   const onPointerUp = (e: JSX.TargetedPointerEvent<HTMLDivElement>) => {
     const sw = swipe.current;
@@ -202,23 +206,16 @@ export function Navigator({ render, swipeBack }: { render: (e: Entry) => Compone
     }
     const complete = sw.dx > sw.w * 0.35 || sw.v > 0.45;
     const t = topRef.current,
-      u = underRef.current;
+      u = underRef.current,
+      d = dimRef.current;
     const rem = complete ? sw.w - sw.dx : sw.dx;
     const dur = Math.max(120, Math.min(320, rem / Math.max(0.6, Math.abs(sw.v))));
     const opts: KeyframeAnimationOptions = { duration: dur, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' };
     const p0 = sw.dx / sw.w;
     const anims: Animation[] = [];
     if (t) anims.push(t.animate([{ transform: `translate3d(${sw.dx}px,0,0)` }, { transform: complete ? 'translate3d(100%,0,0)' : 'translate3d(0,0,0)' }], opts));
-    if (u)
-      anims.push(
-        u.animate(
-          [
-            { transform: `translate3d(${-28 * (1 - p0)}%,0,0)`, filter: `brightness(${0.92 + 0.08 * p0})` },
-            { transform: complete ? 'translate3d(0,0,0)' : 'translate3d(-28%,0,0)', filter: complete ? 'brightness(1)' : 'brightness(0.92)' },
-          ],
-          opts,
-        ),
-      );
+    if (u) anims.push(u.animate([{ transform: `translate3d(${-28 * (1 - p0)}%,0,0)` }, { transform: complete ? 'translate3d(0,0,0)' : 'translate3d(-28%,0,0)' }], opts));
+    if (d) anims.push(d.animate([{ opacity: 1 - p0 }, { opacity: complete ? 0 : 1 }], opts));
     void Promise.all(anims.map((a) => a.finished)).then(() => {
       if (complete) {
         stack.value = stack.value.slice(0, -1);
@@ -227,7 +224,8 @@ export function Navigator({ render, swipeBack }: { render: (e: Entry) => Compone
       signalSwiping.value = false;
       requestAnimationFrame(() => {
         anims.forEach((a) => a.cancel());
-        for (const el of [t, u]) if (el) (el.style.transform = ''), (el.style.filter = '');
+        for (const el of [t, u]) if (el) el.style.transform = '';
+        if (d) d.style.opacity = '';
       });
     });
   };
@@ -240,11 +238,13 @@ export function Navigator({ render, swipeBack }: { render: (e: Entry) => Compone
     const belowRef = tr.kind === 'pop' ? toRef : fromRef;
     const aboveRef = tr.kind === 'pop' ? fromRef : toRef;
     layers.push(<ScreenLayer key={below.key} entry={below} render={render} layerRef={(el) => (belowRef.current = el)} under={below.key !== cur.key} />);
+    if (tr.kind !== 'fade') layers.push(<div key="dim" class="nav-dim" ref={dimRef} aria-hidden="true" />);
     layers.push(<ScreenLayer key={above.key} entry={above} render={render} layerRef={(el) => (aboveRef.current = el)} under={above.key !== cur.key} />);
   } else {
     if (swiping && s.length > 1) {
       const prev = s[s.length - 2];
       layers.push(<ScreenLayer key={prev.key} entry={prev} render={render} layerRef={(el) => (underRef.current = el)} under />);
+      layers.push(<div key="dim" class="nav-dim" ref={dimRef} aria-hidden="true" />);
     }
     layers.push(<ScreenLayer key={cur.key} entry={cur} render={render} layerRef={(el) => (topRef.current = el)} />);
   }

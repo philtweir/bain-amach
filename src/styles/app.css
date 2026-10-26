@@ -115,6 +115,13 @@ p {
 .nav-layer.is-under {
   pointer-events: none;
 }
+/* The screen underneath a push dims a little (as on iOS): an overlay whose opacity animates. */
+.nav-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+}
 .nav-edge {
   position: absolute;
   left: 0;
@@ -826,6 +833,10 @@ button.list-row:active {
   flex-direction: column;
   gap: 10px;
   margin-top: 8px;
+  /* Off-screen groups skip layout and paint until scrolled near: opening the glossary used to
+     style, lay out and paint every row before the slide could start. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 260px;
 }
 .g-head {
   display: flex;

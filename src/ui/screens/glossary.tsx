@@ -7,11 +7,21 @@ import { Face } from '../cards';
 import { Header, Screen, Scroll } from '../kit';
 
 const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+/** Verb groups rendered while the screen slides in; the rest follow once it has landed. */
+const FIRST_GROUPS = 5;
+const SLIDE_MS = 420;
 
 export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOnly?: boolean }) {
   const [q, setQ] = useState('');
   const [onlyDrafts, setOnlyDrafts] = useState(!!draftsOnly);
   const [open, setOpen] = useState<string | null>(focus ?? null);
+  // A deep link to one compound needs every row at once, to scroll to it.
+  const [full, setFull] = useState(!!focus);
+  useEffect(() => {
+    if (full) return;
+    const id = setTimeout(() => setFull(true), SLIDE_MS);
+    return () => clearTimeout(id);
+  }, []);
   const prog = progress.value.byCompound;
   const made = madeCount();
   const groups = useMemo(() => {
@@ -42,7 +52,7 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
           )}
           <input class="search" type="search" placeholder={t('glossary.search')} aria-label={t('glossary.search')} value={q} onInput={(e) => setQ((e.target as HTMLInputElement).value)} autocomplete="off" spellcheck={false} />
           {!groups.length && <p class="body muted">{t('glossary.noMatch', { q })}</p>}
-          {groups.map(([verb, cs]) => (
+          {(full ? groups : groups.slice(0, FIRST_GROUPS)).map(([verb, cs]) => (
             <section class="g-group" key={verb}>
               <div class="g-head">
                 <Face card={{ id: -1, k: 'V', t: verb }} size="river" extraClass="g-chip" />
