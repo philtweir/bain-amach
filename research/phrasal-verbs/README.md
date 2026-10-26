@@ -173,6 +173,26 @@ counts:
 So *glac* earns a card with two senses, *gabh* doesn't, and the bigger gap was *faigh amach* and
 *téigh (amach) le*. *gabh ort féin* is under the *gabh ar* row.
 
+**The live Wiktionary category** (73 pages, checked against a copy Phil pasted on 2026-10-26)
+matches the bundle's snapshot except for two pages: *cuir isteach*, which the sheet already has
+from the counts though without a Wiktionary gloss, and *taitnigh le*, a spelling of *taitin le*.
+37 of the 73 use only river particles, and every one of those is in the sheet. The rest need
+words the river doesn't have: *anuas*, *aníos*, *sall*, *thar*, *thart*, *timpeall*, *chuig*,
+*chun*, *i*, or a fixed phrase (*faoi deara*, *in ionad*, *ar bun*, *i dtaisce*).
+
+**A Gemini-generated list** (checked the same way, by reading examples; it isn't a source):
+
+| item | take |
+|---|---|
+| *cuir isteach ar*, *cuir suas le*, *tabhair suas*, *bain de* | already cards |
+| *bualadh le chéile* | the verbal noun of *buail le (chéile)*: MEET, already a card |
+| *taitin le* | **strong** (Wiktionary; 14 treebank and 4 Tatoeba hits): PLEASE, i.e. LIKE turned round |
+| *cuir isteach* | real, but as PUT IN / SUBMIT (*chuir sé litir isteach*) or CUT IN (*chuir sé isteach sa chomhrá*). INTERFERE is *cuir isteach ar*, or *do ladar a chur isteach* |
+| *caith amach* | THROW OUT (Wiktionary); almost all hits are older texts. Literal, but sound |
+| *pioc suas* | PICK UP, including picking up knowledge (*do phioc na buachaillí suas an t‑eolas*); 1 treebank and 5 Wikisource hits, colloquial. Could be a second answer to PICK UP beside *tóg suas* |
+| *déan suas* | no real hits (they are *cur suas le*, *fásta suas*). Looks like a calque of "make up" |
+| *cuir ar ceal*, *rith ar shiúl* | real (CANCEL; RUN AWAY, with Ulster *ar shiúl*), but *ceal* and *ar shiúl* aren't river cards |
+
 **No phrasal headword is tagged Ulster in Wiktionary**, and Wikisource's Ulster material is three
 short poems. Ulster evidence still has to come from Corpas Stairiúil (b) or a dictionary (d).
 
