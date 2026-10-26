@@ -34,8 +34,10 @@ export type VerbSrc = { table: { x: number; y: number } } | { hand: number };
 
 export interface LineMove {
   type: 'line';
-  /** Meaning card id (card.id) from the hand. */
+  /** Meaning card id (card.id): from the hand, or the table card when `onto` is set. */
   m: number;
+  /** The line ends on a meaning card already on the table, at this cell (rule variant tableMeanings). */
+  onto?: { x: number; y: number };
   /** The meaning it is used as. */
   g: string;
   /** Compound id. */
@@ -88,7 +90,24 @@ export interface GameConfig {
   /** Reference-engine stall counting (never resets after a play). Parity tests only. */
   legacyStall?: boolean;
   tutorial?: boolean;
+  /** Rule variants for playtesting. All off by default (RULES.md as written). */
+  rules?: RuleVariant;
 }
+
+export interface RuleVariant {
+  /** Meaning cards dealt into each hand (deck.json's meaningsInHand otherwise). Hand size is unchanged. */
+  meaningsInHand?: number;
+  /** The "fewer than 2 meanings draws a meaning" rule also applies to a lone verb's draws. */
+  meaningOnAnyDraw?: boolean;
+  /** After laying a line, a player left with no meaning cards draws one from the meaning pile. */
+  refillMeaning?: boolean;
+  /** A line may end on a meaning card already on the table, as any of its three meanings, arriving
+   *  from a free side. The verb comes from the hand; no particle on the line may be a crossing. */
+  tableMeanings?: boolean;
+}
+
+/** The rules the app plays (Phil, 2026-10-26). The engine default stays RULES.md as written. */
+export const APP_RULES: RuleVariant = { refillMeaning: true, tableMeanings: true };
 
 export interface Line {
   p: number;

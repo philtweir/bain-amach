@@ -68,6 +68,10 @@ export interface SpotChoice {
   chosen: number;
 }
 
+/** A line has its meaning once a hand meaning card or a table meaning card is picked. */
+export const hasMeaning = (sel: Selection) => sel.meaning !== undefined || !!sel.onto;
+export const selEmpty = (sel: Selection) => !hasMeaning(sel) && !sel.verb && !sel.river.length && !sel.wild.length && !sel.cross;
+
 const SPEED: Record<string, number> = { slow: 0.6, normal: 1, fast: 1.6 };
 const LOCKOUT_MS = 3000;
 const AUTO_HINT_MS = 20000;
@@ -99,6 +103,8 @@ export class Controller {
   announce = signal('');
   headerNote = signal<string | null>(null);
   elapsed = signal(0);
+  /** A table meaning card being looked at: shows all three of its meanings. */
+  peek = signal<{ x: number; y: number } | null>(null);
   /** Ask the board to bring these cells into view. */
   reveal = signal<{ cells: [number, number][]; seq: number } | null>(null);
   /** World-space point the camera looks at; set by the board, used to place lines near the view. */
@@ -169,14 +175,14 @@ export class Controller {
   });
   lit = computed(() => {
     const sel = this.sel.value;
-    const empty = sel.meaning === undefined && !sel.verb && !sel.river.length && !sel.wild.length && !sel.cross;
+    const empty = selEmpty(sel);
     if (this.hidden || empty || !this.canAct.value) return null;
     return lit(this.gs.value, this.viewer.value, sel, this.ways.value);
   });
   /** Distinct compounds once a meaning and a verb are both chosen ("two ways to finish"). */
   choices = computed(() => {
     const sel = this.sel.value;
-    if (this.hidden || sel.meaning === undefined || (!sel.verb && !sel.cross)) return [] as string[];
+    if (this.hidden || !hasMeaning(sel) || (!sel.verb && !sel.cross)) return [] as string[];
     return distinctCompounds(this.ways.value);
   });
   locked = computed(() => this.lockUntil.value > this.now.value);
@@ -587,6 +593,7 @@ export class Controller {
   clearSelection() {
     batch(() => {
       this.sel.value = emptySelection();
+      this.peek.value = null;
       this.picks.value = [];
       this.spot.value = null;
       this.hintVerb.value = null;
@@ -624,7 +631,8 @@ export class Controller {
     if (this.tutorialHook?.('tapMeaning', id) === false) return;
     this.touch();
     if (this.hidden) {
-      this.sel.value = { ...this.sel.value, meaning: this.sel.value.meaning === id ? undefined : id };
+      this.sel.value = { ...this.sel.value, meaning: this.sel.value.meaning === id ? undefined : id, onto: undefined };
+      this.peek.value = null;
       return;
     }
     const sel = this.sel.value;
@@ -634,7 +642,8 @@ export class Controller {
       return;
     }
     this.hintVerb.value = null;
-    const next = { ...sel, meaning: id };
+    const next = { ...sel, meaning: id, onto: undefined };
+    this.peek.value = null;
     if (ways(this.gs.value, this.viewer.value, next).length) this.sel.value = next;
     else this.sel.value = { ...emptySelection(), meaning: id };
     this.afterPick(`m:${id}`);
@@ -692,9 +701,11 @@ export class Controller {
   }
 
   tapTable(x: number, y: number, long = false) {
-    if (!this.canAct.value) return;
     const c = view(this.gs.value).at(x, y);
     if (!c) return;
+    // A meaning card on the table shows all three of its meanings, whoever's turn it is.
+    if (c.k === 'M') this.peek.value = this.peek.value && this.peek.value.x === x && this.peek.value.y === y && !this.canAct.value ? null : { x, y };
+    if (!this.canAct.value) return;
     if (this.tutorialHook?.('tapTable', { x, y }) === false) return;
     this.touch();
     if (c.k === 'V') return this.pickVerb({ table: { x, y } }, `t:${x},${y}`, long);
@@ -712,6 +723,27 @@ export class Controller {
       const next = { ...sel, cross: { x, y }, verb: sel.verb && 'table' in sel.verb ? undefined : sel.verb };
       if (!ways(this.gs.value, this.viewer.value, next).length) return this.bad(`t:${x},${y}`);
       this.sel.value = next;
+      this.afterPick(`t:${x},${y}`, long);
+      return;
+    }
+    if (c.k === 'M' && this.gs.value.config.rules?.tableMeanings) {
+      const sel = this.sel.value;
+      if (sel.onto && sel.onto.x === x && sel.onto.y === y) {
+        this.sel.value = { ...sel, onto: undefined };
+        this.peek.value = null;
+        return;
+      }
+      const next: Selection = { ...sel, onto: { x, y }, meaning: undefined, cross: undefined, verb: sel.verb && 'table' in sel.verb ? undefined : sel.verb };
+      if (this.hidden) {
+        this.sel.value = next;
+        return;
+      }
+      if (ways(this.gs.value, this.viewer.value, next).length) this.sel.value = next;
+      else {
+        const fresh = { ...emptySelection(), onto: { x, y } };
+        if (!ways(this.gs.value, this.viewer.value, fresh).length) return this.bad(`t:${x},${y}`);
+        this.sel.value = fresh;
+      }
       this.afterPick(`t:${x},${y}`, long);
     }
   }
@@ -743,6 +775,7 @@ export class Controller {
       return;
     }
     // Not part of the current line: explain, or start a new one from this verb.
+    if (sel.onto) return this.bad(key);
     if (sel.meaning !== undefined) {
       const m = this.hand().find((c) => c.id === sel.meaning);
       const word = 'table' in v ? view(s).at(v.table.x, v.table.y)!.t : this.hand().find((c) => c.id === (v as { hand: number }).hand)!.t;
@@ -761,7 +794,7 @@ export class Controller {
   private afterPick(key: string, long = false) {
     const sel = this.sel.value;
     if (this.tutorialHook?.('afterPick', sel) === false) return;
-    if (sel.meaning === undefined || (!sel.verb && !sel.cross)) return;
+    if (!hasMeaning(sel) || (!sel.verb && !sel.cross)) return;
     const ws = ways(this.gs.value, this.viewer.value, sel);
     if (!ws.length) return this.bad(key);
     const cs = distinctCompounds(ws);
@@ -862,8 +895,9 @@ export class Controller {
     if (!this.canAct.value || this.locked.value) return;
     const sel = this.sel.value;
     if (!this.hidden) return;
-    if (sel.meaning === undefined || !sel.verb || !this.picks.value.length) return this.bad('lay', t('table.buildingSub'));
-    const a: Attempt = { meaning: sel.meaning, verb: sel.verb, parts: this.picks.value };
+    if (!hasMeaning(sel) || !sel.verb || !this.picks.value.length) return this.bad('lay', t('table.buildingSub'));
+    const onto = sel.onto;
+    const a: Attempt = { meaning: onto ? view(this.gs.value).at(onto.x, onto.y)!.id : sel.meaning!, verb: sel.verb, parts: this.picks.value, onto };
     const j = judge(this.gs.value, this.viewer.value, a, this.focus);
     if (j.ok) return this.play(j.move);
     this.refuse(j.reason);
@@ -983,7 +1017,7 @@ export class Controller {
       const pl = s.piles[r];
       if (!pl.length || pl[pl.length - 1].id !== this.riverIds.get(r)) return takenPile(r);
     }
-    const empty = sel.meaning === undefined && !sel.verb && !sel.river.length && !sel.wild.length && !sel.cross;
+    const empty = selEmpty(sel);
     if (empty) return;
     if (sel.meaning !== undefined && !hand.some((c) => c.id === sel.meaning)) return this.clearSelection();
     if (!ways(s, p, sel).length) {

@@ -194,8 +194,9 @@ export function newGame(config: GameConfig): GameState {
   s.faceUp = s.mpile.pop() ?? null;
   for (let p = 0; p < n; p++) {
     const h: Card[] = [];
-    for (let i = 0; i < setup.handSize - setup.meaningsInHand; i++) h.push(s.main.pop()!);
-    for (let i = 0; i < setup.meaningsInHand; i++) h.push(s.mpile.pop()!);
+    const nm = config.rules?.meaningsInHand ?? setup.meaningsInHand;
+    for (let i = 0; i < setup.handSize - nm; i++) h.push(s.main.pop()!);
+    for (let i = 0; i < nm; i++) h.push(s.mpile.pop()!);
     s.hands.push(h);
   }
   s.turn = config.firstPlayer ?? Math.floor(r() * n);
@@ -210,6 +211,8 @@ export interface LineOpts {
   handSpots?: number;
   straddles?: boolean;
   meanings?: Card[];
+  /** Include lines ending on a table meaning card (when the rule is on). Default: unless `meanings` is given. */
+  onto?: boolean;
 }
 
 /** Line moves for player p, in the reference engine's order. */
@@ -265,6 +268,32 @@ export function lineMoves(s: GameState, p: number, o: LineOpts = {}): LineMove[]
           });
         }
       }
+  if (s.config.rules?.tableMeanings && (o.onto ?? !o.meanings)) out.push(...ontoMoves(s, p, g, hv, wildIds));
+  return out;
+}
+
+/** Lines ending on a meaning card already on the table, as any of its meanings, verb from the hand. */
+function ontoMoves(s: GameState, p: number, g: Ctx, hv: Card[], wildIds: number[]): LineMove[] {
+  void p;
+  const out: LineMove[] = [];
+  for (const t of s.board) {
+    if (t.k !== 'M') continue;
+    for (const gl of meaningsOf(t))
+      for (const c of COMPOUNDS_BY_MEANING[gl] ?? []) {
+        const vc = hv.find((h) => h.t === c.v);
+        if (!vc) continue;
+        const L = c.ps.length;
+        for (const d of DIRS) {
+          // The line runs verb → particles → t, so the verb sits L+1 cells back along -d.
+          const vx = t.x - d[0] * (L + 1),
+            vy = t.y - d[1] * (L + 1);
+          if (!g.runFree(vx, vy, d, 0, L)) continue;
+          const src = g.plan(c.ps, wildIds);
+          if (!src) continue;
+          out.push({ type: 'line', m: t.id, g: gl, c: c.id, verb: { hand: vc.id }, x: vx, y: vy, d, src, onto: { x: t.x, y: t.y } });
+        }
+      }
+  }
   return out;
 }
 
@@ -287,7 +316,7 @@ export function loneMoves(s: GameState, p: number): LoneMove[] {
 }
 
 export function shed(mv: LineMove) {
-  return 1 + ('hand' in mv.verb ? 1 : 0) + mv.src.filter((x) => 'wild' in x).length;
+  return (mv.onto ? 0 : 1) + ('hand' in mv.verb ? 1 : 0) + mv.src.filter((x) => 'wild' in x).length;
 }
 
 /** The bot's ranking of a line: cards shed, wildcards slightly held back. */
@@ -305,9 +334,20 @@ export function bestLine(lines: LineMove[]): LineMove | null {
 function rejectLine(s: GameState, p: number, mv: LineMove): Rejection | null {
   const g = view(s);
   const hand = s.hands[p];
-  const m = hand.find((c) => c.id === mv.m);
   const c: Compound | undefined = COMPOUND_BY_ID[mv.c];
-  if (!m || m.k !== 'M') return { why: 'NotLegal', detail: 'meaning card not in hand' };
+  let m: Card | undefined;
+  if (mv.onto) {
+    if (!s.config.rules?.tableMeanings) return { why: 'NotLegal', detail: 'lines onto table meaning cards are off' };
+    m = g.at(mv.onto.x, mv.onto.y);
+    if (!m || m.k !== 'M' || m.id !== mv.m) return { why: 'Taken', by: null, card: { x: mv.onto.x, y: mv.onto.y } };
+    if (!('hand' in mv.verb)) return { why: 'NotLegal', detail: 'a line onto a table meaning card needs a verb from the hand' };
+    if (mv.src.some((x) => 'existing' in x)) return { why: 'NotLegal', detail: 'a line onto a table meaning card cannot also cross a particle' };
+    const L0 = c ? c.ps.length : 0;
+    if (mv.x + mv.d[0] * (L0 + 1) !== mv.onto.x || mv.y + mv.d[1] * (L0 + 1) !== mv.onto.y) return { why: 'NotLegal', detail: 'the line must end on that meaning card' };
+  } else {
+    m = hand.find((x) => x.id === mv.m);
+    if (!m || m.k !== 'M') return { why: 'NotLegal', detail: 'meaning card not in hand' };
+  }
   if (!c || c.g !== mv.g || !meaningsOf(m).includes(mv.g)) return { why: 'NotLegal', detail: 'compound does not match meaning' };
   if (mv.src.length !== c.ps.length) return { why: 'NotLegal', detail: 'wrong number of particles' };
   const [dx, dy] = mv.d;
@@ -351,6 +391,7 @@ function rejectLine(s: GameState, p: number, mv: LineMove): Rejection | null {
     }
   }
   if (existing > 1) return { why: 'NotLegal', detail: 'only one particle may be crossed' };
+  if (mv.onto) return null;
   const L = c.ps.length;
   const mo = g.at(mv.x + dx * (L + 1), mv.y + dy * (L + 1));
   if (mo) return { why: 'Taken', by: mo.owner >= 0 ? mo.owner : null, card: { x: mo.x, y: mo.y } };
@@ -455,7 +496,7 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     g.put(mv.x, mv.y, v, null, p);
     const drew: number[] = [];
     for (let i = 0; i < DECK.loneVerbDraw; i++) {
-      const c = drawOne(s, p, false);
+      const c = drawOne(s, p, !!s.config.rules?.meaningOnAnyDraw);
       if (c) drew.push(c.id);
     }
     ev = { e: 'lone', p, word: v.t, x: mv.x, y: mv.y, drew, turnNo: s.turnNo };
@@ -489,11 +530,13 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     const L = c.ps.length;
     const mx = mv.x + dx * (L + 1),
       my = mv.y + dy * (L + 1);
-    g.put(mx, my, removeFromHand(hand, mv.m), axis, p, { used: mv.g });
+    if (mv.onto) g.at(mx, my)!.cross = true;
+    else g.put(mx, my, removeFromHand(hand, mv.m), axis, p, { used: mv.g });
     cells.push([mx, my]);
     const wild = mv.src.some((x) => 'wild' in x),
       straddle = isStraddle(mv);
     s.lines.push({ p, c: c.id, g: mv.g, cells, wild, straddle, turnNo: s.turnNo });
+    if (s.config.rules?.refillMeaning && hand.length && !hand.some((x) => x.k === 'M') && s.mpile.length) hand.push(s.mpile.pop()!);
     ev = { e: 'line', p, c: c.id, g: mv.g, cells, wild, straddle, river, turnNo: s.turnNo };
     if (!s.config.legacyStall) s.stalls = 0;
   }

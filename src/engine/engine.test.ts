@@ -270,3 +270,61 @@ describe('builder', () => {
     expect(hint(s, 0, m.id)).toEqual({ hand: ev.id });
   });
 });
+
+describe('app rules: lines onto table meaning cards, meaning refill', () => {
+  const rules = { refillMeaning: true, tableMeanings: true };
+  // cuir suas le already down, ending on m04 (TAKE OFF / PUT UP WITH / LET OUT).
+  const base = () => [at(V('cuir'), 0, 0), at(P('suas'), 1, 0, 'h', 1), at(P('le'), 2, 0, 'h', 1), { ...at(M('m04'), 3, 0, 'h', 1), used: 'PUT UP WITH' }];
+
+  it('a line can end on a table meaning card as another of its meanings', () => {
+    const lig = V('lig');
+    const s = fixture({ board: base(), piles: [['amach'], ['ar'], ['do'], ['as'], ['de']], hands: [[lig, V('fan'), M('m01')], [V('tóg')]], config: { rules } });
+    const mv = lineMoves(s, 0).find((l) => l.onto && l.c === 'c27');
+    expect(mv).toBeTruthy();
+    const r = apply(s, 0, mv!);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    // Only the verb left the hand; the meaning card stayed on the table, now marked.
+    expect(r.state.hands[0].map((c) => c.id)).not.toContain(lig.id);
+    expect(r.state.hands[0].length).toBe(2);
+    expect(r.state.board.find((b) => b.x === 3 && b.y === 0)!.cross).toBe(true);
+    expect(r.state.lines.at(-1)!.g).toBe('LET OUT');
+  });
+
+  it('any of the three meanings, including the one already made there', () => {
+    const cuir = V('cuir');
+    const s = fixture({ board: base(), piles: [['le', 'suas'], ['ar'], ['do'], ['as'], ['de']], hands: [[cuir, V('fan'), M('m01')], [V('tóg')]], config: { rules } });
+    const again = lineMoves(s, 0).filter((l) => l.onto && l.c === 'c08');
+    expect(again.length).toBeGreaterThan(0);
+    expect(apply(s, 0, again[0]).ok).toBe(true);
+  });
+
+  it('the verb must come from the hand, and the rule is off unless enabled', () => {
+    const s = fixture({ board: [...base(), at(V('lig'), 3, 3)], piles: [['amach', 'amach'], ['ar'], ['do'], ['as'], ['de']], hands: [[V('fan'), M('m01')], [V('tóg')]], config: { rules } });
+    expect(lineMoves(s, 0).some((l) => l.onto)).toBe(false);
+    const forged = { type: 'line' as const, m: s.board[3].id, g: 'LET OUT', c: 'c27', verb: { table: { x: 3, y: 3 } }, x: 3, y: 2, d: [0, -1] as [number, number], src: [{ river: 0 }], onto: { x: 3, y: 0 } };
+    expect(apply(s, 0, forged).ok).toBe(false);
+    const off = fixture({ board: base(), piles: [['amach'], ['ar'], ['do'], ['as'], ['de']], hands: [[V('lig'), M('m01')], [V('tóg')]] });
+    expect(lineMoves(off, 0).some((l) => l.onto)).toBe(false);
+  });
+
+  it('builder: picking the table card lights the verb; hidden mode accepts the line', () => {
+    const lig = V('lig');
+    const s = fixture({ board: base(), piles: [['amach'], ['ar'], ['do'], ['as'], ['de']], hands: [[lig, V('fan')], [V('tóg')]], config: { rules } });
+    const sel = { ...emptySelection(), onto: { x: 3, y: 0 } };
+    expect(lit(s, 0, sel).handVerbs.has(lig.id)).toBe(true);
+    const w = preferredWay(ways(s, 0, { ...sel, verb: { hand: lig.id } }))!;
+    expect(apply(s, 0, wayToMove(w, placements(s, w)[0])).ok).toBe(true);
+    const j = judge(s, 0, { meaning: s.board[3].id, onto: { x: 3, y: 0 }, verb: { hand: lig.id }, parts: [{ river: 0 }] });
+    expect(j.ok).toBe(true);
+  });
+
+  it('a line that uses your last meaning card refills one from the pile', () => {
+    const m = M(findMeaningCard('LISTEN TO'));
+    const s = fixture({ piles: [['le'], ['ar'], ['amach'], ['suas'], ['as']], hands: [[m, V('éist'), V('fan')], [V('tóg')]], mpile: [M('m05'), M('m06')], config: { rules } });
+    const mv = lineMoves(s, 0).find((l) => l.c === 'c32' && !l.onto)!;
+    const r = apply(s, 0, mv);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.state.hands[0].filter((c) => c.k === 'M').length).toBe(1);
+  });
+});

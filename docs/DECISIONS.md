@@ -7,6 +7,35 @@ decides UI questions; rules questions still go to RULES.md. Each conflict below 
 **Phil to confirm or overturn each one.** Every rules choice is a single constant or branch, so
 changing one doesn't mean a rewrite.
 
+## Rule changes (Phil, 2026-10-26)
+
+Two rules beyond RULES.md, after playtesting showed hands running out of meaning cards. They're on
+in every new game in the app (`APP_RULES` in `src/engine/types.ts`). Games saved before the change
+keep the rules they started with. The engine default is still RULES.md as written, so the parity
+and stats tests are unchanged.
+
+1. **Refill.** If laying a line leaves you with no meaning cards, draw one from the meaning pile straight away.
+2. **Lines onto a table meaning card.** A meaning card already on the table can end another line, as
+   **any** of its three meanings (including the one already made there). The verb comes from your
+   hand; the particles come from the river or wildcards, as usual; the line runs into a free side of
+   the card, so at most three more lines can end on one card. A line can't both cross a particle and
+   end on a table meaning card. The card gets the crossing marker. Tap any meaning card on the table
+   to see all three of its meanings.
+
+Still true, as Phil put it: only a verb goes down alone; every other play completes a line, using up to a
+line's worth of cards (four for *cuir síos ar* [DESCRIBE]). The new play is still a complete line.
+
+Simulated effect (300 games each, normal bots; RULES.md as written → with both changes):
+
+| Players | Turns with no meaning card | Turns per game | Lines | Someone goes out |
+|---|---|---|---|---|
+| 2 | 27% → 0% | 57 → 37 | 26.4 → 26.2 | 60% → 79% |
+| 3 | 33% → 2% | 74 → 51 | 32.6 → 35.5 | 31% → 72% |
+| 4 | 29% → 4% | 74 → 51 | 32.3 → 34.4 | 36% → 81% |
+
+Going out becomes the usual ending, where the design treated fewest cards as the norm. Table meanings
+without the refill was too swingy (91–95% go out, fewer lines).
+
 ## Rules conflicts
 
 | # | Question | RULES.md / handback | Design kit (handoff-v2) | Built |

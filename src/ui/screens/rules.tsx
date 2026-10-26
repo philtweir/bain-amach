@@ -65,15 +65,23 @@ export function RulesScreen({ onTutorial }: { onTutorial: () => void }) {
           >
             {t('rules.crossBody')}
           </Rule>
-          <Rule n={3} title={t('rules.lone')} diagram={<Diagram w={1} h={1} cards={[at('V', 'fan', 0, 0)]} />}>
+          <Rule
+            n={3}
+            title={t('rules.onto')}
+            diagram={<Diagram w={4} h={3} cards={[at('V', 'cuir', 0, 0), at('P', 'suas', 1, 0, { axis: 'h' }), at('P', 'le', 2, 0, { axis: 'h' }), at('M', 'm04', 3, 0, { used: 'PUT UP WITH', cross: true }), at('P', 'amach', 3, 1, { axis: 'v' }), at('V', 'lig', 3, 2)]} />}
+          >
+            {t('rules.ontoBody')}
+          </Rule>
+          <Rule n={4} title={t('rules.lone')} diagram={<Diagram w={1} h={1} cards={[at('V', 'fan', 0, 0)]} />}>
             {t('rules.loneBody')}
           </Rule>
-          <Rule n={4} title={t('rules.swap')}>
+          <Rule n={5} title={t('rules.swap')}>
             {t('rules.swapBody')}
           </Rule>
-          <Rule n={5} title={t('rules.pass')}>
+          <Rule n={6} title={t('rules.pass')}>
             {t('rules.passBody')}
           </Rule>
+          <Rule title={t('rules.refill')}>{t('rules.refillBody')}</Rule>
           <Rule title={t('rules.end')}>{t('rules.endBody')}</Rule>
           <Rule
             title={t('rules.cards')}

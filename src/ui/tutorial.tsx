@@ -2,7 +2,7 @@
 // The spotlit zone stays tappable; everything else is blocked until the step is done or skipped.
 import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
 import { meaningsOf } from '../engine/game';
-import type { GameConfig } from '../engine/types';
+import { APP_RULES, type GameConfig } from '../engine/types';
 import type { Controller } from '../game/controller';
 import { t, type Key } from '../i18n';
 import { updateSettings } from '../storage';
@@ -19,6 +19,7 @@ export function tutorialConfig(): GameConfig {
     hints: 'request',
     firstPlayer: 0,
     tutorial: true,
+    rules: APP_RULES,
     players: [
       { name: t('table.you'), kind: 'human', color: 0 },
       { name: 'B', kind: 'bot', level: 'easy', color: 1 },

@@ -12,6 +12,8 @@ export interface Selection {
   river: number[];
   wild: number[];
   cross?: { x: number; y: number };
+  /** A meaning card already on the table, picked as the line's meaning (rule variant tableMeanings). */
+  onto?: { x: number; y: number };
 }
 
 export const emptySelection = (): Selection => ({ river: [], wild: [] });
@@ -25,6 +27,8 @@ export interface Way {
   src: Src[];
   /** For a crossing line: the table particle crossed. */
   cross?: { x: number; y: number };
+  /** For a line onto a table meaning card: that card's cell (m is its card id). */
+  onto?: { x: number; y: number };
 }
 
 export interface Placement {
@@ -93,7 +97,7 @@ export function ways(s: GameState, p: number, sel: Selection): Way[] {
   const g = view(s);
   const hand = s.hands[p];
   const wildIds = hand.filter((c) => c.k === 'W').map((c) => c.id);
-  const meaningCards = hand.filter((c) => c.k === 'M' && (sel.meaning === undefined || c.id === sel.meaning));
+  const meaningCards = sel.onto ? [] : hand.filter((c) => c.k === 'M' && (sel.meaning === undefined || c.id === sel.meaning));
   const out: Way[] = [];
   const handVerbs = hand.filter((c) => c.k === 'V');
   for (const m of meaningCards)
@@ -143,6 +147,35 @@ export function ways(s: GameState, p: number, sel: Selection): Way[] {
           });
         }
       }
+  // Lines onto a meaning card already on the table: any of its meanings, verb from the hand.
+  if (s.config.rules?.tableMeanings && sel.meaning === undefined && !sel.cross && !(sel.verb && 'table' in sel.verb)) {
+    const hvs = sel.verb && 'hand' in sel.verb ? handVerbs.filter((h) => h.id === (sel.verb as { hand: number }).hand) : handVerbs;
+    for (const t of s.board) {
+      if (t.k !== 'M' || (sel.onto && (sel.onto.x !== t.x || sel.onto.y !== t.y))) continue;
+      for (const gl of meaningsOf(t))
+        for (const c of COMPOUNDS_BY_MEANING[gl] ?? []) {
+          const hv = hvs.find((h) => h.t === c.v);
+          if (!hv || !ontoPlacements(g, t.x, t.y, c.ps.length).length) continue;
+          for (const src of sourceCombos(s, c.ps, wildIds, -1)) {
+            let ok = true;
+            for (const r of sel.river) if (!src.some((x) => 'river' in x && x.river === r)) ok = false;
+            for (const w of sel.wild) if (!src.some((x) => 'wild' in x && x.wild === w)) ok = false;
+            if (ok) out.push({ m: t.id, g: gl, c: c.id, verb: { hand: hv.id }, src, onto: { x: t.x, y: t.y } });
+          }
+        }
+    }
+  }
+  return out;
+}
+
+/** Where a line of L particles can arrive at a table meaning card: the verb L+1 cells back, all cells free. */
+function ontoPlacements(g: Ctx, tx: number, ty: number, L: number): Placement[] {
+  const out: Placement[] = [];
+  for (const d of DIRS) {
+    const vx = tx - d[0] * (L + 1),
+      vy = ty - d[1] * (L + 1);
+    if (g.runFree(vx, vy, d, 0, L)) out.push({ x: vx, y: vy, d });
+  }
   return out;
 }
 
@@ -152,7 +185,8 @@ export function placements(s: GameState, w: Way, focus?: { x: number; y: number 
   const c = COMPOUND_BY_ID[w.c];
   const L = c.ps.length;
   let out: Placement[];
-  if (w.cross) {
+  if (w.onto) out = ontoPlacements(g, w.onto.x, w.onto.y, L);
+  else if (w.cross) {
     const i = w.src.findIndex((x) => 'existing' in x);
     out = crossPlacements(g, w.cross.x, w.cross.y, i, L);
   } else if ('table' in w.verb) {
@@ -171,7 +205,9 @@ export function placements(s: GameState, w: Way, focus?: { x: number; y: number 
 }
 
 export function wayToMove(w: Way, pl: Placement): LineMove {
-  return { type: 'line', m: w.m, g: w.g, c: w.c, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src };
+  const mv: LineMove = { type: 'line', m: w.m, g: w.g, c: w.c, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src };
+  if (w.onto) mv.onto = w.onto;
+  return mv;
 }
 
 /** Fewest wildcards, then river piles in order: the default way among equals. */
@@ -194,7 +230,9 @@ export function lit(s: GameState, p: number, sel: Selection, ws = ways(s, p, sel
   const out: Lit = { meanings: new Set(), handVerbs: new Set(), tableCells: new Set(), river: new Set(), wild: new Set() };
   const hand = s.hands[p];
   for (const w of ws) {
-    if (sel.meaning === undefined) out.meanings.add(w.m);
+    if (w.onto) {
+      if (!sel.onto) out.tableCells.add(w.onto.x + ',' + w.onto.y);
+    } else if (sel.meaning === undefined) out.meanings.add(w.m);
     if (!sel.verb) {
       if ('table' in w.verb) out.tableCells.add(w.verb.table.x + ',' + w.verb.table.y);
       else {
@@ -221,7 +259,9 @@ export function distinctCompounds(ws: Way[]): string[] {
 // ---------- hidden mode ----------
 
 export interface Attempt {
+  /** A meaning card id: from the hand, or the table card at `onto`. */
   meaning: number;
+  onto?: { x: number; y: number };
   verb: VerbSrc;
   /** Particle sources in the order picked. */
   parts: ({ river: number } | { wild: number } | { cross: { x: number; y: number } })[];
@@ -234,8 +274,9 @@ export type AttemptResult = { ok: true; move: LineMove } | { ok: false; reason: 
 export function judge(s: GameState, p: number, a: Attempt, focus?: { x: number; y: number }): AttemptResult {
   const g = view(s);
   const hand = s.hands[p];
-  const m = hand.find((c) => c.id === a.meaning);
+  const m = a.onto ? g.at(a.onto.x, a.onto.y) : hand.find((c) => c.id === a.meaning);
   if (!m || m.k !== 'M') return { ok: false, reason: { why: 'NotLegal', detail: 'Pick a meaning card' } };
+  if (a.onto && 'table' in a.verb) return { ok: false, reason: { why: 'NotLegal', detail: 'A line onto a meaning card on the table needs a verb from your hand' } };
   let verbWord: string | undefined;
   if ('table' in a.verb) verbWord = g.at(a.verb.table.x, a.verb.table.y)?.t;
   else {
@@ -266,6 +307,10 @@ export function judge(s: GameState, p: number, a: Attempt, focus?: { x: number; 
   const crossIdx = a.parts.findIndex((x) => 'cross' in x);
   const src: Src[] = a.parts.map((x) => ('river' in x ? { river: x.river } : 'wild' in x ? { wild: x.wild } : { existing: true }));
   const w: Way = { m: m.id, g: c.g, c: c.id, verb: a.verb, src };
+  if (a.onto) {
+    if (crossIdx >= 0) return { ok: false, reason: { why: 'NotLegal', detail: 'A line onto a meaning card on the table cannot also cross a particle' } };
+    w.onto = a.onto;
+  }
   if (crossIdx >= 0) {
     const cr = (a.parts[crossIdx] as { cross: { x: number; y: number } }).cross;
     if ('table' in a.verb) return { ok: false, reason: { why: 'NotLegal', detail: 'A line through a particle needs a verb from your hand' } };

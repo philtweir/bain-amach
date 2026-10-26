@@ -25,10 +25,12 @@ export function botMove(s: GameState, p: number): BotChoice {
   const level = s.config.players[p]?.level ?? 'hard';
   let rngState = s.rng;
   let lines = lineMoves(s, p);
-  if (STRADDLE_SIGHT[level] < 1 && lines.some(isStraddle)) {
+  // Lines through a particle, or onto a meaning card already down, are the harder ones to spot.
+  const subtle = (l: (typeof lines)[number]) => isStraddle(l) || !!l.onto;
+  if (STRADDLE_SIGHT[level] < 1 && lines.some(subtle)) {
     const [r, st] = next(rngState);
     rngState = st;
-    if (r >= STRADDLE_SIGHT[level]) lines = lines.filter((l) => !isStraddle(l));
+    if (r >= STRADDLE_SIGHT[level]) lines = lines.filter((l) => !subtle(l));
   }
   const line = bestLine(lines);
   if (line) return { move: line, rng: rngState };

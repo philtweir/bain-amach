@@ -7,7 +7,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/ho
 import { COMPOUND_BY_ID, compoundText } from '../engine/deck';
 import { view } from '../engine/game';
 import type { Placed } from '../engine/types';
-import type { Controller } from '../game/controller';
+import { selEmpty, type Controller } from '../game/controller';
 import { t } from '../i18n';
 import { Face, cardLabel } from './cards';
 import { IconFit } from './icons';
@@ -461,9 +461,10 @@ export function Board({ c }: { c: Controller }) {
   const showFresh = !!action && freshDone !== action.seq;
 
   // ---------- render ----------
-  const selActive = !hidden && (sel.meaning !== undefined || !!sel.verb || sel.river.length > 0 || sel.wild.length > 0 || !!sel.cross);
+  const selActive = !hidden && !selEmpty(sel);
   const selVerbKey = sel.verb && 'table' in sel.verb ? sel.verb.table.x + ',' + sel.verb.table.y : null;
   const crossKey = sel.cross ? sel.cross.x + ',' + sel.cross.y : null;
+  const ontoKey = sel.onto ? sel.onto.x + ',' + sel.onto.y : null;
   const hintKey = hintVerb && 'table' in hintVerb ? hintVerb.table.x + ',' + hintVerb.table.y : null;
   const hiddenPicked = new Set(picks.flatMap((p) => ('cross' in p ? [p.cross.x + ',' + p.cross.y] : [])));
   const takenKey = taken && taken.cell && Date.now() - taken.at < 700 ? taken.cell : null;
@@ -472,7 +473,7 @@ export function Board({ c }: { c: Controller }) {
   const cards = s.board.map((b) => {
     const k = b.x + ',' + b.y;
     const isLit = !!lit?.tableCells.has(k) || hintKey === k;
-    const selected = selVerbKey === k || crossKey === k || (hidden && ((sel.verb && 'table' in sel.verb && sel.verb.table.x === b.x && sel.verb.table.y === b.y) || hiddenPicked.has(k)));
+    const selected = selVerbKey === k || crossKey === k || ontoKey === k || (hidden && ((sel.verb && 'table' in sel.verb && sel.verb.table.x === b.x && sel.verb.table.y === b.y) || hiddenPicked.has(k)));
     const dim = selActive && !isLit && !selected;
     const was = prevIds.current.has(b.id) && !freshIds.has(b.id);
     return (

@@ -1,6 +1,6 @@
 // Screen flow: language → welcome → (tutorial) → home → setup → table → recap → home.
 import { effect } from '@preact/signals';
-import type { GameConfig, GameState } from '../engine/types';
+import { APP_RULES, type GameConfig, type GameState } from '../engine/types';
 import type { Controller } from '../game/controller';
 import { savedGame, settings, updateSettings } from '../storage';
 import { Navigator, nav, stack, type Entry } from '../ui/nav';
@@ -91,7 +91,7 @@ function renderEntry(e: Entry) {
       return (
         <RecapScreen
           state={st}
-          onAgain={() => play({ config: { ...st.config, seed: (Math.random() * 2 ** 31) >>> 0, tutorial: false, firstPlayer: undefined } }, 'fade')}
+          onAgain={() => play({ config: { ...st.config, seed: (Math.random() * 2 ** 31) >>> 0, tutorial: false, firstPlayer: undefined, rules: APP_RULES } }, 'fade')}
           onReplay={() => play({ config: st.config }, 'fade')}
           onClose={() => nav.backTo('home')}
           onCompound={(id) => nav.push('glossary', { focus: id })}

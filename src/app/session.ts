@@ -1,6 +1,6 @@
 // App-level session: the running game, setup defaults, install prompt and update state.
 import { signal } from '@preact/signals';
-import type { GameConfig, Level, PlayerConfig } from '../engine/types';
+import { APP_RULES, type GameConfig, type Level, type PlayerConfig } from '../engine/types';
 import { Controller } from '../game/controller';
 import { t } from '../i18n';
 import { platform } from '../platform';
@@ -68,7 +68,7 @@ export function configFrom(p: SetupPrefs, seed = freshSeed()): GameConfig {
       players.push({ name: BOT_LETTERS[i], kind: 'bot', level: lv, color: col });
     });
   }
-  return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints };
+  return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints, rules: APP_RULES };
 }
 
 // ---------- install and update ----------

@@ -304,5 +304,13 @@
   "a11y.cell": "{card}, row {y}, column {x}",
   "a11y.back": "Back",
   "a11y.close": "Close",
-  "table.swapFirst": "Pick one of your meaning cards first, then tap this one to swap."
+  "table.swapFirst": "Pick one of your meaning cards first, then tap this one to swap.",
+  "table.peek": "On the table",
+  "table.peekUsable": "On the table · any of these can end a new line",
+  "table.pickVerbOnto": "Lit verbs in your hand finish a meaning on that card",
+  "rules.onto": "A line onto a meaning card",
+  "rules.ontoBody": "A meaning card already on the table can end another line, as any of its three meanings. Lay your verb from your hand, take the particles from the river, and run the line into a free side of the card. Here the PUT UP WITH card also carries LET OUT, so lig amach can end on it. Tap a meaning card on the table to see all three meanings.",
+  "rules.refill": "Running out of meanings",
+  "rules.refillBody": "If laying a line leaves you with no meaning cards, draw one from the meaning pile straight away.",
+  "a11y.meaningMeanings": "Meaning card on the table, used as {used}. Its meanings: {list}"
 }

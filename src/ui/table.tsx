@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 import { COMPOUND_BY_ID, compoundText } from '../engine/deck';
 import { canDraw, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
-import type { Controller } from '../game/controller';
+import { hasMeaning, selEmpty, type Controller } from '../game/controller';
 import { t } from '../i18n';
 import { Avatar, Disc, MeaningCard, cardLabel, glossClass, initialOf, stateClass, typeClass, wordClass } from './cards';
 import { Board } from './board';
@@ -85,7 +85,7 @@ function River({ c }: { c: Controller }) {
     const tm = setTimeout(() => tick((n) => n + 1), 2000 - (Date.now() - stallAt));
     return () => clearTimeout(tm);
   }, [stallAt]);
-  const selActive = !c.hidden && (sel.meaning !== undefined || !!sel.verb || sel.river.length > 0 || sel.wild.length > 0 || !!sel.cross);
+  const selActive = !c.hidden && !selEmpty(sel);
   return (
     <div class="river ba-riverbed" role="group" aria-label="River">
       {s.piles.map((pl, i) => {
@@ -170,7 +170,7 @@ function YourLine({ c }: { c: Controller }) {
   const sel = c.sel.value;
   const picks = c.picks.value;
   const hand = s.hands[c.viewer.value];
-  const m = sel.meaning !== undefined ? hand.find((x) => x.id === sel.meaning) : undefined;
+  const m = sel.meaning !== undefined ? hand.find((x) => x.id === sel.meaning) : sel.onto ? s.board.find((b) => b.x === sel.onto!.x && b.y === sel.onto!.y) : undefined;
   let verb: string | undefined;
   if (sel.verb) verb = 'table' in sel.verb ? s.board.find((b) => b.x === (sel.verb as any).table.x && b.y === (sel.verb as any).table.y)?.t : hand.find((x) => x.id === (sel.verb as any).hand)?.t;
   const tops = s.piles.map((p) => p.length);
@@ -252,8 +252,8 @@ function Header({ c }: { c: Controller }) {
   }
 
   if (c.hidden) {
-    const ready = sel.meaning !== undefined && !!sel.verb && c.picks.value.length > 0;
-    const any = sel.meaning !== undefined || !!sel.verb || c.picks.value.length > 0;
+    const ready = hasMeaning(sel) && !!sel.verb && c.picks.value.length > 0;
+    const any = hasMeaning(sel) || !!sel.verb || c.picks.value.length > 0;
     if (any && canAct) {
       title = ready ? t('table.ready') : t('table.building');
       sub = ready ? t('table.hiddenSub') : t('table.buildingSub');
@@ -314,10 +314,10 @@ function Header({ c }: { c: Controller }) {
         {t('table.layAlone')} <span class="ba-cost">· {t('table.draw2')}</span>
       </button>,
     );
-  } else if (sel.meaning !== undefined && canAct) {
+  } else if (hasMeaning(sel) && canAct) {
     title = t('table.pickVerb');
-    sub = c.hintVerb.value ? t('table.hintSub') : t('table.pickVerbSub');
-    if (hintsOn && !c.hintVerb.value)
+    sub = c.hintVerb.value ? t('table.hintSub') : sel.onto ? t('table.pickVerbOnto') : t('table.pickVerbSub');
+    if (hintsOn && !c.hintVerb.value && sel.meaning !== undefined)
       actions.push(
         <button class="ba-btn ba-btn-secondary btn-hint" onClick={() => c.hint()} key="hint" aria-label={t('table.hint')}>
           <IconHint size={20} /> {t('table.hint')}
@@ -377,7 +377,7 @@ function Tray({ c }: { c: Controller }) {
   const shake = c.shake.value;
   const picks = c.picks.value;
   const hidden = c.hidden;
-  const selActive = !hidden && (sel.meaning !== undefined || !!sel.verb || sel.river.length > 0 || sel.wild.length > 0 || !!sel.cross);
+  const selActive = !hidden && !selEmpty(sel);
   const meanings = hand.filter((x) => x.k === 'M');
   const others = hand.filter((x) => x.k !== 'M');
   const shaking = (key: string) => !!shake && shake.key === key && Date.now() - shake.at < 400;
@@ -396,7 +396,7 @@ function Tray({ c }: { c: Controller }) {
     const isLit = !!lit?.wild.has(card.id);
     return { selected, lit: isLit && !selected, dim: selActive && !selected && !isLit, shake: shaking('w:' + card.id) };
   };
-  const showLine = hidden && (sel.meaning !== undefined || !!sel.verb || picks.length > 0);
+  const showLine = hidden && (hasMeaning(sel) || !!sel.verb || picks.length > 0);
   return (
     <div class="tray ba-tray">
       <Header c={c} />
@@ -470,6 +470,26 @@ function Toasts({ c }: { c: Controller }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** A meaning card on the table, opened up: all three meanings (and their Irish, if answers are shown). */
+function MeaningPeek({ c }: { c: Controller }) {
+  const pk = c.peek.value;
+  const s = c.gs.value;
+  if (!pk) return null;
+  const card = s.board.find((b) => b.x === pk.x && b.y === pk.y);
+  if (!card || card.k !== 'M') return null;
+  const usable = !!s.config.rules?.tableMeanings;
+  // Sit on the other half of the board from the card, so it never covers what you tapped.
+  const cell = document.querySelector(`[data-cell="${pk.x},${pk.y}"]`)?.getBoundingClientRect();
+  const board = document.querySelector('.table-board')?.getBoundingClientRect();
+  const low = !!cell && !!board && cell.top + cell.height / 2 < board.top + board.height / 2;
+  return (
+    <div class={'peek' + (low ? ' is-low' : '')} role="status" onClick={() => (c.peek.value = null)}>
+      <div class="peek-label">{usable ? t('table.peekUsable') : t('table.peek')}</div>
+      <MeaningCard card={card} hidden={c.hidden} used={card.used} />
     </div>
   );
 }
@@ -654,6 +674,7 @@ export function TableView(p: TableProps) {
       </div>
       <div class="table-board">
         <Board c={c} />
+        <MeaningPeek c={c} />
         <Toasts c={c} />
         <MadeMoment c={c} />
       </div>
