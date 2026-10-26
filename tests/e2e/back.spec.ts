@@ -16,7 +16,7 @@ test('back button: screens pop, the table pauses, the pause sheet closes', async
   await waitForMyTurn(page);
   await page.goBack();
   await expect(page.getByRole('dialog', { name: 'Paused' })).toBeVisible();
-  await page.goBack();
+  await page.goBack(); // straight away, as a quick double press would
   await expect(page.getByRole('dialog', { name: 'Paused' })).toBeHidden();
   await expect(page.locator('.table')).toBeVisible();
 

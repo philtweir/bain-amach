@@ -558,6 +558,8 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
       return;
     }
     return pushBackHandler(() => {
+      // Only while the table is the top screen: not while Rules or Settings slide in over it.
+      if (nav.top?.id !== 'table') return false;
       c.pause(false);
       return true;
     });
@@ -634,7 +636,9 @@ export function TableView(p: TableProps) {
       pushBackHandler(() => {
         if (nav.top?.id !== 'table' || c.phase.value === 'over' || c.phase.value === 'board') return false;
         if (c.made.value) c.dismissMade();
-        c.pause(true);
+        // Toggle here rather than relying on the sheet's own handler, which registers a frame
+        // after it opens: a quick second back press must still resume.
+        c.pause(!c.paused.value);
         return true;
       }),
     [c],
