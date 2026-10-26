@@ -145,7 +145,7 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
               <span class="panel-title">{t('home.glossary')}</span>
               <span class="caption muted tabnum">{t('home.made', { n: made, total: COMPOUNDS.length })}</span>
             </div>
-            <div class="progress" role="progressbar" aria-valuemin={0} aria-valuemax={COMPOUNDS.length} aria-valuenow={made}>
+            <div class="progress" role="progressbar" aria-label={t('home.made', { n: made, total: COMPOUNDS.length })} aria-valuemin={0} aria-valuemax={COMPOUNDS.length} aria-valuenow={made}>
               <span style={{ width: `${(made / COMPOUNDS.length) * 100}%` }} />
             </div>
             <div class="caption muted">{last ? t('home.lastMade', { compound: compoundText(last), meaning: last.g.toLowerCase() }) : t('home.glossaryEmpty')}</div>

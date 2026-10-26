@@ -1733,3 +1733,32 @@ button.list-row:active {
     animation: fade-in 120ms linear backwards !important;
   }
 }
+
+/* Segmented controls are radio groups (aria-checked); mirror the kit's aria-pressed look. */
+.ba-seg button[aria-checked='true'] {
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-card), inset 0 -2px 0 var(--line);
+}
+
+/* Settings rows: the label keeps its width; a control that doesn't fit wraps onto its own line, full width. */
+.row {
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.row > .row-text {
+  flex: 1 1 9em;
+}
+.row > .seg-sm {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+.seg button {
+  white-space: nowrap;
+}
+@media (max-width: 430px) {
+  .row > .seg-sm:has(> button:nth-child(3)) {
+    flex: 1 1 100%;
+    display: grid;
+  }
+}

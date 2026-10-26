@@ -30,7 +30,7 @@ export function Seg<T extends string>({ value, options, onChange, label, small }
   return (
     <div class={'ba-seg seg' + (small ? ' seg-sm' : '')} role="radiogroup" aria-label={label}>
       {options.map((o) => (
-        <button key={o.v} role="radio" aria-checked={value === o.v ? 'true' : 'false'} aria-pressed={value === o.v ? 'true' : 'false'} disabled={o.disabled} onClick={() => onChange(o.v)}>
+        <button key={o.v} role="radio" aria-checked={value === o.v ? 'true' : 'false'} disabled={o.disabled} onClick={() => onChange(o.v)}>
           {o.label}
         </button>
       ))}
