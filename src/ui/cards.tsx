@@ -1,6 +1,6 @@
 // Card faces, built on the design kit's ba- classes.
 import type { JSX } from 'preact';
-import { PARTICLE_TYPE, answersFor, printedAnswer } from '../engine/deck';
+import { PARTICLE_TYPE, answersFor, printedAnswer, senseOf } from '../engine/deck';
 import { meaningsOf } from '../engine/game';
 import type { Card as CardT, Placed } from '../engine/types';
 import type { CritterFace } from '../game/critters';
@@ -110,8 +110,9 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
   return (
     <Tag class={'ba-card ba-meaning' + stateClass(p)} onClick={p.onTap} aria-label={label} aria-pressed={p.onTap ? (p.selected ? 'true' : 'false') : undefined} data-card={p.card.id} type={p.onTap ? 'button' : undefined}>
       {ms.map((g) => (
-        <div class={'ba-m' + (p.used === g ? ' is-used' : '')} key={g}>
+        <div class={'ba-m' + (p.used === g ? ' is-used' : '') + (!p.hidden && senseOf(printedAnswer(p.card.t, g), g) ? ' has-sense' : '')} key={g}>
           <span class="ba-en">{g}</span>
+          {!p.hidden && <SenseCount text={printedAnswer(p.card.t, g)} g={g} />}
           <span class={'ba-ga' + (p.hidden ? ' is-hidden' : '')}>{p.hidden ? '·' : printedAnswer(p.card.t, g)}</span>
           {p.alts && !p.hidden && answersFor(g).filter((a) => a !== printedAnswer(p.card.t, g)).map((a) => (
             <span class="ba-alt" key={a}>
@@ -122,6 +123,19 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
       ))}
     </Tag>
   );
+}
+
+/** "[1/2]": this is one of several meanings the printed compound has in the deck. */
+function SenseCount({ text, g }: { text: string; g: string }) {
+  const s = senseOf(text, g);
+  return s ? (
+    <>
+      <span class="ba-sense tabnum" aria-hidden="true">
+        [{s[0]}/{s[1]}]
+      </span>
+      <span class="sr-only">{t('a11y.sense', { n: s[0], total: s[1] })}</span>
+    </>
+  ) : null;
 }
 
 export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean; critter?: CritterFace }) {

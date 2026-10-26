@@ -89,6 +89,16 @@ const PRINTED: Record<string, Record<string, string>> = {};
   }
 }
 
+/**
+ * Which of its compound's meanings `g` is, in deck order: [1, 2] for cuir ar PUT ON when cuir ar also
+ * means BOTHER. Null when the compound has only the one meaning.
+ */
+export function senseOf(text: string, g: string): [number, number] | null {
+  const same = COMPOUNDS.filter((c) => compoundText(c) === text);
+  const i = same.findIndex((c) => c.g === g);
+  return same.length > 1 && i >= 0 ? [i + 1, same.length] : null;
+}
+
 /** The Irish answer printed under meaning `g` on meaning card `cardT` (m01…). */
 export function printedAnswer(cardT: string, g: string): string {
   return PRINTED[cardT]?.[g] ?? answersFor(g)[0] ?? '';

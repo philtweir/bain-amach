@@ -303,6 +303,7 @@
   "a11y.selected": "selected",
   "a11y.board": "Table. {n} cards.",
   "a11y.player": "{name}, {n} cards",
+  "a11y.sense": "meaning {n} of {total}",
   "a11y.cell": "{card}, row {y}, column {x}",
   "a11y.back": "Back",
   "a11y.close": "Close",

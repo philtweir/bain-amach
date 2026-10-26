@@ -1967,6 +1967,21 @@ button.list-row:active {
   padding-top: 8px;
   padding-bottom: 8px;
 }
+/* [1/2] in the row's top corner: the printed compound has other meanings in the deck too. */
+.ba-meaning .ba-m {
+  position: relative;
+}
+.ba-meaning .has-sense .ba-en {
+  padding-right: 36px;
+}
+.ba-meaning .ba-sense {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  font: 700 11px/14px var(--font-ui);
+  color: var(--ink-muted);
+  letter-spacing: 0.02em;
+}
 .ba-meaning .ba-alt {
   font: 700 13px/16px var(--font-card);
   color: var(--meaning-answer);
