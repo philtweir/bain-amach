@@ -35,6 +35,11 @@ and stats tests are unchanged.
    play, swaps included, so swapping every turn kept the river from ever turning, which Phil hit in
    playtesting with the deck empty. Now the river turns once everyone has passed or swapped in a row.
    The swapper doesn't draw. Race mode is unchanged (Stuck decides there). `swapIsPass` in `APP_RULES`.
+7. **Ending, with swaps as passes** (follows from 6). Swaps never draw, so the meaning pile may never
+   run out and RULES §8's "once both piles are empty" could never arrive: up to 21 in 200 simulated
+   3-player games never finished. So a stall counts towards the end once the main deck is empty (the
+   meaning pile no longer matters), and as a backstop four stalls in a row with no line or lone verb
+   laid also end the game. Fewest cards wins either way.
 3. **New meaning cards pop up.** When another player puts a new meaning card down, it opens in full
    view (all three meanings) for about 2.5 s once their line lands; tap to dismiss. Several queue one
    after another. Not for your own cards, nor for lines ending on a card already down. In
@@ -77,6 +82,16 @@ without the refill was too swingy (91–95% go out, fewer lines).
 | 11 | Three opponents on a phone | — | — | The status strip has no room for three avatars and the turn label, so below 480px the label is hidden visually (still announced) and the dot plus the avatar's turn ring show whose turn it is. |
 
 ## Numbers the brief left to the build (playtest these)
+
+- **Bots swap instead of passing** (turn mode, with rule 6). With no line to lay, a Hard bot swaps its
+  least useful meaning card (fewest meanings a verb in hand or on the table could make) instead of
+  drawing and passing; Normal does so half the time; Easy still draws. Swaps for the face-up card
+  also give away the least useful card now. Playtesting showed a swap is a pass that adds no card,
+  and in simulation the new Hard bot beats the old one 60.5% of the time (400 two-player games).
+  Hard-bot games get shorter and usually end with someone going out (2p 40→36 turns, out 86%→99%;
+  3p 58→53, 58%→86%; 4p 57→51, 67%→94%). `SWAP_FOR_PASS` in `src/engine/bot.ts`. Tested and not
+  adopted: a pass that draws nothing (the new bots never pass, so it changes nothing for them, and
+  with the old bots it left games unfinished).
 
 - **Bot difficulty.** Chance of spotting lines through a particle already down: easy 25%, normal 60%, hard 100%. Race reaction delay: easy 5.2–9 s, normal 3.2–6 s, hard 1.8–3.6 s, divided by the bot-speed setting (slow ×0.6, fast ×1.6). In `src/engine/bot.ts`.
 - **Bot swaps.** Bots swap a meaning card for the face-up one when the face-up card would make a line now. The reference bot never swapped.

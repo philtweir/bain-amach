@@ -478,19 +478,26 @@ function endFewest(s: GameState) {
 }
 
 /** Bury: every pile with more than one card turns its top under. Then count final stalls:
- *  a stall counts once the piles were already empty before its last draw (as the reference does). */
+ *  a stall counts once the piles were already empty before its last draw (as the reference does).
+ *  With swapIsPass only the main deck counts: swaps cycle the meaning pile, so it may never empty. */
 function stall(s: GameState, drew: (number | null)[], emptyBefore: boolean) {
   for (const pl of s.piles) if (pl.length > 1) pl.unshift(pl.pop()!);
   let final: number | null = null;
-  if (emptyBefore) {
+  if (emptyBefore || (s.config.rules?.swapIsPass && !s.main.length)) {
     s.stalls++;
     final = s.stalls;
   }
   s.passes = 0;
   s.stuck = s.stuck.map(() => false);
   s.log.push({ e: 'stall', drew, final, turnNo: s.turnNo });
+  s.quiet = (s.quiet ?? 0) + 1;
   if (final !== null && s.stalls >= FINAL_STALLS) endFewest(s);
+  // Backstop: with swaps counting as passes nobody need ever draw, so the deck may never run out.
+  else if (s.config.rules?.swapIsPass && s.quiet >= QUIET_STALLS) endFewest(s);
 }
+
+/** With swapIsPass: this many stalls in a row with no line or lone verb laid end the game. */
+export const QUIET_STALLS = 4;
 
 /** RULES §8: once both piles are empty, two stalls in a row with no line between them end the game. */
 export const FINAL_STALLS = 2;
@@ -512,6 +519,7 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     }
     ev = { e: 'lone', p, word: v.t, x: mv.x, y: mv.y, drew, turnNo: s.turnNo };
     s.stalls = s.config.legacyStall ? s.stalls : 0;
+    s.quiet = 0;
   } else if (mv.type === 'swap') {
     const m = removeFromHand(hand, mv.m);
     const took = s.faceUp!;
@@ -562,6 +570,7 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
       ev.drew = drew;
     }
     if (!s.config.legacyStall) s.stalls = 0;
+    s.quiet = 0;
   }
   const swapPass = mv.type === 'swap' && !!s.config.rules?.swapIsPass && s.config.mode === 'turns';
   s.passes = swapPass ? s.passes + 1 : 0;
@@ -593,7 +602,7 @@ export function pass(s0: GameState, p: number): Result {
   const s = clone(s0);
   recordMissed(s, p);
   const emptyBefore = !canDraw(s);
-  const c = drawOne(s, p, true);
+  const c = s.config.rules?.noPassDraw ? null : drawOne(s, p, true);
   s.passes++;
   s.log.push({ e: 'pass', p, drew: c ? c.id : null, turnNo: s.turnNo });
   if (s.passes >= s.hands.length) stall(s, [], emptyBefore);

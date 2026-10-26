@@ -232,7 +232,7 @@
   "rules.pass": "Draw and pass, or Stuck",
   "rules.passBody": "In turns, you can always draw a card and pass instead; when everyone has passed or swapped in a row, each river pile turns its top card under. In a race, tap Stuck when you can't play; when nobody can play, everyone draws 1 and each river pile turns its top card under.",
   "rules.end": "Winning",
-  "rules.endBody": "Empty your hand first to win. Once both piles are empty, two stalls in a row with no line laid end the game, and the fewest cards wins. Equal fewest share the win.",
+  "rules.endBody": "Empty your hand first to win. Once the deck is empty, two stalls in a row with no line laid end the game, and the fewest cards wins; so do four stalls in a row with nothing laid at all. Equal fewest share the win.",
   "rules.cards": "The cards",
   "rules.cardsBody": "Verbs are gorse, with notches on all four sides. Adverbs are deep heather with square notches; prepositions pale heather with round ones. Wildcards have a dashed edge. Meaning cards show three English meanings and their Irish.",
   "rules.modes": "Race and turns",

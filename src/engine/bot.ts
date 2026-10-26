@@ -7,6 +7,10 @@ import type { GameState, Level, Move } from './types';
 /** How often a bot spots a line through a particle already down. */
 export const STRADDLE_SIGHT: Record<Level, number> = { easy: 0.25, normal: 0.6, hard: 1 };
 
+/** In turn mode, how often a bot with no play swaps its least useful meaning card instead of
+ *  drawing and passing. A swap costs the turn but, unlike a pass, adds no card. */
+export const SWAP_FOR_PASS: Record<Level, number> = { easy: 0, normal: 0.5, hard: 1 };
+
 /** Race reaction delay before a bot commits, in ms, by difficulty (before the bot-speed setting). */
 export const REACTION_MS: Record<Level, [number, number]> = {
   easy: [5200, 9000],
@@ -40,8 +44,10 @@ export function botMove(s: GameState, p: number): BotChoice {
     // Swap a dead meaning card for the face-up one when the face-up one makes a line now.
     const faceLines = lineMoves(s, p, { meanings: [s.faceUp], handSpots: 1 });
     if (faceLines.length) {
-      const dead = hand.find((c) => c.k === 'M');
-      if (dead) return { move: { type: 'swap', m: dead.id }, rng: rngState };
+      // Under the app's rules give away the least useful card; RULES.md play keeps the reference
+      // engine's choice (the first one), so the stats test still compares like with like.
+      const dead = s.config.rules?.swapIsPass ? leastUseful(s, p) : (hand.find((c) => c.k === 'M')?.id ?? null);
+      if (dead !== null) return { move: { type: 'swap', m: dead }, rng: rngState };
     }
   }
 
@@ -51,7 +57,36 @@ export function botMove(s: GameState, p: number): BotChoice {
     return COMPOUNDS.some((c) => c.v === v.t && goals.has(c.g));
   });
   if (lone.length && s.main.length) return { move: lone[0], rng: rngState };
+
+  // Swap rather than draw, giving away the meaning card that's least use with the verbs in reach.
+  // Only where a swap counts towards turning the river (swapIsPass); otherwise swapping every turn
+  // can keep the river from ever turning. Turn mode only: in a race, no play means Stuck.
+  const share = SWAP_FOR_PASS[level];
+  if (share > 0 && s.config.mode === 'turns' && s.config.rules?.swapIsPass && s.faceUp) {
+    const worst = leastUseful(s, p);
+    if (worst) {
+      let go = share >= 1;
+      if (!go) {
+        const [r, st] = next(rngState);
+        rngState = st;
+        go = r < share;
+      }
+      if (go) return { move: { type: 'swap', m: worst }, rng: rngState };
+    }
+  }
   return { move: null, rng: rngState };
+}
+
+/** The hand meaning card with the fewest meanings a verb in hand or on the table could make. */
+function leastUseful(s: GameState, p: number): number | null {
+  const verbs = new Set([...s.hands[p], ...s.board].filter((c) => c.k === 'V').map((c) => c.t));
+  let best: { id: number; live: number } | null = null;
+  for (const m of s.hands[p]) {
+    if (m.k !== 'M') continue;
+    const live = meaningsOf(m).filter((g) => COMPOUNDS.some((c) => c.g === g && verbs.has(c.v))).length;
+    if (!best || live < best.live) best = { id: m.id, live };
+  }
+  return best?.id ?? null;
 }
 
 /** A random reaction delay for a race bot, and the next RNG state. */

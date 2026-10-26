@@ -393,6 +393,29 @@ describe('swap counts as a pass for the river', () => {
   });
 });
 
+describe('bots swap instead of passing', () => {
+  // m01 (LISTEN TO / PUT ON / SUCCEED) is live: éist in hand, cuir on the table. m02 (STAND BY /
+  // LOOK AT / REACH) has no verb in reach. The river has neither le nor ar, and the deck is empty.
+  const position = (rules: GameConfig['rules']) => {
+    const live = M('m01'), dead = M('m02');
+    const s = fixture({ piles: [['síos'], ['ó'], ['de'], ['faoi'], ['isteach']], hands: [[live, dead, V('éist')], [V('tóg')]], main: [], faceUp: M('m03'), mpile: [M('m04')], config: { rules } });
+    return { s, live, dead };
+  };
+  it('a hard bot with no line swaps away its least useful meaning card', () => {
+    const { s, dead } = position({ swapRefresh: true, swapIsPass: true });
+    expect(lineMoves(s, 0).length).toBe(0);
+    const after = botTurn(s, 0);
+    const ev = after.log[after.log.length - 1];
+    expect(ev.e).toBe('swap');
+    expect(ev.e === 'swap' && ev.gave).toBe(dead.id);
+  });
+  it('without the swap-as-pass rule it draws and passes, as before', () => {
+    const { s } = position({ swapRefresh: true });
+    const after = botTurn(s, 0);
+    expect(after.log[after.log.length - 1].e).toBe('pass');
+  });
+});
+
 describe('wildcards in the line builder', () => {
   it('the wildcard the player tapped is the one used, whichever of several it is', () => {
     const m = M(findMeaningCard('LISTEN TO'));

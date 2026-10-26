@@ -114,6 +114,8 @@ export interface RuleVariant {
   /** Turn mode: a swap counts towards the river turning like a pass (without the draw), instead of
    *  resetting the pass count. Otherwise swapping every turn would keep the river from ever turning. */
   swapIsPass?: boolean;
+  /** Experimental, not in APP_RULES: draw and pass draws nothing (a plain pass). */
+  noPassDraw?: boolean;
 }
 
 /** The rules the app plays (Phil, 2026-10-26). The engine default stays RULES.md as written. */
@@ -175,6 +177,8 @@ export interface GameState {
   passes: number;
   /** Consecutive stalls with both piles empty and no line laid. */
   stalls: number;
+  /** Stalls since the last line or lone verb (swapIsPass's backstop against a game nobody can move). */
+  quiet?: number;
   stuck: boolean[];
   over: Over | null;
   log: GameEvent[];
