@@ -563,10 +563,12 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     }
     if (!s.config.legacyStall) s.stalls = 0;
   }
-  s.passes = 0;
+  const swapPass = mv.type === 'swap' && !!s.config.rules?.swapIsPass && s.config.mode === 'turns';
+  s.passes = swapPass ? s.passes + 1 : 0;
   s.stuck[p] = false;
   s.log.push(ev);
   checkOut(s, p);
+  if (swapPass && s.passes >= s.hands.length) stall(s, [], !canDraw(s));
   advance(s);
   return { ok: true, state: s };
 }

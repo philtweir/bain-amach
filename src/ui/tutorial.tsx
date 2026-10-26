@@ -1,4 +1,5 @@
-// The scripted first game: six steps against one bot, with a spotlight on the part being taught.
+// The scripted first game: nine steps against one bot, with a spotlight on the part being taught.
+// Steps 1–6 are played; 7–9 point at swapping, wildcards and the other ways to make a line.
 // The spotlit zone stays tappable; everything else is blocked until the step is done or skipped.
 import { useEffect, useLayoutEffect, useState } from 'preact/hooks';
 import { meaningsOf } from '../engine/game';
@@ -27,7 +28,8 @@ export function tutorialConfig(): GameConfig {
   };
 }
 
-const TOTAL = 6;
+const TOTAL = 9;
+const DONE = TOTAL + 1;
 
 export function Tutorial({ c }: { c: Controller }) {
   const [step, setStep] = useState(1);
@@ -38,7 +40,7 @@ export function Tutorial({ c }: { c: Controller }) {
   const cuir = s0.board.find((b) => b.k === 'V' && b.t === 'cuir');
 
   useEffect(() => {
-    if (step > TOTAL + 1) {
+    if (step > DONE) {
       c.tutorialHook = null;
       return;
     }
@@ -78,6 +80,16 @@ export function Tutorial({ c }: { c: Controller }) {
     if (step === 4) return document.querySelector('.table-board');
     if (step === 5) return document.querySelector('.status');
     if (step === 6) return document.querySelector('.tray-head .th-actions');
+    if (step === 7) return document.querySelector('.faceup');
+    if (step === 8) {
+      const w = c.gs.value.hands[0].find((x) => x.k === 'W');
+      return (w && document.querySelector(`.tray [data-card="${w.id}"]`)) || document.querySelector('.tray');
+    }
+    if (step === 9) {
+      // The meaning card the player laid in step 3: the thing a later line can end on.
+      const m = c.gs.value.board.find((b) => b.k === 'M' && b.owner === 0) ?? c.gs.value.board.find((b) => b.k === 'M');
+      return (m && document.querySelector(`[data-cell="${m.x},${m.y}"] .ba-card`)) || document.querySelector('.table-board');
+    }
     return null;
   };
   useEffect(() => {
@@ -109,15 +121,15 @@ export function Tutorial({ c }: { c: Controller }) {
       setStep(5);
       c.resume();
     } else if (step === 5) return;
-    else if (step === 7) {
-      setStep(8);
+    else if (step === DONE) {
+      setStep(DONE + 1);
       updateSettings({ tutorialDone: true });
       c.resume();
     } else setStep(step + 1);
   };
 
-  if (step > TOTAL + 1) return null;
-  const done = step === 7;
+  if (step > DONE) return null;
+  const done = step === DONE;
   // The tutorial's opponent is player 1: its name now comes from its character (Broc, …).
   const names = { name: c.name(1) };
   const key = (k: string) => (done ? `tut.end.${k}` : `tut.${step}.${k}`) as Key;
@@ -126,7 +138,8 @@ export function Tutorial({ c }: { c: Controller }) {
   const pad = 8;
   const hole = rect && !done ? { x: rect.left - pad, y: rect.top - pad, w: rect.width + pad * 2, h: rect.height + pad * 2 } : null;
   const below = !hole || hole.y + hole.h / 2 < H / 2;
-  const cardStyle = hole ? (below ? { top: Math.min(H - 260, hole.y + hole.h + 14) } : { bottom: Math.max(16, H - hole.y + 14) }) : { top: H / 2 - 120 };
+  // A spotlight too big to fit the card beside it (the whole board) gets the card centred over it.
+  const cardStyle = hole && hole.h < H * 0.45 ? (below ? { top: Math.min(H - 260, hole.y + hole.h + 14) } : { bottom: Math.max(16, H - hole.y + 14) }) : { top: H / 2 - 120 };
   // Steps where the player acts: the hole is open; info steps block the whole table.
   const acting = step === 1 || step === 2 || step === 3 || step === 6;
   return (

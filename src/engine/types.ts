@@ -111,10 +111,13 @@ export interface RuleVariant {
   /** Swap: your meaning card goes to the bottom of the meaning pile and the next one turns face up,
    *  so swapping again shows a new card instead of handing yours straight back. */
   swapRefresh?: boolean;
+  /** Turn mode: a swap counts towards the river turning like a pass (without the draw), instead of
+   *  resetting the pass count. Otherwise swapping every turn would keep the river from ever turning. */
+  swapIsPass?: boolean;
 }
 
 /** The rules the app plays (Phil, 2026-10-26). The engine default stays RULES.md as written. */
-export const APP_RULES: RuleVariant = { refillMeaning: true, tableMeanings: true, freshLineDraw: 2, swapRefresh: true };
+export const APP_RULES: RuleVariant = { refillMeaning: true, tableMeanings: true, freshLineDraw: 2, swapRefresh: true, swapIsPass: true };
 
 export interface Line {
   p: number;

@@ -31,6 +31,10 @@ and stats tests are unchanged.
 5. **Swap refresh.** Swapping puts your meaning card at the bottom of the meaning pile and turns the next
    card face up (RULES §4.4 put your card face up, so a second swap just handed it back). With answers
    shown, the face-up card lights when it would make a line for you now. Balance-neutral in simulation.
+6. **A swap counts like a pass for the river** (turn mode). RULES §5.1 resets the pass count after any
+   play, swaps included, so swapping every turn kept the river from ever turning, which Phil hit in
+   playtesting with the deck empty. Now the river turns once everyone has passed or swapped in a row.
+   The swapper doesn't draw. Race mode is unchanged (Stuck decides there). `swapIsPass` in `APP_RULES`.
 3. **New meaning cards pop up.** When another player puts a new meaning card down, it opens in full
    view (all three meanings) for about 2.5 s once their line lands; tap to dismiss. Several queue one
    after another. Not for your own cards, nor for lines ending on a card already down. In

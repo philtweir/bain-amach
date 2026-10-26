@@ -371,6 +371,28 @@ describe('swap refresh', () => {
   });
 });
 
+describe('swap counts as a pass for the river', () => {
+  const setup = (swapIsPass: boolean) => {
+    const mine = M('m01'), face = M('m02');
+    return { mine, s: fixture({ hands: [[mine, V('fan')], [V('tóg'), M('m05')]], faceUp: face, mpile: [M('m03'), M('m04')], config: { rules: { swapRefresh: true, swapIsPass } } }) };
+  };
+  it('a swap then a pass turns the river when swapIsPass is on', () => {
+    const { mine, s } = setup(true);
+    const r1 = apply(s, 0, { type: 'swap', m: mine.id });
+    expect(r1.ok).toBe(true);
+    if (!r1.ok) return;
+    const r2 = pass(r1.state, 1);
+    expect(r2.ok && r2.state.log.some((e) => e.e === 'stall')).toBe(true);
+  });
+  it('without it, a swap resets the pass count as RULES.md says', () => {
+    const { mine, s } = setup(false);
+    const r1 = apply(s, 0, { type: 'swap', m: mine.id });
+    if (!r1.ok) throw new Error('swap refused');
+    const r2 = pass(r1.state, 1);
+    expect(r2.ok && r2.state.log.some((e) => e.e === 'stall')).toBe(false);
+  });
+});
+
 describe('wildcards in the line builder', () => {
   it('the wildcard the player tapped is the one used, whichever of several it is', () => {
     const m = M(findMeaningCard('LISTEN TO'));

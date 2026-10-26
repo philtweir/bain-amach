@@ -18,6 +18,11 @@ export async function tap(page: Page, selector: string) {
 export async function waitForMyTurn(page: Page) {
   for (let i = 0; i < 400; i++) {
     if (await page.locator('.end-card').count()) return false;
+    // The state is over a beat before the end card shows (while "Your turn" may still read): wait for it.
+    if (await page.evaluate(() => !!(window as any).__game?.gs.value.over)) {
+      await page.locator('.end-card').waitFor();
+      return false;
+    }
     const st = (await page.locator('.st-turn').textContent().catch(() => '')) ?? '';
     if (st.includes('Your turn') && !(await page.locator('.made-wrap').count())) return true;
     await page.waitForTimeout(100);

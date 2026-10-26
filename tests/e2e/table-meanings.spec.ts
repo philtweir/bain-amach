@@ -62,5 +62,5 @@ test('a game saved before the rule change picks the new rules up on Continue', a
   });
   await page.reload();
   await page.getByRole('button', { name: 'Continue' }).click();
-  expect(await page.evaluate(() => (window as any).__game.gs.value.config.rules)).toEqual({ refillMeaning: true, tableMeanings: true, freshLineDraw: 2, swapRefresh: true });
+  expect(await page.evaluate(() => (window as any).__game.gs.value.config.rules)).toEqual({ refillMeaning: true, tableMeanings: true, freshLineDraw: 2, swapRefresh: true, swapIsPass: true });
 });
