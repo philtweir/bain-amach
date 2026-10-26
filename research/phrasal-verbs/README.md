@@ -49,6 +49,19 @@ it's idiomatic.
    - The [Doegen Records](https://www.doegen.ie) (1928–31) include 1931 Ulster speakers with
      transcriptions. These are the speech of people born in the mid-1800s. No licence was found,
      so treat them as reference only.
+   - Public domain, so these could be ingested, not just looked up. Little of it is Ulster:
+     - [Wikisource, Category:Gaeilge](https://wikisource.org/wiki/Category:Gaeilge): a couple of
+       hundred pages. Most are Munster (*Séadna*, *Niamh*). *Irisleabhar na Gaedhilge*
+       (1882–1909, about 140 pages) has contributors from every province.
+     - Project Gutenberg: a handful of Irish-language titles, none of them Ulster
+       ([PGDP's list](https://www.pgdp.net/wiki/Irish_Language_Projects)). Ua Laoghaire's
+       *Niamh* and Ó Dubhghaill's *Prátaí Mhíchíl Thaidhg* are Munster; Hyde's *Beside the Fire*
+       is Connacht.
+     - E. C. Quiggin, *A Dialect of Donegal* (1906; Quiggin died in 1920). Glenties speech, with
+       texts in phonetic transcription. Good evidence, but useless for word matching.
+     - All of these are pre-standard spelling, often Cló Gaelach with dots for lenition. Watch
+       for *air* = *ar* and *do-* past forms, which the extractor would misread unless the text
+       is standardised first.
 3. **(c) Permissively licensed corpora** (what `extract.py` reads). These are the sources
    [flaxandteal/greasan-data](https://github.com/flaxandteal/greasan-data) signposts:
    - English Wiktionary via Kaikki: phrasal-verb headwords and glosses (CC BY-SA 4.0).
