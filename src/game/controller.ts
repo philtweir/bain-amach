@@ -1068,46 +1068,71 @@ export class Controller {
     return m;
   }
 
-  /** In a race the state can change under a half-built line: clear it if a card it needs went. */
+  /**
+   * In a race the state can change under a half-built line. Only what actually went is dropped: a
+   * river card you tapped that someone took (with a Taken toast naming them, unless the river turned
+   * in a stall, which has its own toast), or a card no longer in your hand. If nothing left can make
+   * a line, it falls back to just your meaning card (or verb) with nothing lit, as if you'd just
+   * tapped it. Lit options that merely disappear don't toast: nothing of yours was taken.
+   */
   private validateSelection() {
     const sel = this.sel.value;
     const s = this.gs.value;
     const p = this.viewer.value;
     const hand = s.hands[p];
+    const stalled = s.log[s.log.length - 1]?.e === 'stall';
     const takenPile = (pile: number) => {
       this.taken.value = { river: pile, at: Date.now() };
+      if (stalled) return;
       const last = [...s.log].reverse().find((e) => e.e === 'line') as Extract<GameEvent, { e: 'line' }> | undefined;
       const by = last && last.river.includes(pile) ? last.p : null;
       const word = last ? COMPOUND_BY_ID[last.c].ps.find((_, i) => last.river[i] === pile) : undefined;
       this.toast({ kind: 'quiet', icon: 'taken', msg: t('table.taken'), sub: by !== null && word ? t('table.takenBy', { name: this.name(by), word }) : t('table.takenAnon') });
       haptic('light');
-      this.clearSelection();
     };
     if (this.hidden) {
       const tops = s.piles.map((pl) => pl.length);
       for (const pk of this.picks.value)
         if ('river' in pk) {
           const top = --tops[pk.river];
-          if (top < 0 || s.piles[pk.river][top].id !== pk.cid) return takenPile(pk.river);
+          if (top < 0 || s.piles[pk.river][top].id !== pk.cid) {
+            takenPile(pk.river);
+            return this.clearSelection();
+          }
         }
       if (sel.meaning !== undefined && !hand.some((c) => c.id === sel.meaning)) this.clearSelection();
       return;
     }
-    for (const r of sel.river) {
+    if (selEmpty(sel)) return;
+    const inHand = (id: number) => hand.some((c) => c.id === id);
+    const gone = sel.river.filter((r) => {
       const pl = s.piles[r];
-      if (!pl.length || pl[pl.length - 1].id !== this.riverIds.get(r)) return takenPile(r);
-    }
-    const empty = selEmpty(sel);
-    if (empty) return;
-    if (sel.meaning !== undefined && !hand.some((c) => c.id === sel.meaning)) return this.clearSelection();
-    if (!ways(s, p, sel).length) {
-      if (this.race) {
-        const r = sel.river[0];
-        if (r !== undefined) this.taken.value = { river: r, at: Date.now() };
-        this.toast({ kind: 'quiet', icon: 'taken', msg: t('table.taken'), sub: t('table.takenAnon') });
+      return !pl.length || pl[pl.length - 1].id !== this.riverIds.get(r);
+    });
+    if (gone.length) takenPile(gone[0]);
+    const onto = sel.onto && view(s).at(sel.onto.x, sel.onto.y)?.k === 'M' ? sel.onto : undefined;
+    const kept: Selection = {
+      ...sel,
+      meaning: sel.meaning !== undefined && inHand(sel.meaning) ? sel.meaning : undefined,
+      verb: sel.verb && 'hand' in sel.verb && !inHand(sel.verb.hand) ? undefined : sel.verb,
+      river: sel.river.filter((r) => !gone.includes(r)),
+      wild: sel.wild.filter(inHand),
+      onto,
+    };
+    const changed = JSON.stringify(kept) !== JSON.stringify(sel);
+    if (ways(s, p, kept).length) {
+      if (changed) {
+        this.sel.value = kept;
+        this.spot.value = null;
       }
-      this.clearSelection();
+      return;
     }
+    // Nothing left makes a line: keep the one card you chose, as if you had just tapped it.
+    this.spot.value = null;
+    this.hintVerb.value = null;
+    if (kept.meaning !== undefined) this.sel.value = { ...emptySelection(), meaning: kept.meaning };
+    else if (kept.verb) this.sel.value = { ...emptySelection(), verb: kept.verb };
+    else this.clearSelection();
   }
 
   // ---------- hints ----------
