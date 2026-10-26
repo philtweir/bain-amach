@@ -10,7 +10,7 @@ import { t } from '../i18n';
 import { Avatar, Disc, MeaningCard, cardLabel, glossClass, initialOf, stateClass, typeClass, wordClass } from './cards';
 import { Board } from './board';
 import { IconClock, IconHint, IconNotQuite, IconPause, IconRefused, IconRiverTurns, IconTaken } from './icons';
-import { pushBackHandler } from './nav';
+import { nav, pushBackHandler } from './nav';
 import { press } from './press';
 
 // ---------- status strip ----------
@@ -628,6 +628,17 @@ export interface TableProps {
 
 export function TableView(p: TableProps) {
   const c = p.c;
+  // Hardware back on the table opens the pause menu, as in a native game; back again resumes.
+  useEffect(
+    () =>
+      pushBackHandler(() => {
+        if (nav.top?.id !== 'table' || c.phase.value === 'over' || c.phase.value === 'board') return false;
+        if (c.made.value) c.dismissMade();
+        c.pause(true);
+        return true;
+      }),
+    [c],
+  );
   const phase = c.phase.value;
   const s = c.gs.value;
   const announce = c.announce.value;
