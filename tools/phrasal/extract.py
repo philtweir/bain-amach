@@ -189,6 +189,22 @@ def verb_lexicon(entries, verbs: set[str], ud_dir: str):
 
 # ---------------- UD treebanks ----------------
 
+# Common in the treebanks but never phrasal: "dar le" (according to), "arsa" (says), "féad" (can).
+NOT_PHRASAL = {"dar", "arsa", "féad"}
+
+
+def frequent_verbs(ud_dir: str, n: int) -> list[str]:
+    """The n commonest verb lemmas in the modern treebanks. Picking candidate verbs only from the deck
+    and from Wiktionary's phrasal headwords missed common verbs with no such headword (glac, téigh)."""
+    c: Counter = Counter()
+    for path in sorted(glob.glob(f"{ud_dir}/UD_Irish-*/*.conllu")):
+        if os.path.basename(os.path.dirname(path)) in PRESTANDARD:
+            continue
+        for _, sent in read_conllu(path):
+            c.update(t["lemma"] for t in sent if t["upos"] == "VERB" and " " not in t["lemma"] and t["lemma"] not in NOT_PHRASAL)
+    return [v for v, _ in c.most_common(n)]
+
+
 def is_vnoun(t: dict) -> bool:
     # IDT marks verbal nouns VerbForm=Inf; other treebanks have used Vnoun.
     return "VerbForm=Inf" in t["feats"] or "VerbForm=Vnoun" in t["feats"]
@@ -284,6 +300,8 @@ def tatoeba_examples(bundle: str, forms: dict[str, set[str]]):
         if not ga or GAELIC_GRAVE.search(ga):
             continue
         words = [w.lower() for w in tok.findall(ga)]
+        if GAIDHLIG_SENTENCE & set(words):  # "Chan eil mi a' dol leat": Gàidhlig without a grave accent
+            continue
         for verb, fs in forms.items():
             for i, w in enumerate(words):
                 if w not in fs:
@@ -313,6 +331,8 @@ ULSTER_RATE = 3.0  # markers per 1,000 words for a text to count as Ulster-leani
 ULSTER_MIN_WORDS = 150  # …given enough words for the rate to mean something
 # Common in Scottish Gaelic, rare in Irish of any spelling: tells Gàidhlig without grave accents apart.
 GAIDHLIG_WORDS = {"tha", "gu", "ri", "thu", "bha", "agus'", "orra", "dhomh", "leam", "leat", "mo'n"}
+# Of those, the ones that mark a single sentence as Gàidhlig (leam, leat, orra are Irish too).
+GAIDHLIG_SENTENCE = {"tha", "eil", "bha", "gu"}
 # Function words the spelling pairs would misread (is → as, a → ag…): always taken as written.
 AS_WRITTEN = {"is", "a", "an", "na", "go", "sé", "sí", "mé", "tú", "ar", "do", "le", "de", "as", "ó", "agus"}
 
@@ -404,6 +424,8 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--texts", action="append", default=[], help="JSONL of public-domain texts (fetch_wikisource.py); repeatable")
     ap.add_argument("--pairs", help="caighdean's pairs.txt, to read pre-standard spelling")
+    ap.add_argument("--top-verbs", type=int, default=40, help="also look at the N commonest verbs in the treebanks")
+    ap.add_argument("--verbs", nargs="*", default=[], help="further verbs to look at (e.g. gabh, rarer in the treebanks)")
     a = ap.parse_args()
 
     deck = json.load(open(a.deck, encoding="utf-8"))
@@ -421,7 +443,7 @@ def main():
         if len(w) >= 2 and w[0] in all_verbs and is_particle_seq(w[1:]) and e["senses"]:
             heads.setdefault(e["name"], []).extend(e["senses"])
     variants = fold_variants(heads)
-    cand_verbs = deck_verbs | {h.split()[0] for h in heads}
+    cand_verbs = deck_verbs | {h.split()[0] for h in heads} | set(frequent_verbs(a.ud, a.top_verbs)) | set(a.verbs)
     vn, forms = verb_lexicon(wk, cand_verbs, a.ud)
     ud = ud_compounds(a.ud, vn)
     tt = tatoeba_examples(a.bundle, {v: forms[v] for v in cand_verbs if forms.get(v)})
@@ -430,6 +452,10 @@ def main():
     keys = set(heads) | set(in_deck)
     for k, refs in ud.items():
         if k[0] in cand_verbs and len(refs) >= 2:
+            keys.add(" ".join(k))
+    # Combinations the treebanks barely have but Tatoeba or the public-domain texts use often.
+    for k in set(tt) | set(pd):
+        if k[0] in cand_verbs and (len(tt[k]) if k in tt else 0) + len(pd.get(k, [])) / 4 >= 3:
             keys.add(" ".join(k))
     rows = []
     for key in keys:

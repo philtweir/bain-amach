@@ -29,6 +29,12 @@ they say where to look, so the deck itself can be written from first-hand checki
 | `lookup` | links: the Wiktionary entry, the Tatoeba sentences, the Wikisource pages, and the verb's page on teanglann.ie |
 | `ulster_attested`, `proposed_meaning`, `phil_verdict`, `notes` | for review |
 
+**Which verbs.** The deck's verbs, every verb with a Wiktionary phrasal headword, the 40 commonest
+verbs in the modern treebanks (minus *dar*, *arsa* and *féad*, which are never phrasal), and any
+given with `--verbs`. The rerun below adds *gabh*, which the treebanks rarely use. Before
+2026-10-26 only the first two groups were read. That missed common verbs that have no such
+headword, including *glac*, *téigh* and *faigh*.
+
 **Order.** Within each status, rows are sorted by modern evidence (treebank + Tatoeba hits), plus
 a quarter of the public-domain hits (older spelling, looser matching), plus a boost for having a
 Wiktionary sense.
@@ -146,6 +152,27 @@ The frequent combinations with no Wiktionary entry (*tabhair do*, *cuir le*, *d�
 *cuir faoi*) are probably mostly literal. They are worth a glance for idioms such as *cuir le*
 (add to, support) and *cuir faoi* (settle, stay).
 
+**Verbs the deck lacks: checked by reading the examples.** A common verb doesn't mean common
+compounds, so these are verdicts from reading each compound's attested sentences, not from its
+counts:
+
+| verb | compound | what the examples show | take |
+|---|---|---|---|
+| glac (15th commonest verb, above *tóg*) | *glac le* | about 33 of 44 treebank hits and all 3 Tatoeba hits are idiomatic: ACCEPT (*ghlac Tom leis an chuireadh*, an offer, a decision) and ASSUME (*glactar leis go…*, *glacann gach duine leis gur…*) | **strong**: two senses |
+| | *glac ar*, *faoi*, *de*, *do*, *ó* | noun phrases (*seilbh a ghlacadh ar*, *buíochas a ghlacadh le*), *glac X ort féin* (take on yourself), or literal "take from" | no |
+| gabh (not in the treebanks' top 50) | *gabh le* | modern: formal "accompanying" (*na foirmeacha a ghabhann leis*); older: side with (*gabháil le muintir an Choibhinint*) | weak: formal register |
+| | *gabh ort féin* | undertake (*gabhfaidh an tÚdarás air féin…*), formal and Biblical | weak |
+| | *gabh de / do X ar Y* | beat Y with X (*gabháil de shlataibh orthu*); every hit is literary or quotes a dictionary | literary only |
+| | *gabh amach*, *isteach*, *síos*, *suas* | literal go out / in / down / up, mostly from the Blasket books | literal |
+| faigh | *faigh amach* | FIND OUT, nearly every treebank hit (*chun a fháil amach cad é…*) | **strong** |
+| | *faigh ar*, *faigh ó* | noun phrases (*locht a fháil ar*, *taithí a fháil ar*) or literal "get from" | no |
+| téigh | *téigh le* | TAKE UP (*chuaigh tú le sagartóireacht*, *chuadar leis an bpolaitíocht*); also "go with, suit" | worth a card |
+| | *téigh amach le* | GO OUT WITH, as in date (*chuaigh mé amach le gealt*). Only one Tatoeba sentence, below the sheet's cut-off, so it has no row; check it in a dictionary | worth a card |
+| | *téigh ar*, *isteach*, *amach*, *faoi* | literal motion, or noun idioms (*dul ar aghaidh*, *dul ar imirce*, *dul faoi uisce*) | literal |
+
+So *glac* earns a card with two senses, *gabh* doesn't, and the bigger gap was *faigh amach* and
+*téigh (amach) le*. *gabh ort féin* is under the *gabh ar* row.
+
 **No phrasal headword is tagged Ulster in Wiktionary**, and Wikisource's Ulster material is three
 short poems. Ulster evidence still has to come from Corpas Stairiúil (b) or a dictionary (d).
 
@@ -163,7 +190,7 @@ git clone --depth 1 https://github.com/UniversalDependencies/UD_Irish-Cadhan    
 python3 tools/phrasal/fetch_wikisource.py --out ws/
 git clone --depth 1 https://github.com/kscanne/caighdean
 python3 tools/phrasal/extract.py --bundle greasan/ --ud ud/ --deck data/deck.json --out research/phrasal-verbs \
-  --texts ws/wikisource-ga.jsonl --pairs caighdean/pairs.txt
+  --texts ws/wikisource-ga.jsonl --pairs caighdean/pairs.txt --verbs gabh
 ```
 
 Rerunning overwrites the sheet. Copy any review columns you've filled in somewhere else first, or
