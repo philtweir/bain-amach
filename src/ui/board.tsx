@@ -145,7 +145,9 @@ export function Board({ c }: { c: Controller }) {
         const cells = last ? last.cells : s.board.map((b) => [b.x, b.y] as [number, number]);
         let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
         for (const [x, y] of cells) (x0 = Math.min(x0, x)), (y0 = Math.min(y0, y)), (x1 = Math.max(x1, x)), (y1 = Math.max(y1, y));
-        cam.current = { x: ((x0 + x1) / 2) * PITCH + CARD / 2, y: ((y0 + y1) / 2) * PITCH + CARD / 2, z: 1 };
+        const pad = 20;
+        const fitZ = Math.min((size.current.w - pad * 2) / ((x1 - x0) * PITCH + CARD), (size.current.h - pad * 2) / ((y1 - y0) * PITCH + CARD));
+        cam.current = { x: ((x0 + x1) / 2) * PITCH + CARD / 2, y: ((y0 + y1) / 2) * PITCH + CARD / 2, z: Math.max(Z_MIN, Math.min(1, fitZ)) };
       }
       applyCam();
     };
@@ -502,7 +504,7 @@ export function Board({ c }: { c: Controller }) {
   }
 
   return (
-    <div class="board ba-board" ref={vp} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onContextMenu={(e) => e.preventDefault()} role="application" aria-label={t('a11y.board', { n: s.board.length })}>
+    <div class="board ba-board" ref={vp} onScroll={(e) => ((e.currentTarget.scrollTop = 0), (e.currentTarget.scrollLeft = 0))} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onContextMenu={(e) => e.preventDefault()} role="application" aria-label={t('a11y.board', { n: s.board.length })}>
       <div class="board-world" ref={world}>
         {cards}
         {ghosts}

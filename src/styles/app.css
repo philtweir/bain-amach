@@ -108,6 +108,7 @@ p {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  overflow: clip;
   background: var(--table);
   contain: layout paint;
 }
@@ -871,6 +872,7 @@ button.list-row:active {
   flex-direction: column;
   background: var(--table);
   overflow: hidden;
+  overflow: clip;
 }
 .table-top {
   flex: none;
@@ -993,6 +995,7 @@ button.list-row:active {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  overflow: clip;
   touch-action: none;
   outline: none;
 }
@@ -1039,6 +1042,21 @@ button.list-row:active {
   letter-spacing: 0.04em;
   text-align: center;
   padding: 3px;
+}
+/* long glosses on square meaning cards */
+.ba-meaning.ba-table .ba-en,
+.ba-meaning.ba-river .ba-en {
+  overflow-wrap: anywhere;
+  hyphens: manual;
+}
+.ba-meaning .ba-en.en-sm {
+  font-size: 10px !important;
+  letter-spacing: 0.01em !important;
+}
+.ba-meaning .ba-en.en-xs {
+  font-size: 9px !important;
+  line-height: 11px !important;
+  letter-spacing: 0 !important;
 }
 /* zoomed out below 32px a cell: words give way to the type glyph */
 .board.is-glyph .ba-word,
@@ -1408,10 +1426,12 @@ button.list-row:active {
   position: absolute;
   inset: 0;
   z-index: 40;
+  pointer-events: none;
 }
 .tut-block {
   position: absolute;
   background: rgba(8, 14, 13, 0.5);
+  pointer-events: auto;
 }
 .tut-hole {
   position: absolute;
@@ -1425,6 +1445,7 @@ button.list-row:active {
   box-shadow: none;
 }
 .tut-card {
+  pointer-events: auto;
   position: absolute;
   left: var(--gut-l);
   right: var(--gut-r);

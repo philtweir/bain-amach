@@ -546,6 +546,7 @@ export class Controller {
     this.stopClock();
     this.later(wait, () => {
       this.made.value = null;
+      this.botPlaying.value = null;
       haptic('strong');
       this.phase.value = 'over';
       const s = this.gs.value;

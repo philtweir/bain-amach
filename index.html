@@ -28,7 +28,8 @@
   html, body { margin: 0; height: 100%; background: #bfd3cc; overflow: hidden; }
   @media (prefers-color-scheme: dark) { html:not([data-theme="light"]), html:not([data-theme="light"]) body { background: #121a19; } }
   html[data-theme="dark"], html[data-theme="dark"] body { background: #121a19; }
-  #boot { position: fixed; inset: 0; display: grid; place-items: center; }
+  #boot { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; background: #bfd3cc; }
+  html[data-theme="dark"] #boot { background: #121a19; }
   #boot img { width: 120px; height: 120px; border-radius: 27px; box-shadow: 0 6px 18px rgba(10,20,18,0.18); }
 </style>
 <script>

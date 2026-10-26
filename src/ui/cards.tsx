@@ -21,6 +21,12 @@ export function wordClass(w: string) {
   return n >= 7 ? ' ba-xl' : n >= 5 ? ' ba-l' : '';
 }
 
+/** Long glosses step down so they fit a square card: one long word, or three or more lines. */
+export function glossClass(g: string) {
+  const longest = Math.max(...g.split(/\s+/).map((w) => w.length));
+  return longest >= 9 || g.length > 16 ? ' en-xs' : longest >= 7 ? ' en-sm' : '';
+}
+
 export function typeClass(c: CardT): string {
   if (c.k === 'V') return 'ba-verb';
   if (c.k === 'W') return 'ba-wild';
@@ -70,7 +76,7 @@ export function Face(p: FaceProps) {
   if (c.k === 'W') inner = placed.stands ? <span class="ba-stands">{placed.stands}</span> : <span class="ba-star" />;
   else if (c.k === 'M') {
     const g = placed.used ?? meaningsOf(c)[0] ?? '';
-    inner = <span class="ba-en">{g}</span>;
+    inner = <span class={'ba-en' + glossClass(g)}>{g}</span>;
   } else inner = <span class={'ba-word' + wordClass(c.t)}>{c.t}</span>;
   const Tag = p.onTap ? 'button' : 'div';
   return (

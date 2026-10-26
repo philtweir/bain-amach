@@ -81,6 +81,9 @@ export function Tutorial({ c }: { c: Controller }) {
   };
   useLayoutEffect(() => {
     let raf = 0;
+    // Bring the target into view first (a hand card may be scrolled off the lane).
+    const el = target();
+    if (el?.closest('.lane-scroll')) el.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' as ScrollBehavior });
     const measure = () => {
       const el = target();
       const r = el?.getBoundingClientRect() ?? null;

@@ -13,6 +13,8 @@ export function startGame(init: { config: GameConfig } | { state: import('../eng
   const c = new Controller(init);
   game.value = c;
   c.start();
+  // Handle for end-to-end tests and debugging.
+  if (import.meta.env.DEV || location.search.includes('e2e')) (window as unknown as { __game: Controller }).__game = c;
   return c;
 }
 

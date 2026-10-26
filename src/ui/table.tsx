@@ -7,7 +7,7 @@ import { canDraw, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
 import type { Controller } from '../game/controller';
 import { t } from '../i18n';
-import { Avatar, Disc, MeaningCard, cardLabel, initialOf, stateClass, typeClass, wordClass } from './cards';
+import { Avatar, Disc, MeaningCard, cardLabel, glossClass, initialOf, stateClass, typeClass, wordClass } from './cards';
 import { Board } from './board';
 import { IconClock, IconHint, IconNotQuite, IconPause, IconRefused, IconRiverTurns, IconTaken } from './icons';
 import { pushBackHandler } from './nav';
@@ -154,7 +154,7 @@ function FaceUp({ c }: { c: Controller }) {
         <div class="ba-stack">
           {f && (
             <div class="ba-card ba-meaning ba-river" data-card={f.id}>
-              <span class="ba-en">{meaningsOf(f)[0]}</span>
+              <span class={'ba-en' + glossClass(meaningsOf(f)[0])}>{meaningsOf(f)[0]}</span>
             </div>
           )}
         </div>
@@ -274,6 +274,7 @@ function Header({ c }: { c: Controller }) {
         </button>,
       );
     } else {
+      if (stuck && !any) sub = t('table.stuckOn');
       if (c.race) actions.push(stuckBtn);
       else if (!any) actions.push(passBtn);
       if (any || c.race)

@@ -29,15 +29,22 @@ document.addEventListener('touchstart', () => {}, { passive: true });
 initialStack();
 render(<App />, document.getElementById('app')!);
 
-// Remove the boot splash once the first frame of the app is on screen.
-requestAnimationFrame(() =>
-  requestAnimationFrame(() => {
-    const boot = document.getElementById('boot');
-    if (!boot) return;
-    boot.style.transition = 'opacity 180ms ease-out';
-    boot.style.opacity = '0';
-    setTimeout(() => boot.remove(), 200);
-  }),
+// Remove the boot splash once the fonts are in and the first frame of the app is on screen,
+// so text never visibly swaps typeface. Never wait more than a second.
+const fontsReady = Promise.race([
+  Promise.all([document.fonts.load('800 20px "Bricolage Grotesque"'), document.fonts.load('400 16px "Atkinson Hyperlegible"'), document.fonts.load('700 16px "Atkinson Hyperlegible"')]),
+  new Promise((r) => setTimeout(r, 1000)),
+]).catch(() => {});
+void fontsReady.then(() =>
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
+      const boot = document.getElementById('boot');
+      if (!boot) return;
+      boot.style.transition = 'opacity 180ms ease-out';
+      boot.style.opacity = '0';
+      setTimeout(() => boot.remove(), 200);
+    }),
+  ),
 );
 
 // Service worker: precache everything; a new version waits until the player restarts from
