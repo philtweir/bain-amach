@@ -131,7 +131,7 @@ export function Avatar(p: { player: number; initial: string; count?: number; tur
       role="img"
       aria-label={p.name ? t('a11y.player', { name: p.name, n: p.count ?? 0 }) + (p.stuck ? ', ' + t('table.stuckTag') : '') : undefined}
     >
-      <span class={'ba-disc' + (p.critter ? ' has-critter' : '')}>{p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={37} /> : p.initial}</span>
+      <span class={'ba-disc' + (p.critter ? ' has-critter' : '')}>{p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={44} /> : p.initial}</span>
       {p.name && p.big && <span class="av-name">{p.name}</span>}
       {p.count !== undefined && <span class="ba-cnt">{p.count}</span>}
       {p.stuck && <span class="av-flag">{t('table.stuckTag')}</span>}
@@ -144,7 +144,7 @@ export function Disc(p: { player: number; initial: string; size?: number; critte
   const size = p.size ?? 34;
   return (
     <span class={'ba-disc-solo ba-p' + (p.player + 1) + (p.critter ? ' has-critter' : '')} style={p.size ? { width: p.size, height: p.size, fontSize: p.size * 0.44 } : undefined} aria-hidden="true">
-      {p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={Math.round((size * 37) / 34)} /> : p.initial}
+      {p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={Math.round((size * 44) / 34)} /> : p.initial}
     </span>
   );
 }

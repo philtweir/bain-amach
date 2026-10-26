@@ -992,18 +992,11 @@ button.list-row:active {
   transition: box-shadow 200ms;
 }
 
-/* Bot faces: the die-cut paper edge round the whole silhouette, and the face standing on its
-   seat disc (a little bigger than the disc, so ears and beak overhang it). */
+/* Bot faces stand on their seat disc, a little bigger than it (44 on 34, as in the design), so
+   ears, plume and beak overhang it. */
 .critter {
   display: block;
-  overflow: visible;
-}
-.critter-edge * {
-  fill: #fbf8f1;
-  stroke: #fbf8f1;
-  stroke-width: 5px;
-  stroke-linejoin: round;
-  stroke-linecap: round;
+  -webkit-user-drag: none;
 }
 .has-critter {
   position: relative;
@@ -1012,7 +1005,7 @@ button.list-row:active {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -56%);
+  transform: translate(-50%, -55%);
   pointer-events: none;
 }
 .ba-toast > .critter {
