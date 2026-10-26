@@ -130,6 +130,29 @@ def load_wiktionary(bundle: str):
     return irish
 
 
+def fold_variants(heads: dict[str, list]) -> dict[str, list[str]]:
+    """Drop headwords that are only spelling or dialect forms of another (díon as: "Connacht form of
+    déan as"), returning them by the compound they belong to, e.g. {"déan as": ["díon as (Connacht form)"]}.
+    Inflected variants (díonamh as) go to the same compound as their verb's bare form."""
+    found: dict[str, tuple[str, str]] = {}
+    for name, senses in heads.items():
+        gl = [s["gloss"] for s in senses if s.get("gloss")]
+        m = [re.match(r"^((?:[\w-]+ )*?(?:form|spelling)) of (.+)$", g) for g in gl]
+        if gl and all(m):
+            found[name] = (m[0].group(1), m[0].group(2).strip())
+    verb_to = {n.split()[0]: t.split()[0] for n, (_, t) in found.items() if t in heads}
+    out: dict[str, list[str]] = defaultdict(list)
+    for name, (kind, target) in found.items():
+        if target not in heads:
+            v, tail = name.split()[0], " ".join(name.split()[1:])
+            base = max((k for k in verb_to if v.startswith(k)), key=len, default=None)
+            target = f"{verb_to[base]} {tail}" if base else target
+        if target in heads and target not in found:
+            out[target].append(f"{name} ({kind})")
+            del heads[name]
+    return out
+
+
 def is_particle_seq(words: list[str]) -> bool:
     return 1 <= len(words) <= 2 and all(w in ADVERBS or w in PREP_FORMS for w in words) and (len(words) == 1 or (words[0] in ADVERBS and words[1] in PREP_FORMS))
 
@@ -397,6 +420,7 @@ def main():
         w = e["name"].split()
         if len(w) >= 2 and w[0] in all_verbs and is_particle_seq(w[1:]) and e["senses"]:
             heads.setdefault(e["name"], []).extend(e["senses"])
+    variants = fold_variants(heads)
     cand_verbs = deck_verbs | {h.split()[0] for h in heads}
     vn, forms = verb_lexicon(wk, cand_verbs, a.ud)
     ud = ud_compounds(a.ud, vn)
@@ -416,6 +440,7 @@ def main():
         ud_old = [r for r in ud_refs if r[0] in PRESTANDARD]
         ud_new = [r for r in ud_refs if r[0] not in PRESTANDARD]
         senses = [s for s in heads.get(key, []) if s.get("gloss") and not s["gloss"].startswith("Used other than")]
+        also = variants.get(key, [])
         deck_now = in_deck.get(key, [])
         ulster = any("Ulster" in (s.get("dialect") or "") or "Ulster" in (s.get("gloss") or "") for s in heads.get(key, []))
         status = "in deck" if any(not d for _, d in deck_now) else ("draft in deck" if deck_now else ("new compound" if w[0] in deck_verbs else "new verb"))
@@ -435,7 +460,7 @@ def main():
             "particles": " ".join(w[1:]),
             "status": status,
             "deck_meanings": "; ".join(f"{m}{' (draft)' if d else ''}" for m, d in deck_now),
-            "wiktionary_senses": " | ".join(s["gloss"] for s in senses),
+            "wiktionary_senses": " | ".join([s["gloss"] for s in senses] + (["also " + ", ".join(also)] if also else [])),
             "wiktionary_ulster": "yes" if ulster else "",
             "ud_hits": len(ud_new),
             "ud_prestandard": len(ud_old),
@@ -450,7 +475,8 @@ def main():
             "notes": "",
         })
     order = {"in deck": 0, "draft in deck": 1, "new compound": 2, "new verb": 3}
-    rows.sort(key=lambda r: (order[r["status"]], -(r["ud_hits"] + r["tatoeba_hits"] + 3 * bool(r["wiktionary_senses"])), r["compound"]))
+    # Modern evidence counts in full; public-domain hits a quarter (older spelling, looser matching).
+    rows.sort(key=lambda r: (order[r["status"]], -(r["ud_hits"] + r["tatoeba_hits"] + r["pd_hits"] / 4 + 3 * bool(r["wiktionary_senses"])), r["compound"]))
 
     os.makedirs(a.out, exist_ok=True)
     cols = list(rows[0].keys())

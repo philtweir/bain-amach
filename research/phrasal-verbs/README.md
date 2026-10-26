@@ -18,7 +18,7 @@ they say where to look, so the deck itself can be written from first-hand checki
 | `compound`, `verb`, `particles` | e.g. `cuir isteach ar` |
 | `status` | `in deck` (any sense already a card), `new compound` (verb already in the deck), `new verb` |
 | `deck_meanings` | the senses the deck has now; drafts are marked `(draft)` |
-| `wiktionary_senses` | English Wiktionary glosses for the phrasal headword (blank = no entry) |
+| `wiktionary_senses` | English Wiktionary glosses for the phrasal headword (blank = no entry). Spelling and dialect forms are folded in as "also …" (*déan as* lists the Connacht *díon as* forms) instead of getting their own rows |
 | `wiktionary_ulster` | a sense is tagged Ulster, or its gloss mentions Ulster |
 | `ud_hits` | modern-spelling treebank sentences with this verb + particles attached (IDT, TwittIrish) |
 | `ud_prestandard` | the same in Cadhan Aonair (pre-1940s spelling, 1602–1936, incl. a bardic poem and a Gospel) |
@@ -28,6 +28,10 @@ they say where to look, so the deck itself can be written from first-hand checki
 | `examples` | up to 3 treebank, 2 Tatoeba, 1 Cadhan and 2 Wikisource sentences, each with its source and licence |
 | `lookup` | links: the Wiktionary entry, the Tatoeba sentences, the Wikisource pages, and the verb's page on teanglann.ie |
 | `ulster_attested`, `proposed_meaning`, `phil_verdict`, `notes` | for review |
+
+**Order.** Within each status, rows are sorted by modern evidence (treebank + Tatoeba hits), plus
+a quarter of the public-domain hits (older spelling, looser matching), plus a boost for having a
+Wiktionary sense.
 
 **Read the counts with care.** They count literal uses too. `cuir ar` = 171 is mostly
 "put on" plus *cuir fáilte*, *cuir ar fáil* and so on, not the BOTHER sense. `bí ar` and `bí le`
