@@ -319,7 +319,16 @@ function Header({ c }: { c: Controller }) {
     );
   } else if (hasMeaning(sel) && canAct) {
     title = t('table.pickVerb');
-    sub = c.hintVerb.value ? t('table.hintSub') : sel.onto ? t('table.pickVerbOnto') : s.config.rules?.freshLineDraw ? t('table.pickVerbFresh') : t('table.pickVerbSub');
+    const makes = [...new Set(c.ways.value.map((w) => w.c))].map((id) => compoundText(COMPOUND_BY_ID[id]) + ' (' + COMPOUND_BY_ID[id].g.toLowerCase() + ')');
+    sub = c.hintVerb.value
+      ? t('table.hintSub')
+      : makes.length && makes.length <= 3
+        ? t('table.litMakes', { list: makes.join(', ') })
+        : sel.onto
+          ? t('table.pickVerbOnto')
+          : s.config.rules?.freshLineDraw
+            ? t('table.pickVerbFresh')
+            : t('table.pickVerbSub');
     if (hintsOn && !c.hintVerb.value && sel.meaning !== undefined)
       actions.push(
         <button class="ba-btn ba-btn-secondary btn-hint" onClick={() => c.hint()} key="hint" aria-label={t('table.hint')}>
@@ -492,7 +501,7 @@ function MeaningPeek({ c }: { c: Controller }) {
   return (
     <div class={'peek' + (low ? ' is-low' : '')} role="status" onClick={() => (c.peek.value = null)}>
       <div class="peek-label">{usable ? t('table.peekUsable') : t('table.peek')}</div>
-      <MeaningCard card={card} hidden={c.hidden} used={card.used} />
+      <MeaningCard card={card} hidden={c.hidden} used={card.used} alts />
     </div>
   );
 }
@@ -514,7 +523,7 @@ function NewMeaning({ c }: { c: Controller }) {
         {by && <span class={'ba-dot dot-sm ba-p' + (by.color + 1)} aria-hidden="true" />}
         {t('table.newOnTable', { name: c.name(sh.by) })}
       </div>
-      <MeaningCard card={card} hidden={c.hidden} used={card.used} />
+      <MeaningCard card={card} hidden={c.hidden} used={card.used} alts />
       <div class="peek-timer" aria-hidden="true" />
     </div>
   );

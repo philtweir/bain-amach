@@ -1,6 +1,6 @@
 // Card faces, built on the design kit's ba- classes.
 import type { JSX } from 'preact';
-import { PARTICLE_TYPE, printedAnswer } from '../engine/deck';
+import { PARTICLE_TYPE, answersFor, printedAnswer } from '../engine/deck';
 import { meaningsOf } from '../engine/game';
 import type { Card as CardT, Placed } from '../engine/types';
 import { t } from '../i18n';
@@ -99,7 +99,7 @@ export function Face(p: FaceProps) {
 }
 
 /** The wide meaning card in the hand: three meanings, the Irish answer under each (or a dotted rule). */
-export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string } & CardState) {
+export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string; alts?: boolean } & CardState) {
   const ms = meaningsOf(p.card);
   const Tag = p.onTap ? 'button' : 'div';
   const label = t('a11y.meaning', {
@@ -111,6 +111,11 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
         <div class={'ba-m' + (p.used === g ? ' is-used' : '')} key={g}>
           <span class="ba-en">{g}</span>
           <span class={'ba-ga' + (p.hidden ? ' is-hidden' : '')}>{p.hidden ? '·' : printedAnswer(p.card.t, g)}</span>
+          {p.alts && !p.hidden && answersFor(g).filter((a) => a !== printedAnswer(p.card.t, g)).map((a) => (
+            <span class="ba-alt" key={a}>
+              {t('table.alsoAnswer', { answer: a })}
+            </span>
+          ))}
         </div>
       ))}
     </Tag>

@@ -1879,3 +1879,16 @@ button.list-row:active {
   color: var(--ink);
   box-shadow: var(--shadow-card);
 }
+
+/* An opened-up meaning card grows to fit every accepted answer (GIVE UP: tabhair suas, also éirigh as). */
+.peek .ba-meaning {
+  height: auto;
+  min-height: var(--card-meaning-h);
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.ba-meaning .ba-alt {
+  font: 700 13px/16px var(--font-card);
+  color: var(--meaning-answer);
+  opacity: 0.75;
+}
