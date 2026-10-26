@@ -15,7 +15,7 @@ test('a full turn-mode game against a bot, to the recap', async ({ page }) => {
   expect(lines).toBeGreaterThan(0);
   // The glossary picked up what this player made.
   await page.getByRole('button', { name: 'Done' }).click();
-  await expect(page.locator('.glossary-card')).toContainText(/[1-9]\d* of 36 made/);
+  await expect(page.locator('.glossary-card')).toContainText(/[1-9]\d* of \d+ made/);
 });
 
 test('reload mid-game, then Continue restores the exact state', async ({ page }) => {

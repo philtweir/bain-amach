@@ -11,7 +11,7 @@ export default defineConfig({
   // GitHub Pages serves the app from /<repo>/; the deploy workflow sets BASE_PATH.
   base: process.env.BASE_PATH || '/',
   resolve: {
-    alias: { '@deck': fileURLToPath(new URL('./handoff/data/deck.json', import.meta.url)) },
+    alias: { '@deck': fileURLToPath(new URL('./data/deck.json', import.meta.url)) },
   },
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   build: { target: 'es2022', cssMinify: true, assetsInlineLimit: 0 },

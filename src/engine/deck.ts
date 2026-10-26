@@ -7,6 +7,8 @@ export interface DeckCompound {
   particles: string[];
   meaning: string;
   check_note?: string;
+  /** A sense added for playtesting that Phil hasn't checked yet. */
+  draft?: boolean;
 }
 
 export interface DeckData {
@@ -33,6 +35,7 @@ export interface Compound {
 }
 
 export const COMPOUNDS: Compound[] = DECK.compounds.map((c) => ({ id: c.id, v: c.verb, ps: c.particles, g: c.meaning }));
+export const DRAFT_COMPOUNDS = new Set(DECK.compounds.filter((c) => c.draft).map((c) => c.id));
 export const COMPOUND_BY_ID: Record<string, Compound> = Object.fromEntries(COMPOUNDS.map((c) => [c.id, c]));
 export const COMPOUNDS_BY_MEANING: Record<string, Compound[]> = {};
 for (const c of COMPOUNDS) (COMPOUNDS_BY_MEANING[c.g] ??= []).push(c);

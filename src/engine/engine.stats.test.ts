@@ -1,12 +1,13 @@
-// Milestone 1 acceptance: 300 seeded bot games per player count, within noise of the reference
-// (engine.test.js: 28.2 / 31.9 / 31.3 lines, wildcard lines 3.7–3.8, straddles 1.4–2.0).
+// Milestone 1 acceptance: 300 seeded bot games per player count, within noise of the reference engine
+// run on the same deck. On the app deck (handoff deck + 13 draft meaning cards) the reference makes
+// 31.5 / 38.6 / 37.6 lines, wildcard lines 3.8, straddles 1.6–2.8. (Handoff deck: 28.2 / 31.9 / 31.3.)
 import { describe, expect, it } from 'vitest';
 import { botTurn } from './bot';
 import { DECK } from './deck';
 import { newGame } from './game';
 import type { GameConfig } from './types';
 
-const REF_LINES: Record<number, number> = { 2: 28.2, 3: 31.9, 4: 31.3 };
+const REF_LINES: Record<number, number> = { 2: 31.5, 3: 38.6, 4: 37.6 };
 
 function run(n: number, games: number, extra: Partial<GameConfig> = {}) {
   let out = 0, lines = 0, straddles = 0, wild = 0, unfinished = 0, short = 0, ties = 0, firstWins = 0, decided = 0;
@@ -38,10 +39,13 @@ describe('bot games match the reference within noise', () => {
       console.log(`${n}p: lines ${r.lines.toFixed(1)}, straddles ${r.straddles.toFixed(2)}, wildcard lines ${r.wild.toFixed(2)}, out ${Math.round(r.out * 100)}%, ties ${r.ties}, first player wins ${Math.round(r.firstWins * 100)}%`);
       expect(r.short).toBe(0);
       expect(r.unfinished).toBe(0);
-      expect(Math.abs(r.lines - REF_LINES[n])).toBeLessThan(2.5);
+      // Within 10%: the production engine differs from the reference on purpose (random first player,
+      // bot swaps, final-stall count reset after a line). Exact equality under the reference's own rules
+      // is engine.parity.test.ts's job.
+      expect(Math.abs(r.lines - REF_LINES[n]) / REF_LINES[n]).toBeLessThan(0.1);
       expect(r.wild).toBeGreaterThan(3.0);
       expect(r.wild).toBeLessThan(4.5);
       expect(r.straddles).toBeGreaterThan(1.0);
-      expect(r.straddles).toBeLessThan(2.6);
+      expect(r.straddles).toBeLessThan(3.4);
     });
 });

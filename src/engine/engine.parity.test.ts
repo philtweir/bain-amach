@@ -9,7 +9,11 @@ import type { GameConfig, GameState } from './types';
 // The reference is CommonJS but the repo is "type": "module", so evaluate it with a CommonJS wrapper.
 const refPath = new URL('../../handoff/reference/engine/engine.js', import.meta.url);
 const refModule: { exports: any } = { exports: {} };
-const refRequire = createRequire(refPath);
+// The reference reads ../../data/deck.json relative to itself; hand it the app's deck instead, so both
+// engines deal from the same cards (the app deck adds draft meanings to the handoff's).
+const appDeck = JSON.parse(readFileSync(new URL('../../data/deck.json', import.meta.url), 'utf8'));
+const baseRequire = createRequire(refPath);
+const refRequire = ((id: string) => (id.endsWith('data/deck.json') ? appDeck : baseRequire(id))) as NodeRequire;
 new Function('module', 'require', readFileSync(refPath, 'utf8'))(refModule, refRequire);
 const { Game } = refModule.exports;
 

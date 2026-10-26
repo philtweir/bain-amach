@@ -100,7 +100,7 @@ function renderEntry(e: Entry) {
       );
     }
     case 'glossary':
-      return <GlossaryScreen focus={e.params?.focus as string | undefined} />;
+      return <GlossaryScreen focus={e.params?.focus as string | undefined} draftsOnly={!!e.params?.drafts} />;
     case 'rules':
       return <RulesScreen onTutorial={startTutorial} />;
     case 'settings':

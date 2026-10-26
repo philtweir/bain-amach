@@ -8,8 +8,8 @@ import { t, type Key } from '../i18n';
 import { updateSettings } from '../storage';
 import { nav } from './nav';
 
-/** Seed 490 deals DESCRIBE / GIVE UP / STAY AWAY FROM to you, cuir on the table and síos, ar on the river. */
-export const TUTORIAL_SEED = 490;
+/** Seed 912 deals DESCRIBE / GIVE UP / STAY AWAY FROM to you, cuir on the table and síos, ar on the river (app deck). */
+export const TUTORIAL_SEED = 912;
 
 export function tutorialConfig(): GameConfig {
   return {

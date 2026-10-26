@@ -15,7 +15,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "types": ["vite/client", "vite-plugin-pwa/preact", "node"],
-    "paths": { "@deck": ["./handoff/data/deck.json"] }
+    "paths": { "@deck": ["./data/deck.json"] }
   },
   "include": ["src", "tests", "vite.config.ts", "playwright.config.ts"]
 }

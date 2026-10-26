@@ -322,5 +322,8 @@
   "table.freshDrew": "New line, so you draw 2: {what}",
   "table.pickVerbFresh": "Lit cards finish a meaning on this card. A line that uses nothing on the table draws 2.",
   "rules.fresh": "A new line draws 2",
-  "rules.freshBody": "A line that uses nothing already on the table (verb from your hand, no particle crossed, not ending on a meaning card already down) draws 2 cards afterwards, like a lone verb. Touching other cards doesn't count. Build off the table to shed cards."
+  "rules.freshBody": "A line that uses nothing already on the table (verb from your hand, no particle crossed, not ending on a meaning card already down) draws 2 cards afterwards, like a lone verb. Touching other cards doesn't count. Build off the table to shed cards.",
+  "glossary.draft": "Draft",
+  "glossary.draftFilter": "Show only the {n} draft meanings",
+  "home.draftNote": "Playtest deck: {n} extra meanings are drafts, still to be checked. Tap to see them."
 }

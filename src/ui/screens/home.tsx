@@ -1,6 +1,6 @@
 // Home: continue a saved game, start a new one, glossary progress, install nudge, update banner.
 import { canInstall, installEvent, restartForUpdate, updateReady } from '../../app/session';
-import { COMPOUND_BY_ID, COMPOUNDS, DECK, compoundText } from '../../engine/deck';
+import { COMPOUND_BY_ID, COMPOUNDS, DECK, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
 import { platform } from '../../platform';
@@ -164,6 +164,12 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
             </div>
           )}
           <InstallNudge />
+          {DRAFT_COMPOUNDS.size > 0 && (
+            <button class="panel draft-note" onClick={() => nav.push('glossary', { drafts: true })}>
+              <span class="draft-chip">{t('glossary.draft')}</span>
+              <span class="caption">{t('home.draftNote', { n: DRAFT_COMPOUNDS.size })}</span>
+            </button>
+          )}
           <button class={'ba-btn wide ' + (savedInfo ? 'ba-btn-secondary' : 'ba-btn-primary')} onClick={onNew}>
             {t('home.newGame')}
           </button>

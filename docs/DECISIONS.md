@@ -81,6 +81,37 @@ without the refill was too swingy (91–95% go out, fewer lines).
 - **iOS status bar.** It uses `default` (opaque bar, dark text) so it stays readable on the light felt. `black-translucent` would let the felt run under the clock, but iOS then forces white text, which is unreadable on the light table. Worth checking on a device.
 - **Sound** is a stub toggle (no audio in v1).
 
+## Draft meanings (in the app now, Phil to check)
+
+The app deals from `data/deck.json`: the handoff deck plus 13 extra senses of existing compounds
+(`c37` to `c49`, each marked `"draft": true` with a `check_note`) on 13 extra meaning cards (`m37` to
+`m49`). `handoff/data/deck.json` stays as the original. Only existing verb + particle combinations got
+new senses, so no verb or particle counts changed. Each new card has three senses from three different
+verbs, and no card has two senses of one compound.
+
+| Compound | Original | Draft addition |
+|---|---|---|
+| bain amach | REACH | ACHIEVE |
+| bain as | GET FROM | CLEAR OFF |
+| bain le | CONCERN | TOUCH |
+| cuir amach | THROW UP | PUT OUT, PUBLISH |
+| cuir ar | PUT ON | BOTHER |
+| cuir isteach ar | APPLY FOR | INTERFERE WITH |
+| tabhair faoi | ATTEMPT | ATTACK |
+| tabhair ar | MAKE (SOMEONE) | CALL |
+| éirigh as | GIVE UP | RESIGN |
+| tit amach | HAPPEN | FALL OUT |
+| lig do | LEAVE ALONE | ALLOW |
+| amharc ar | LOOK AT | WATCH |
+
+Home shows a note while any draft senses remain, and the glossary marks them "Draft" with a filter.
+To accept one, drop its `draft` flag; to change or remove one, edit the row and its meaning cards.
+
+Effect with all app rules (300 games, normal bots): no-meaning turns 0–1%; lines 38.5 / 48.4 / 47.1
+(about a quarter use draft senses); 55 / 73 / 73 turns; someone goes out in 59% / 18% / 27%, so fewest
+cards is the usual ending again at 3–4 players. The tutorial moved to seed 912 (same opening hand
+as the design render). The stats test now compares against the reference engine run on this deck.
+
 ## Deck depth (Phil, open)
 
 Each of the 36 compounds has exactly one meaning, and no verb + particles appears twice. Many phrasal
