@@ -104,10 +104,17 @@ export interface RuleVariant {
   /** A line may end on a meaning card already on the table, as any of its three meanings, arriving
    *  from a free side. The verb comes from the hand; no particle on the line may be a crossing. */
   tableMeanings?: boolean;
+  /** A fresh line, using no card already on the table (verb from the hand, no crossing, not onto a
+   *  table meaning card), draws this many cards afterwards, like a lone verb. Touching other cards
+   *  doesn't count as using them. */
+  freshLineDraw?: number;
+  /** Swap: your meaning card goes to the bottom of the meaning pile and the next one turns face up,
+   *  so swapping again shows a new card instead of handing yours straight back. */
+  swapRefresh?: boolean;
 }
 
 /** The rules the app plays (Phil, 2026-10-26). The engine default stays RULES.md as written. */
-export const APP_RULES: RuleVariant = { refillMeaning: true, tableMeanings: true };
+export const APP_RULES: RuleVariant = { refillMeaning: true, tableMeanings: true, freshLineDraw: 2, swapRefresh: true };
 
 export interface Line {
   p: number;
@@ -130,7 +137,7 @@ export interface Missed {
 }
 
 export type GameEvent =
-  | { e: 'line'; p: number; c: string; g: string; cells: [number, number][]; wild: boolean; straddle: boolean; river: number[]; turnNo: number }
+  | { e: 'line'; p: number; c: string; g: string; cells: [number, number][]; wild: boolean; straddle: boolean; river: number[]; turnNo: number; drew?: number[] }
   | { e: 'lone'; p: number; word: string; x: number; y: number; drew: number[]; turnNo: number }
   | { e: 'swap'; p: number; gave: number; took: number; turnNo: number }
   | { e: 'pass'; p: number; drew: number | null; turnNo: number }

@@ -103,6 +103,8 @@ export class Controller {
   announce = signal('');
   headerNote = signal<string | null>(null);
   elapsed = signal(0);
+  /** A meaning card another player has just put down, popped up in full view for a moment. */
+  shown = signal<{ id: number; x: number; y: number; by: number } | null>(null);
   /** A table meaning card being looked at: shows all three of its meanings. */
   peek = signal<{ x: number; y: number } | null>(null);
   /** Ask the board to bring these cells into view. */
@@ -123,6 +125,10 @@ export class Controller {
   private autoHintTimer: ReturnType<typeof setTimeout> | null = null;
   private lastViewer = -1;
   private riverIds = new Map<number, number>();
+  /** Meaning cards on the table each human has already seen, so each new one pops up once per viewer. */
+  private seenMeanings = new Map<number, Set<number>>();
+  private popQueue: { id: number; x: number; y: number; by: number }[] = [];
+  private popTimer: ReturnType<typeof setTimeout> | null = null;
   private disposed = false;
 
   readonly config: GameConfig;
@@ -135,6 +141,9 @@ export class Controller {
     const humans = this.humans();
     this.viewer.value = s.config.mode === 'turns' && this.isHuman(s.turn) ? s.turn : humans[0] ?? 0;
     this.lastViewer = this.passAndPlay ? -1 : this.viewer.value;
+    // Cards already down (a fresh deal has none; a restored game may have many) don't pop up.
+    const onTable = s.board.filter((b) => b.k === 'M').map((b) => b.id);
+    for (const h of this.humans(s)) this.seenMeanings.set(h, new Set(onTable));
     if (s.over) this.phase.value = 'over';
   }
 
@@ -199,6 +208,7 @@ export class Controller {
 
   dispose() {
     this.disposed = true;
+    if (this.popTimer) clearTimeout(this.popTimer);
     platform.keepAwake(false);
     document.removeEventListener('visibilitychange', this.onVisibility);
     this.stopTimers();
@@ -411,6 +421,8 @@ export class Controller {
     if (!this.passAndPlay && !bot) this.lastViewer = this.viewer.value;
     this.save();
     this.validateSelection();
+    // Your own meaning cards never pop up for you.
+    if (!bot && p >= 0) for (const b of next.board) if (b.k === 'M' && b.owner === p) this.seenMeanings.get(p)?.add(b.id);
     this.tutorialHook?.('commit', { move, p });
     this.kick();
   }
@@ -427,6 +439,13 @@ export class Controller {
         const flight = (n - 1) * stagger + dur(200);
         this.action.value = { seq: actionSeq++, kind: 'line', p: ev.p, bot, cells: ev.cells, from: from ?? this.botSources(prev, ev), stagger };
         this.say(t('table.lays', { name: this.name(ev.p), compound: text, meaning: ev.g.toLowerCase() }));
+        // A fresh line (no card already on the table) draws, like a lone verb.
+        if (ev.drew) {
+          if (ev.p === this.viewer.value && !bot) {
+            this.noteDraw(ev.drew, next);
+            if (this.headerNote.value) this.headerNote.value = t('table.freshDrew', { what: this.headerNote.value });
+          } else this.bumpPlus(ev.p, ev.drew.length);
+        }
         if (byHuman && !bot) {
           haptic('light');
           this.later(flight, () => {
@@ -440,6 +459,7 @@ export class Controller {
         this.later(flight, () => {
           this.toast({ kind: 'made', ga: text, en: ev.g.toLowerCase() + ' · ' + this.name(ev.p), player: ev.p });
           if (this.botPlaying.value === ev.p) this.botPlaying.value = null;
+          this.popNewMeanings();
         });
         return flight + 250;
       }
@@ -555,6 +575,8 @@ export class Controller {
     this.later(wait, () => {
       this.made.value = null;
       this.botPlaying.value = null;
+      this.popQueue = [];
+      this.dismissShown();
       haptic('strong');
       this.phase.value = 'over';
       const s = this.gs.value;
@@ -605,6 +627,40 @@ export class Controller {
     this.lastViewer = this.viewer.value;
     this.headerNote.value = null;
     this.kick();
+    // Pass-and-play: whatever the others put down while this player looked away.
+    this.popNewMeanings();
+  }
+
+  /** Queue every meaning card on the table the viewer hasn't seen yet and that someone else laid. */
+  private popNewMeanings() {
+    const s = this.gs.value;
+    const v = this.viewer.value;
+    if (!s.config.rules?.tableMeanings || !this.isHuman(v) || this.phase.value !== 'play' || s.over || this.tutorialHook) return;
+    let seen = this.seenMeanings.get(v);
+    if (!seen) this.seenMeanings.set(v, (seen = new Set()));
+    for (const b of s.board) {
+      if (b.k !== 'M' || seen.has(b.id)) continue;
+      seen.add(b.id);
+      if (b.owner !== v) this.popQueue.push({ id: b.id, x: b.x, y: b.y, by: b.owner });
+    }
+    this.pumpPop();
+  }
+
+  private pumpPop(): void {
+    if (this.shown.value || !this.popQueue.length || this.disposed) return;
+    const next = this.popQueue.shift()!;
+    if (!this.gs.value.board.some((b) => b.id === next.id)) return this.pumpPop();
+    this.shown.value = next;
+    this.say(t('table.newOnTableSay', { name: this.name(next.by), list: meaningsOf(this.gs.value.board.find((b) => b.id === next.id)!).map((g) => g.toLowerCase()).join(', ') }));
+    if (this.popTimer) clearTimeout(this.popTimer);
+    this.popTimer = setTimeout(() => this.dismissShown(), 2600);
+  }
+
+  dismissShown() {
+    if (this.popTimer) clearTimeout(this.popTimer);
+    this.popTimer = null;
+    this.shown.value = null;
+    this.pumpPop();
   }
 
   lookAtBoard() {
@@ -775,7 +831,7 @@ export class Controller {
       return;
     }
     // Not part of the current line: explain, or start a new one from this verb.
-    if (sel.onto) return this.bad(key);
+    if (sel.onto) return this.bad(key, 'table' in v ? t('table.ontoHandVerb') : undefined);
     if (sel.meaning !== undefined) {
       const m = this.hand().find((c) => c.id === sel.meaning);
       const word = 'table' in v ? view(s).at(v.table.x, v.table.y)!.t : this.hand().find((c) => c.id === (v as { hand: number }).hand)!.t;

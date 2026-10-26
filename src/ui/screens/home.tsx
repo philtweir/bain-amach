@@ -4,7 +4,8 @@ import { COMPOUND_BY_ID, COMPOUNDS, DECK, compoundText } from '../../engine/deck
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
 import { platform } from '../../platform';
-import { madeCount, progress, savedGame, saveError, settings, updateSettings } from '../../storage';
+import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame } from '../../storage';
+import { useState } from 'preact/hooks';
 import { Avatar, Face, MeaningCard, initialOf } from '../cards';
 import { IconRules, IconSettings, IconShare } from '../icons';
 import { Screen, Scroll } from '../kit';
@@ -75,6 +76,7 @@ function InstallNudge() {
 }
 
 export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNew: () => void }) {
+  const [discarding, setDiscarding] = useState(false);
   const saved = savedGame.value;
   const made = madeCount();
   const last = progress.value.lastMadeId ? COMPOUND_BY_ID[progress.value.lastMadeId] : null;
@@ -131,9 +133,34 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
                 </div>
                 <Avatar player={savedInfo.you.color} initial={savedInfo.you.initial} count={savedInfo.you.n} />
               </div>
-              <button class="ba-btn ba-btn-primary wide" onClick={onContinue}>
-                {t('home.continue')}
-              </button>
+              {discarding ? (
+                <div class="discard-confirm">
+                  <p class="confirm-q">{t('home.discardQ')}</p>
+                  <div class="row2">
+                    <button class="ba-btn ba-btn-secondary" onClick={() => setDiscarding(false)}>
+                      {t('home.keep')}
+                    </button>
+                    <button
+                      class="ba-btn ba-btn-primary danger"
+                      onClick={() => {
+                        writeGame(null);
+                        setDiscarding(false);
+                      }}
+                    >
+                      {t('home.discard')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div class="saved-actions">
+                  <button class="ba-btn ba-btn-primary" onClick={onContinue}>
+                    {t('home.continue')}
+                  </button>
+                  <button class="ba-btn ba-btn-quiet" onClick={() => setDiscarding(true)}>
+                    {t('home.discard')}
+                  </button>
+                </div>
+              )}
             </div>
           )}
           <InstallNudge />

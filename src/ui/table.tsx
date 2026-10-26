@@ -2,8 +2,8 @@
 // the end card, the pass-and-play cover and the pause sheet.
 import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { COMPOUND_BY_ID, compoundText } from '../engine/deck';
-import { canDraw, meaningsOf } from '../engine/game';
+import { COMPOUND_BY_ID, COMPOUNDS, compoundText } from '../engine/deck';
+import { canDraw, lineMoves, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
 import { t } from '../i18n';
@@ -148,12 +148,15 @@ function TrayCard({ c, card, st }: { c: Controller; card: Card; st: { lit?: bool
 function FaceUp({ c }: { c: Controller }) {
   const s = c.gs.value;
   const f = s.faceUp;
+  const sel = c.sel.value;
+  // Answers shown: once you pick a meaning card to swap, the face-up card lights if it makes a line now.
+  const swapLit = !!f && !c.hidden && sel.meaning !== undefined && c.canAct.value && lineMoves(s, c.viewer.value, { meanings: [f], handSpots: 1 }).length > 0;
   return (
     <div class="faceup">
       <button class={'ba-pile' + (f ? '' : ' is-empty')} onClick={() => c.tapFaceUp()} aria-label={f ? t('a11y.faceUp', { list: meaningsOf(f).map((g) => g.toLowerCase()).join('; '), n: s.mpile.length }) : t('a11y.pileEmpty', { n: 0 })}>
         <div class="ba-stack">
           {f && (
-            <div class="ba-card ba-meaning ba-river" data-card={f.id}>
+            <div class={'ba-card ba-meaning ba-river' + (swapLit ? ' is-lit' : '')} data-card={f.id}>
               <span class={'ba-en' + glossClass(meaningsOf(f)[0])}>{meaningsOf(f)[0]}</span>
             </div>
           )}
@@ -316,7 +319,7 @@ function Header({ c }: { c: Controller }) {
     );
   } else if (hasMeaning(sel) && canAct) {
     title = t('table.pickVerb');
-    sub = c.hintVerb.value ? t('table.hintSub') : sel.onto ? t('table.pickVerbOnto') : t('table.pickVerbSub');
+    sub = c.hintVerb.value ? t('table.hintSub') : sel.onto ? t('table.pickVerbOnto') : s.config.rules?.freshLineDraw ? t('table.pickVerbFresh') : t('table.pickVerbSub');
     if (hintsOn && !c.hintVerb.value && sel.meaning !== undefined)
       actions.push(
         <button class="ba-btn ba-btn-secondary btn-hint" onClick={() => c.hint()} key="hint" aria-label={t('table.hint')}>
@@ -494,6 +497,29 @@ function MeaningPeek({ c }: { c: Controller }) {
   );
 }
 
+/** A meaning card someone else just put down, in full view for a moment: new options on the table. */
+function NewMeaning({ c }: { c: Controller }) {
+  const sh = c.shown.value;
+  const s = c.gs.value;
+  if (!sh || c.peek.value || c.made.value) return null;
+  const card = s.board.find((b) => b.id === sh.id);
+  if (!card) return null;
+  const cell = document.querySelector(`[data-cell="${sh.x},${sh.y}"]`)?.getBoundingClientRect();
+  const board = document.querySelector('.table-board')?.getBoundingClientRect();
+  const low = !!cell && !!board && cell.top + cell.height / 2 < board.top + board.height / 2;
+  const by = sh.by >= 0 ? s.config.players[sh.by] : undefined;
+  return (
+    <div class={'peek is-new' + (low ? ' is-low' : '')} key={sh.id} aria-live="polite">
+      <div class="peek-label">
+        {by && <span class={'ba-dot dot-sm ba-p' + (by.color + 1)} aria-hidden="true" />}
+        {t('table.newOnTable', { name: c.name(sh.by) })}
+      </div>
+      <MeaningCard card={card} hidden={c.hidden} used={card.used} />
+      <div class="peek-timer" aria-hidden="true" />
+    </div>
+  );
+}
+
 function MadeMoment({ c }: { c: Controller }) {
   const m = c.made.value;
   if (!m) return null;
@@ -503,7 +529,7 @@ function MadeMoment({ c }: { c: Controller }) {
         {m.isNew && <span class="ba-new">{t('table.new')}</span>}
         <span class="ba-ga">{m.compound}</span>
         <span class="ba-en">{m.meaning}</span>
-        {m.isNew && <span class="ba-progress">{t('table.made', { n: m.count, total: 36 })}</span>}
+        {m.isNew && <span class="ba-progress">{t('table.made', { n: m.count, total: COMPOUNDS.length })}</span>}
       </div>
     </div>
   );
@@ -667,7 +693,11 @@ export function TableView(p: TableProps) {
   const s = c.gs.value;
   const announce = c.announce.value;
   return (
-    <div class={'table ba-felt' + (phase === 'over' ? ' is-over' : '') + (c.paused.value ? ' is-paused' : '')} onPointerDownCapture={() => c.made.value && c.dismissMade()}>
+    <div class={'table ba-felt' + (phase === 'over' ? ' is-over' : '') + (c.paused.value ? ' is-paused' : '')} onPointerDownCapture={() => {
+        if (c.made.value) c.dismissMade();
+        // Any tap clears an opponent's pop-up card and still reaches what's underneath.
+        if (c.shown.value) c.dismissShown();
+      }}>
       <div class="table-top">
         <Status c={c} />
         <River c={c} />
@@ -675,6 +705,7 @@ export function TableView(p: TableProps) {
       <div class="table-board">
         <Board c={c} />
         <MeaningPeek c={c} />
+        <NewMeaning c={c} />
         <Toasts c={c} />
         <MadeMoment c={c} />
       </div>

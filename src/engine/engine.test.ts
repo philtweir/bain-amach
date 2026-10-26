@@ -328,3 +328,45 @@ describe('app rules: lines onto table meaning cards, meaning refill', () => {
     if (r.ok) expect(r.state.hands[0].filter((c) => c.k === 'M').length).toBe(1);
   });
 });
+
+describe('fresh-line draw', () => {
+  const rules = { refillMeaning: true, tableMeanings: true, freshLineDraw: 2 };
+  it('a line using nothing on the table draws 2; one off a table verb does not', () => {
+    const m = M(findMeaningCard('LISTEN TO'));
+    const ev = V('éist');
+    const s = fixture({ piles: [['le', 'le'], ['ar'], ['amach'], ['suas'], ['as']], hands: [[m, ev, V('fan')], [V('tóg')]], main: [V('bain'), V('tóg'), V('lig')], config: { rules } });
+    const fresh = lineMoves(s, 0).find((l) => l.c === 'c32' && 'hand' in l.verb)!;
+    const r = apply(s, 0, fresh);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const e = r.state.log.at(-1)!;
+    expect(e.e === 'line' && e.drew?.length).toBe(2);
+    // éist (2 cards out: meaning + verb), refill a meaning, draw 2: 3 - 2 + 1 + 2 = 4
+    expect(r.state.hands[0].length).toBe(4);
+    const m2 = M(findMeaningCard('PUT ON'));
+    const s2 = fixture({ board: [at(V('cuir'), 0, 0)], piles: [['ar'], ['le'], ['amach'], ['suas'], ['as']], hands: [[m2, V('fan')], [V('tóg')]], config: { rules } });
+    const off = lineMoves(s2, 0).find((l) => l.c === 'c06' && 'table' in l.verb)!;
+    const r2 = apply(s2, 0, off);
+    expect(r2.ok && (r2.state.log.at(-1) as any).drew).toBeUndefined();
+  });
+  it('a fresh line that empties your hand still wins', () => {
+    const m = M(findMeaningCard('LISTEN TO'));
+    const ev = V('éist');
+    const s = fixture({ piles: [['le'], ['ar'], ['amach'], ['suas'], ['as']], hands: [[m, ev], [V('tóg')]], config: { rules } });
+    const r = apply(s, 0, lineMoves(s, 0).find((l) => l.c === 'c32')!);
+    expect(r.ok && r.state.over?.how).toBe('out');
+  });
+});
+
+describe('swap refresh', () => {
+  it('your card goes under the meaning pile and a new one turns face up', () => {
+    const mine = M('m01'), face = M('m02'), top = M('m03'), bottom = M('m04');
+    const s = fixture({ hands: [[mine, V('fan')], [V('tóg')]], faceUp: face, mpile: [bottom, top], config: { rules: { swapRefresh: true } } });
+    const r = apply(s, 0, { type: 'swap', m: mine.id });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.state.hands[0].some((c) => c.id === face.id)).toBe(true);
+    expect(r.state.faceUp!.id).toBe(top.id);
+    expect(r.state.mpile[0].id).toBe(mine.id);
+  });
+});

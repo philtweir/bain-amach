@@ -226,7 +226,7 @@
   "rules.lone": "A lone verb",
   "rules.loneBody": "Lay one verb on the table, then draw 2 cards. Not allowed once the deck and the meaning pile are both empty.",
   "rules.swap": "Swap",
-  "rules.swapBody": "Swap a meaning card from your hand for the face-up one.",
+  "rules.swapBody": "Swap a meaning card from your hand for the face-up one. Yours goes to the bottom of the meaning pile and the next card turns face up. With answers shown, the face-up card lights when it would make a line for you now.",
   "rules.pass": "Draw and pass, or Stuck",
   "rules.passBody": "In turns, you can always draw a card and pass instead. In a race, tap Stuck when you can't play. When nobody can play, everyone draws 1 and each river pile turns its top card under.",
   "rules.end": "Winning",
@@ -312,5 +312,15 @@
   "rules.ontoBody": "A meaning card already on the table can end another line, as any of its three meanings. Lay your verb from your hand, take the particles from the river, and run the line into a free side of the card. Here the PUT UP WITH card also carries LET OUT, so lig amach can end on it. Tap a meaning card on the table to see all three meanings.",
   "rules.refill": "Running out of meanings",
   "rules.refillBody": "If laying a line leaves you with no meaning cards, draw one from the meaning pile straight away.",
-  "a11y.meaningMeanings": "Meaning card on the table, used as {used}. Its meanings: {list}"
+  "a11y.meaningMeanings": "Meaning card on the table, used as {used}. Its meanings: {list}",
+  "table.newOnTable": "New on the table from {name} · any meaning can end a line",
+  "table.newOnTableSay": "{name} put down a meaning card: {list}",
+  "table.ontoHandVerb": "A line onto a meaning card on the table needs a verb from your hand",
+  "home.discard": "Discard",
+  "home.discardQ": "Discard this game? It can't be got back.",
+  "home.keep": "Keep it",
+  "table.freshDrew": "New line, so you draw 2: {what}",
+  "table.pickVerbFresh": "Lit cards finish a meaning on this card. A line that uses nothing on the table draws 2.",
+  "rules.fresh": "A new line draws 2",
+  "rules.freshBody": "A line that uses nothing already on the table (verb from your hand, no particle crossed, not ending on a meaning card already down) draws 2 cards afterwards, like a lone verb. Touching other cards doesn't count. Build off the table to shed cards."
 }

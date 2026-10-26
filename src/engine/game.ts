@@ -320,13 +320,24 @@ export function shed(mv: LineMove) {
 }
 
 /** The bot's ranking of a line: cards shed, wildcards slightly held back. */
-export function lineScore(mv: LineMove) {
-  return shed(mv) - mv.src.filter((x) => 'wild' in x).length * 0.6;
+/** A line that uses no card already on the table. */
+export function isFresh(mv: LineMove) {
+  return 'hand' in mv.verb && !mv.onto && !isStraddle(mv);
 }
 
-export function bestLine(lines: LineMove[]): LineMove | null {
+/** Cards a line draws afterwards under the fresh-line rule. */
+export function lineDraws(s: GameState, mv: LineMove) {
+  return s.config.rules?.freshLineDraw && isFresh(mv) ? s.config.rules.freshLineDraw : 0;
+}
+
+/** The bot's ranking of a line: net cards shed, wildcards slightly held back. */
+export function lineScore(mv: LineMove, s?: GameState) {
+  return shed(mv) - (s ? lineDraws(s, mv) : 0) - mv.src.filter((x) => 'wild' in x).length * 0.6;
+}
+
+export function bestLine(lines: LineMove[], s?: GameState): LineMove | null {
   if (!lines.length) return null;
-  return [...lines].sort((a, b) => lineScore(b) - lineScore(a))[0];
+  return [...lines].sort((a, b) => lineScore(b, s) - lineScore(a, s))[0];
 }
 
 // ---------- validation ----------
@@ -505,7 +516,10 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     const m = removeFromHand(hand, mv.m);
     const took = s.faceUp!;
     hand.push(took);
-    s.faceUp = m;
+    if (s.config.rules?.swapRefresh && s.mpile.length) {
+      s.mpile.unshift(m);
+      s.faceUp = s.mpile.pop()!;
+    } else s.faceUp = m;
     ev = { e: 'swap', p, gave: m.id, took: took.id, turnNo: s.turnNo };
   } else {
     const c = COMPOUND_BY_ID[mv.c];
@@ -538,6 +552,15 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     s.lines.push({ p, c: c.id, g: mv.g, cells, wild, straddle, turnNo: s.turnNo });
     if (s.config.rules?.refillMeaning && hand.length && !hand.some((x) => x.k === 'M') && s.mpile.length) hand.push(s.mpile.pop()!);
     ev = { e: 'line', p, c: c.id, g: mv.g, cells, wild, straddle, river, turnNo: s.turnNo };
+    const nDraw = lineDraws(s, mv);
+    if (nDraw && hand.length) {
+      const drew: number[] = [];
+      for (let i = 0; i < nDraw; i++) {
+        const d = drawOne(s, p, !!s.config.rules?.meaningOnAnyDraw);
+        if (d) drew.push(d.id);
+      }
+      ev.drew = drew;
+    }
     if (!s.config.legacyStall) s.stalls = 0;
   }
   s.passes = 0;
@@ -550,7 +573,7 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
 
 function recordMissed(s: GameState, p: number) {
   if (s.config.players[p]?.kind !== 'human' || s.missed[p].length >= 3) return;
-  const best = bestLine(lineMoves(s, p, { handSpots: 1 }));
+  const best = bestLine(lineMoves(s, p, { handSpots: 1 }), s);
   if (!best || s.missed[p].some((m) => m.c === best.c)) return;
   s.missed[p].push({
     c: best.c,

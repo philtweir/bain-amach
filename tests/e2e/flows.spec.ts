@@ -53,3 +53,21 @@ test('works offline after the first load', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   await expect(page.locator('.river .ba-pile')).toHaveCount(5);
 });
+
+test('a saved game can be discarded from Home, with one confirm', async ({ page }) => {
+  await seedSettings(page);
+  await page.goto('./?e2e&seed=12');
+  await page.getByRole('button', { name: 'New game' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await waitForMyTurn(page);
+  await page.getByRole('button', { name: 'Pause' }).click();
+  await page.getByRole('button', { name: 'Save and quit' }).click();
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
+  await page.getByRole('button', { name: 'Discard' }).click();
+  await page.getByRole('button', { name: 'Keep it' }).click();
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeVisible();
+  await page.getByRole('button', { name: 'Discard' }).click();
+  await page.getByRole('button', { name: 'Discard' }).click();
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeHidden();
+  expect(await page.evaluate(() => localStorage.getItem('ba.game'))).toBeNull();
+});

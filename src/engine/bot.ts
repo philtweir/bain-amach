@@ -32,7 +32,7 @@ export function botMove(s: GameState, p: number): BotChoice {
     rngState = st;
     if (r >= STRADDLE_SIGHT[level]) lines = lines.filter((l) => !subtle(l));
   }
-  const line = bestLine(lines);
+  const line = bestLine(lines, s);
   if (line) return { move: line, rng: rngState };
 
   const hand = s.hands[p];

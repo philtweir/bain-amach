@@ -9,9 +9,10 @@ changing one doesn't mean a rewrite.
 
 ## Rule changes (Phil, 2026-10-26)
 
-Two rules beyond RULES.md, after playtesting showed hands running out of meaning cards. They're on
-in every new game in the app (`APP_RULES` in `src/engine/types.ts`). Games saved before the change
-keep the rules they started with. The engine default is still RULES.md as written, so the parity
+Rules beyond RULES.md from playtesting, numbered in the order they were agreed. They're on
+in every game in the app (`APP_RULES` in `src/engine/types.ts`). A game saved before the change picks
+them up when continued (it first kept its old rules, which made the app refuse a play it seemed to
+offer; both rules only add options, so switching mid-game is safe). The engine default is still RULES.md as written, so the parity
 and stats tests are unchanged.
 
 1. **Refill.** If laying a line leaves you with no meaning cards, draw one from the meaning pile straight away.
@@ -21,6 +22,19 @@ and stats tests are unchanged.
    the card, so at most three more lines can end on one card. A line can't both cross a particle and
    end on a table meaning card. The card gets the crossing marker. Tap any meaning card on the table
    to see all three of its meanings.
+4. **A fresh line draws 2.** A line that uses no card already on the table (verb from the hand, no
+   crossing, not onto a table meaning card) draws 2 afterwards, like a lone verb. Touching other cards
+   doesn't count as using them. A fresh line that empties your hand still wins. Without this, about 40%
+   of lines ignored the table; with it, about 6%. Each game makes about ten more compounds and runs
+   about 25% longer, and every simulated game still finishes (2p 36 lines, 3p 45, 4p 44; someone goes
+   out in 76% / 37% / 66%). A one-card draw was the softer option tested.
+5. **Swap refresh.** Swapping puts your meaning card at the bottom of the meaning pile and turns the next
+   card face up (RULES §4.4 put your card face up, so a second swap just handed it back). With answers
+   shown, the face-up card lights when it would make a line for you now. Balance-neutral in simulation.
+3. **New meaning cards pop up.** When another player puts a new meaning card down, it opens in full
+   view (all three meanings) for about 2.5 s once their line lands; tap to dismiss. Several queue one
+   after another. Not for your own cards, nor for lines ending on a card already down. In
+   pass-and-play, cards laid while you looked away pop up when you tap "Show my hand".
 
 Still true, as Phil put it: only a verb goes down alone; every other play completes a line, using up to a
 line's worth of cards (four for *cuir síos ar* [DESCRIBE]). The new play is still a complete line.
@@ -66,3 +80,12 @@ without the refill was too swingy (91–95% go out, fewer lines).
 - **Compound list** (Ulster check). A new `handoff/data/deck.json` is all that's needed; nothing else hard-codes a card.
 - **iOS status bar.** It uses `default` (opaque bar, dark text) so it stays readable on the light felt. `black-translucent` would let the felt run under the clock, but iOS then forces white text, which is unreadable on the light table. Worth checking on a device.
 - **Sound** is a stub toggle (no audio in v1).
+
+## Deck depth (Phil, open)
+
+Each of the 36 compounds has exactly one meaning, and no verb + particles appears twice. Many phrasal
+verbs have several senses, and playtesting found too little variety on the meaning cards. The data
+format already supports more: add a row to the card list with the same verb and particles, a new
+`id` and a new `meaning`, and put that meaning on meaning cards. The engine, the line builder,
+hidden-answers judging, the glossary (one row per sense) and the recap need no changes.
+The counts to keep in step are the meaning cards (three meanings each) and, if new verbs come in, the verb counts.

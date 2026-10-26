@@ -81,6 +81,7 @@ export function RulesScreen({ onTutorial }: { onTutorial: () => void }) {
           <Rule n={6} title={t('rules.pass')}>
             {t('rules.passBody')}
           </Rule>
+          <Rule title={t('rules.fresh')}>{t('rules.freshBody')}</Rule>
           <Rule title={t('rules.refill')}>{t('rules.refillBody')}</Rule>
           <Rule title={t('rules.end')}>{t('rules.endBody')}</Rule>
           <Rule

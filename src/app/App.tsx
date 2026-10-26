@@ -55,7 +55,8 @@ function renderEntry(e: Entry) {
         <HomeScreen
           onContinue={() => {
             const sg = savedGame.value;
-            if (sg) play({ state: sg.state, elapsed: sg.elapsed });
+            // Games saved before a rule change pick the current rules up: they only add options.
+            if (sg) play({ state: { ...sg.state, config: { ...sg.state.config, rules: { ...APP_RULES, ...sg.state.config.rules } } }, elapsed: sg.elapsed });
           }}
           onNew={() => nav.push('setup', { prefs: defaultSetup() })}
         />

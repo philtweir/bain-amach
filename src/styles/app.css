@@ -1793,3 +1793,43 @@ button.list-row:active {
 .ba-reduce-motion .peek {
   animation: fade-in 120ms linear backwards;
 }
+.peek-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+/* The pop-up for a card someone else put down never blocks a tap; it drains a thin bar while it shows. */
+.peek.is-new {
+  pointer-events: none;
+}
+.peek.is-new .peek-timer {
+  align-self: stretch;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  transform-origin: left center;
+  animation: peek-drain 2600ms linear forwards;
+}
+@keyframes peek-drain {
+  to {
+    transform: scaleX(0);
+  }
+}
+.ba-reduce-motion .peek.is-new .peek-timer {
+  animation: none;
+}
+
+.saved-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.saved-actions .ba-btn-primary {
+  flex: 1;
+}
+.discard-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
