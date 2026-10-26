@@ -34,8 +34,9 @@ export function byMeaning(uses: Use[]): { g: string; sides: Side[] }[] {
   return out;
 }
 
-/** Arrow pointing towards the line, for the tap view: ← PUT OFF means its line is to the left. */
-export const SIDE_ARROW: Record<Side, string> = { w: '←', e: '→', n: '↑', s: '↓' };
+/** Arrow running the way the line reads into the card, for the tap view: PUT OFF → means its line
+ *  comes in from the left. */
+export const SIDE_ARROW: Record<Side, string> = { w: '→', e: '←', n: '↓', s: '↑' };
 
 type Box = { left: number; top: number; w: number; h: number };
 export interface Half {

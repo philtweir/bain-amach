@@ -908,6 +908,40 @@ button.list-row:active {
     zoom: 0.85;
   }
 }
+/* the symbol key: each mark on a real card, its line of explanation beside it */
+.sym-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sym-row {
+  display: grid;
+  grid-template-columns: var(--card-table) 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.sym-row.is-wide {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.sym-row .body {
+  margin: 0;
+}
+.sym-row > .ba-card {
+  position: relative;
+}
+/* Zoomed-out glyphs at the size they show on the table. */
+.sym-glyph {
+  display: flex;
+  gap: 10px;
+}
+.sym-glyph .ba-card {
+  position: relative;
+  zoom: 0.5;
+}
 
 /* ---------- table ---------- */
 .table {
@@ -1123,7 +1157,7 @@ button.list-row:active {
   left: calc(50% - 5px);
   border-bottom-color: var(--ink-muted);
 }
-.board.is-glyph .ba-arrive,
+:is(.board.is-glyph, .sym-glyph) .ba-arrive,
 .ba-zoomed .ba-arrive {
   display: none;
 }
@@ -1175,7 +1209,7 @@ button.list-row:active {
   place-items: center;
   font: 800 15px/1 var(--font-card);
 }
-.board.is-glyph .ba-meaning.ba-table.is-multi .ba-multi {
+:is(.board.is-glyph, .sym-glyph) .ba-meaning.ba-table.is-multi .ba-multi {
   width: 28px;
   height: 28px;
   font-size: 18px;
@@ -1226,19 +1260,19 @@ button.list-row:active {
   letter-spacing: 0 !important;
 }
 /* zoomed out below 32px a cell: words give way to the type glyph */
-.board.is-glyph .ba-word,
-.board.is-glyph .ba-en,
-.board.is-glyph .ba-stands,
-.board.is-glyph .ba-own,
-.board.is-glyph .ba-cross {
+:is(.board.is-glyph, .sym-glyph) .ba-word,
+:is(.board.is-glyph, .sym-glyph) .ba-en,
+:is(.board.is-glyph, .sym-glyph) .ba-stands,
+:is(.board.is-glyph, .sym-glyph) .ba-own,
+:is(.board.is-glyph, .sym-glyph) .ba-cross {
   display: none;
 }
-.board.is-glyph .ba-card::after {
+:is(.board.is-glyph, .sym-glyph) .ba-card::after {
   display: block;
   width: 32px;
   height: 32px;
 }
-.board.is-glyph .ba-meaning::after {
+:is(.board.is-glyph, .sym-glyph) .ba-meaning::after {
   display: block;
   -webkit-mask: none;
   mask: none;
@@ -1251,12 +1285,12 @@ button.list-row:active {
   transform: translate(-50%, -50%);
 }
 /* Split cards zoomed out: just the two tones (that alone marks a meaning card), no text or square. */
-.board.is-glyph .ba-meaning.ba-table .ba-half .ba-half-en,
-.board.is-glyph .ba-meaning.is-split::after {
+:is(.board.is-glyph, .sym-glyph) .ba-meaning.ba-table .ba-half .ba-half-en,
+:is(.board.is-glyph, .sym-glyph) .ba-meaning.is-split::after {
   display: none;
 }
 /* Three or four meanings zoomed out: one square, with the count in it (not the glyph as well). */
-.board.is-glyph .ba-meaning.is-multi::after {
+:is(.board.is-glyph, .sym-glyph) .ba-meaning.is-multi::after {
   display: none;
 }
 

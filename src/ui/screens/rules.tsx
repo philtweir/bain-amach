@@ -2,7 +2,8 @@
 import type { ComponentChildren } from 'preact';
 import type { Card, Placed } from '../../engine/types';
 import { t } from '../../i18n';
-import { Face } from '../cards';
+import { Face, MeaningCard } from '../cards';
+import type { Use } from '../meaningUses';
 import { Header, Screen, Scroll } from '../kit';
 
 const P = 72;
@@ -35,6 +36,49 @@ function Rule({ n, title, children, diagram }: { n?: number; title: string; chil
       </h2>
       <p class="body muted">{children}</p>
       {diagram}
+    </section>
+  );
+}
+
+const m = (id: string, used: string): Placed => at('M', id, 0, 0, { used });
+const SYMBOLS: { key: 'cross' | 'owner' | 'arrive' | 'split' | 'multi'; card: Placed; owner?: number; uses?: Use[] }[] = [
+  { key: 'cross', card: at('P', 'le', 0, 0, { axis: 'h', cross: true }) },
+  { key: 'owner', card: at('V', 'cuir', 0, 0), owner: 1 },
+  { key: 'arrive', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }] },
+  { key: 'split', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }, { g: 'LET OUT', side: 'n' }] },
+  { key: 'multi', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }, { g: 'LET OUT', side: 'n' }, { g: 'TAKE OFF', side: 'e' }] },
+];
+
+/** What each mark on the table's cards means, drawn with the real card faces. */
+function SymbolKey() {
+  return (
+    <section class="panel rule">
+      <h2 class="panel-title">{t('rules.symbols')}</h2>
+      <p class="body muted">{t('rules.symbolsBody')}</p>
+      <ul class="sym-list">
+        <li class="sym-row is-wide">
+          <div class="sym-glyph" aria-hidden="true">
+            {[at('V', 'cuir', 0, 0), at('P', 'amach', 0, 0), at('P', 'le', 0, 0), at('W', '*', 0, 0), m('m04', 'PUT UP WITH')].map((c, i) => (
+              <Face card={c} size="table" key={i} />
+            ))}
+          </div>
+          <p class="body muted">{t('rules.sym.glyphs')}</p>
+        </li>
+        {SYMBOLS.map((x) => (
+          <li class="sym-row" key={x.key}>
+            <div aria-hidden="true">
+              <Face card={x.card} size="table" owner={x.owner} showOwner={x.owner !== undefined} uses={x.uses} />
+            </div>
+            <p class="body muted">{t(`rules.sym.${x.key}`)}</p>
+          </li>
+        ))}
+        <li class="sym-row is-wide">
+          <div aria-hidden="true">
+            <MeaningCard card={at('M', 'm01', 0, 0)} uses={[{ g: 'LISTEN TO', side: 'w' }, { g: 'PUT ON', side: 'n' }]} />
+          </div>
+          <p class="body muted">{t('rules.sym.peek')}</p>
+        </li>
+      </ul>
     </section>
   );
 }
@@ -90,6 +134,7 @@ export function RulesScreen({ onTutorial }: { onTutorial: () => void }) {
           >
             {t('rules.cardsBody')}
           </Rule>
+          <SymbolKey />
           <Rule title={t('rules.modes')}>{t('rules.modesBody')}</Rule>
           <Rule title={t('rules.hidden')}>{t('rules.hiddenBody')}</Rule>
         </div>

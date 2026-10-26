@@ -129,7 +129,8 @@ export function Face(p: FaceProps) {
 
 /** The wide meaning card in the hand: three meanings, the Irish answer under each (or a dotted rule). */
 export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string; alts?: boolean; uses?: Use[] } & CardState) {
-  // On the board: every meaning in use is marked, with an arrow towards each of its lines.
+  // On the board: every meaning in use is marked, with an arrow after it for each of its lines,
+  // running the way that line reads into the card.
   const inUse = p.uses ? byMeaning(p.uses) : [];
   const sidesOf = (g: string) => inUse.find((m) => m.g === g)?.sides ?? [];
   const ms = meaningsOf(p.card);
@@ -142,15 +143,16 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
       {ms.map((g) => (
         <div class={'ba-m' + (p.used === g || sidesOf(g).length ? ' is-used' : '') + (!p.hidden && senseOf(printedAnswer(p.card.t, g), g) ? ' has-sense' : '')} key={g}>
           <span class="ba-en">
+            {g}
             {sidesOf(g).length > 0 && (
               <>
                 <span class="ba-dir" aria-hidden="true">
-                  {sidesOf(g).map((sd) => SIDE_ARROW[sd]).join('')}{' '}
+                  {' '}
+                  {sidesOf(g).map((sd) => SIDE_ARROW[sd]).join('')}
                 </span>
-                <span class="sr-only">{sidesOf(g).map((sd) => t(`a11y.side.${sd}` as Key)).join(', ')}: </span>
+                <span class="sr-only">, {sidesOf(g).map((sd) => t(`a11y.side.${sd}` as Key)).join(', ')}</span>
               </>
             )}
-            {g}
           </span>
           {!p.hidden && <SenseCount text={printedAnswer(p.card.t, g)} g={g} />}
           <span class={'ba-ga' + (p.hidden ? ' is-hidden' : '')}>{p.hidden ? '·' : printedAnswer(p.card.t, g)}</span>
