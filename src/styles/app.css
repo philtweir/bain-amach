@@ -1175,9 +1175,10 @@ button.list-row:active {
   place-items: center;
   font: 800 15px/1 var(--font-card);
 }
-.board.is-glyph .ba-multi,
-.ba-zoomed .ba-multi {
-  display: none;
+.board.is-glyph .ba-meaning.ba-table.is-multi .ba-multi {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
 }
 .board .ba-card {
   transition: transform var(--dur-snap) var(--ease-snap), box-shadow 600ms var(--ease-out), filter 160ms, opacity var(--dur-snap);
@@ -1244,6 +1245,19 @@ button.list-row:active {
   width: 24px;
   height: 24px;
   border-radius: 3px;
+  /* centred: the meaning card is a column flexbox, so without this it sat at the left edge */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* Split cards zoomed out: just the two tones (that alone marks a meaning card), no text or square. */
+.board.is-glyph .ba-meaning.ba-table .ba-half .ba-half-en,
+.board.is-glyph .ba-meaning.is-split::after {
+  display: none;
+}
+/* Three or four meanings zoomed out: one square, with the count in it (not the glyph as well). */
+.board.is-glyph .ba-meaning.is-multi::after {
+  display: none;
 }
 
 .toasts {
