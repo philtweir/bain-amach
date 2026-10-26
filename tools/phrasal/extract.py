@@ -41,7 +41,7 @@ PREP_FORMS = {
 }
 FORM_TO_PREP = {f: p for p, fs in PREP_FORMS.items() for f in fs.split()}
 # Words that turn a preposition into a compound one (ar son, ar fud, le haghaidh…), which isn't a particle.
-COMPOUND_PREP_NEXT = {"son", "fud", "feadh", "nós", "aghaidh", "haghaidh", "ais", "chúl", "bun", "lorg", "réir", "dheis", "chlé", "choinne", "dtaobh", "thaobh", "dtuairim"}
+COMPOUND_PREP_NEXT = {"son", "fud", "feadh", "nós", "aghaidh", "haghaidh", "ais", "chúl", "bun", "lorg", "réir", "dheis", "chlé", "choinne", "dtaobh", "thaobh", "dtuairim", "éis", "eis"}
 # Tatoeba's Irish set has some Scottish Gaelic in it; its grave accents give it away.
 GAELIC_GRAVE = re.compile(r"[àèìòùÀÈÌÒÙ]")
 # Standard verbal nouns of common verbs (grammar, not dictionary text). Wiktionary's glosses cover
@@ -286,7 +286,12 @@ DOTTED = str.maketrans({c: b + "h" for c, b in zip("ḃċḋḟġṁṗṡṫḂ
 # Words common in Ulster writing and rare elsewhere. A rough signpost for which texts to read, not a classifier.
 ULSTER_MARKERS = {"chan", "char", "cha", "inteacht", "ínteacht", "goidé", "caidé", "tchí", "tchíonn", "tchífeá",
                   "tchífidh", "domh", "fosta", "achan", "bhéarfaidh", "bhéarfainn", "bhéarfadh", "bhéarfas", "druid"}
-ULSTER_RATE = 3.0  # markers per 1,000 words for a text to count as Ulster-leaning
+ULSTER_RATE = 3.0  # markers per 1,000 words for a text to count as Ulster-leaning…
+ULSTER_MIN_WORDS = 150  # …given enough words for the rate to mean something
+# Common in Scottish Gaelic, rare in Irish of any spelling: tells Gàidhlig without grave accents apart.
+GAIDHLIG_WORDS = {"tha", "gu", "ri", "thu", "bha", "agus'", "orra", "dhomh", "leam", "leat", "mo'n"}
+# Function words the spelling pairs would misread (is → as, a → ag…): always taken as written.
+AS_WRITTEN = {"is", "a", "an", "na", "go", "sé", "sí", "mé", "tú", "ar", "do", "le", "de", "as", "ó", "agus"}
 
 
 def load_pairs(path: str | None) -> dict[str, set[str]]:
@@ -316,24 +321,31 @@ def pd_texts(paths: list[str], forms: dict[str, set[str]], pairs: dict[str, set[
     for path in paths:
         with open(path, encoding="utf-8") as fh:
             docs += [json.loads(line) for line in fh if line.strip()]
-    works: dict[str, dict] = defaultdict(lambda: {"pages": 0, "words": 0, "markers": 0, "url": ""})
+    works: dict[str, dict] = defaultdict(lambda: {"pages": 0, "words": 0, "markers": 0, "grave": 0, "gd": 0, "url": ""})
     for d in docs:
         words = [w.lower().strip("'’-") for w in tok.findall(nfc(d["text"]).translate(DOTTED))]
         wk = works[d["work"]]
         wk["pages"] += 1
         wk["words"] += len(words)
         wk["markers"] += sum(w in ULSTER_MARKERS for w in words)
+        wk["grave"] += sum(bool(GAELIC_GRAVE.search(w)) for w in words)
+        wk["gd"] += sum(w in GAIDHLIG_WORDS for w in words)
         wk["url"] = wk["url"] or d["url"].split("/wiki/")[0] + "/wiki/" + urllib.parse.quote(d["work"].replace(" ", "_"))
     for wk in works.values():
         wk["rate"] = 1000 * wk["markers"] / max(wk["words"], 1)
+        # chan / cha are Scottish Gaelic too; a work full of grave accents is Gàidhlig, not Ulster Irish.
+        wk["scottish"] = wk["grave"] > 0.02 * wk["words"] or wk["gd"] > 0.015 * wk["words"]
+        wk["ulster"] = wk["rate"] >= ULSTER_RATE and wk["words"] >= ULSTER_MIN_WORDS and not wk["scottish"]
     hits: dict[tuple, list] = defaultdict(list)
     for d in docs:
-        ulster = works[d["work"]]["rate"] >= ULSTER_RATE
+        if works[d["work"]]["scottish"]:
+            continue
+        ulster = works[d["work"]]["ulster"]
         for sent in re.split(r"(?<=[.!?])\s+|\n+", nfc(d["text"]).translate(DOTTED)):
             words = [w.lower().strip("'’-") for w in tok.findall(sent)]
             if len(words) < 3 or GAELIC_GRAVE.search(sent):
                 continue
-            opts = [{w} | pairs.get(w, set()) for w in words]
+            opts = [{w} | (set() if w in AS_WRITTEN else pairs.get(w, set())) for w in words]
             for i, o in enumerate(opts):
                 verbs = set().union(*(form_to_verb.get(w, set()) for w in o))
                 if not verbs:
@@ -479,9 +491,9 @@ def main():
         # The signpost list: which public-domain works were read, and how Ulster-leaning each looks.
         with open(f"{a.out}/sources-public-domain.csv", "w", newline="", encoding="utf-8") as fh:
             wr = csv.writer(fh)
-            wr.writerow(["work", "pages", "words", "ulster_markers_per_1000", "ulster_leaning", "url"])
-            for name, wk in sorted(works.items(), key=lambda kv: -kv[1]["rate"]):
-                wr.writerow([name, wk["pages"], wk["words"], f"{wk['rate']:.1f}", "yes" if wk["rate"] >= ULSTER_RATE else "", wk["url"]])
+            wr.writerow(["work", "pages", "words", "ulster_markers_per_1000", "ulster_leaning", "scottish_gaelic", "url"])
+            for name, wk in sorted(works.items(), key=lambda kv: (not kv[1]["ulster"], -kv[1]["rate"])):
+                wr.writerow([name, wk["pages"], wk["words"], f"{wk['rate']:.1f}", "yes" if wk["ulster"] else "", "yes" if wk["scottish"] else "", wk["url"]])
         print(f"{len(works)} public-domain works → {a.out}/sources-public-domain.csv")
 
 

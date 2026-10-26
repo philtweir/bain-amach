@@ -6,7 +6,10 @@ they say where to look, so the deck itself can be written from first-hand checki
 
 - `candidates.xlsx`: the sheet to work in. Yellow columns are for review.
 - `candidates.csv`: the same data, kept for diffs.
-- `../../tools/phrasal/extract.py`: regenerates both files (see [Rerun](#rerun)).
+- `sources-public-domain.csv`: every Wikisource work read, with its size and how Ulster-leaning it
+  looks. A reading list, not a verdict.
+- `../../tools/phrasal/extract.py`: regenerates all three (see [Rerun](#rerun)).
+  `../../tools/phrasal/fetch_wikisource.py` downloads the Wikisource texts it reads.
 
 ## Columns
 
@@ -20,8 +23,10 @@ they say where to look, so the deck itself can be written from first-hand checki
 | `ud_hits` | modern-spelling treebank sentences with this verb + particles attached (IDT, TwittIrish) |
 | `ud_prestandard` | the same in Cadhan Aonair (pre-1940s spelling, 1602–1936, incl. a bardic poem and a Gospel) |
 | `tatoeba_hits` | Tatoeba sentences with a form of the verb followed, within 5 words, by the particles |
-| `examples` | up to 3 treebank + 2 Tatoeba + 1 pre-standard sentence, each with its id and licence |
-| `lookup` | links: the Wiktionary entry, the Tatoeba sentences, and the verb's page on teanglann.ie |
+| `pd_hits` | the same surface match in Wikisource's public-domain Irish (1.3 million words, pre-standard spelling) |
+| `pd_ulster_hits` | of those, how many are in a work that looks Ulster-leaning (see below) |
+| `examples` | up to 3 treebank, 2 Tatoeba, 1 Cadhan and 2 Wikisource sentences, each with its source and licence |
+| `lookup` | links: the Wiktionary entry, the Tatoeba sentences, the Wikisource pages, and the verb's page on teanglann.ie |
 | `ulster_attested`, `proposed_meaning`, `phil_verdict`, `notes` | for review |
 
 **Read the counts with care.** They count literal uses too. `cuir ar` = 171 is mostly
@@ -49,19 +54,27 @@ it's idiomatic.
    - The [Doegen Records](https://www.doegen.ie) (1928–31) include 1931 Ulster speakers with
      transcriptions. These are the speech of people born in the mid-1800s. No licence was found,
      so treat them as reference only.
-   - Public domain, so these could be ingested, not just looked up. Little of it is Ulster:
-     - [Wikisource, Category:Gaeilge](https://wikisource.org/wiki/Category:Gaeilge): a couple of
-       hundred pages. Most are Munster (*Séadna*, *Niamh*). *Irisleabhar na Gaedhilge*
-       (1882–1909, about 140 pages) has contributors from every province.
+   - Public domain, so these can be ingested, not just looked up. Little of it is Ulster:
+     - [Wikisource, Category:Gaeilge](https://wikisource.org/wiki/Category:Gaeilge): **read by the
+       extractor** (`pd_hits`). 57 works, 1.3 million words, Old and Middle Irish left out. Most is
+       Munster (*Séadna*, *Niamh*, *Mo Sgéal Féin*, *An t-Oileánach*) or Connacht (*Deoraidheacht*,
+       Hyde). *Irisleabhar na Gaedhilge* (1882–1909, 128 pages, 310,000 words) has contributors
+       from every province. The Ulster-marker score (*chan*, *inteacht*, *goidé*, *tchí*, *domh*,
+       *fosta*, *bhéarfainn*…) flags three Oriel/south-Ulster poems: *An Bonnán Buí* (Cathal Buí
+       Mac Giolla Ghunna), *Mná na hÉireann* (Peadar Ó Doirnín) and *Róisín Dubh*. Each has a few
+       hundred words, so they're a reading list, not a corpus. Works in Scottish Gaelic (by grave
+       accents, or words like *tha*, *gu*, *ri*, *thu*) are marked and skipped.
      - Project Gutenberg: a handful of Irish-language titles, none of them Ulster
        ([PGDP's list](https://www.pgdp.net/wiki/Irish_Language_Projects)). Ua Laoghaire's
        *Niamh* and Ó Dubhghaill's *Prátaí Mhíchíl Thaidhg* are Munster; Hyde's *Beside the Fire*
        is Connacht.
      - E. C. Quiggin, *A Dialect of Donegal* (1906; Quiggin died in 1920). Glenties speech, with
        texts in phonetic transcription. Good evidence, but useless for word matching.
-     - All of these are pre-standard spelling, often Cló Gaelach with dots for lenition. Watch
-       for *air* = *ar* and *do-* past forms, which the extractor would misread unless the text
-       is standardised first.
+     - All of these are pre-standard spelling, often Cló Gaelach with dots for lenition. The
+       extractor expands the dots and reads each old word through Kevin Scannell's
+       [caighdean](https://github.com/kscanne/caighdean) word pairs (`--pairs`, GPL; used as a
+       lookup, not copied). An old word with two modern readings keeps both, so these are surface
+       matches. Expect some noise, and check the sentence.
 3. **(c) Permissively licensed corpora** (what `extract.py` reads). These are the sources
    [flaxandteal/greasan-data](https://github.com/flaxandteal/greasan-data) signposts:
    - English Wiktionary via Kaikki: phrasal-verb headwords and glosses (CC BY-SA 4.0).
@@ -97,12 +110,12 @@ not pasted.
 | bain as: CLEAR OFF | yes: "to make off" (also "tease, pull someone's leg") | 96 / 7 | supported. MAKE OFF is closer; TEASE could be another card |
 | cuir isteach ar: INTERFERE WITH | yes: "interrupt; annoy, disturb; affect (negatively)" | 7 / 1 | **relabel INTERRUPT or ANNOY** (also APPLY FOR, already a card) |
 | cuir ar: BOTHER | only "put on (clothes)" | 171 / 20, mostly literal | needs (b) or (d) |
-| tabhair faoi: ATTACK | no entry | 37 / 0 | needs (d) |
+| tabhair faoi: ATTACK | no entry | 37 / 0 | needs (d). Most Wikisource hits are *thug sé faoi deara* ("noticed"), a separate idiom and a possible NOTICE card |
 | cuir amach: PUT OUT, PUBLISH | no entry | 10 / 0 | needs (d). PUT OUT means eject (*cuir amach an madadh*), not extinguish (*múch*); the card wording should make that clear |
 | éirigh as: RESIGN | no entry | 10 / 3 | needs (d) |
 | lig do: ALLOW | no entry | 6 / 0 | needs (d) |
 | amharc ar: WATCH | no entry | 4 / 0 | needs (d). *amharc* is the Ulster verb, so (b) should settle it |
-| tit amach: FALL OUT | no entry | 1 / 0 | needs (b) or (d). The corpora barely have it |
+| tit amach: FALL OUT | no entry | 1 / 0 | needs (b) or (d). Wikisource has it as "happen" (*mar thuit amach dóibh*, *An t-Oileánach*), the deck's other sense; the quarrel sense still needs checking |
 
 **New candidates with a Wiktionary sense** (52 rows have one). The most promising are those with
 a verb already in the deck:
@@ -129,7 +142,8 @@ The frequent combinations with no Wiktionary entry (*tabhair do*, *cuir le*, *d�
 *cuir faoi*) are probably mostly literal. They are worth a glance for idioms such as *cuir le*
 (add to, support) and *cuir faoi* (settle, stay).
 
-**No phrasal headword is tagged Ulster in Wiktionary.** Ulster evidence has to come from (b) or (d).
+**No phrasal headword is tagged Ulster in Wiktionary**, and Wikisource's Ulster material is three
+short poems. Ulster evidence still has to come from Corpas Stairiúil (b) or a dictionary (d).
 
 ## Rerun
 
@@ -141,7 +155,11 @@ pip install duckdb openpyxl
 git clone --depth 1 https://github.com/UniversalDependencies/UD_Irish-IDT       ud/UD_Irish-IDT
 git clone --depth 1 https://github.com/UniversalDependencies/UD_Irish-TwittIrish ud/UD_Irish-TwittIrish
 git clone --depth 1 https://github.com/UniversalDependencies/UD_Irish-Cadhan    ud/UD_Irish-Cadhan
-python3 tools/phrasal/extract.py --bundle greasan/ --ud ud/ --deck data/deck.json --out research/phrasal-verbs
+# Optional: Wikisource's public-domain Irish (slow: Wikisource rate-limits; reruns resume from its cache)
+python3 tools/phrasal/fetch_wikisource.py --out ws/
+git clone --depth 1 https://github.com/kscanne/caighdean
+python3 tools/phrasal/extract.py --bundle greasan/ --ud ud/ --deck data/deck.json --out research/phrasal-verbs \
+  --texts ws/wikisource-ga.jsonl --pairs caighdean/pairs.txt
 ```
 
 Rerunning overwrites the sheet. Copy any review columns you've filled in somewhere else first, or
@@ -157,5 +175,6 @@ the counts would grow by orders of magnitude, but they would still be mostly lit
 | domain | for |
 |---|---|
 | `downloads.tatoeba.org` | the full Tatoeba export |
+| `www.gutenberg.org` | Gutenberg (gutenberg.org redirects there); only a handful of Irish books, none Ulster |
 | `dumps.wikimedia.org` | Irish Wikipedia |
 | `opus.nlpl.eu`, `object.pouta.csc.fi` | OPUS parallel corpora |
