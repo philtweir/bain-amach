@@ -24,26 +24,28 @@ export function botName(players: PlayerConfig[], i: number): string {
 
 /**
  * What a bot's face shows now. In order: game over (pleased if it won, else beaten); its turn or
- * mid-play (thinking); it passed or tapped Stuck since the latest play and the river hasn't turned
- * (stuck); the latest play was its line (pleased); otherwise neutral.
+ * mid-play (thinking); it passed, swapped (where a swap counts as a pass) or tapped Stuck since the
+ * latest play and the river hasn't turned (stuck); the latest play was its line (pleased); else neutral.
  */
 export function moodOf(s: GameState, i: number, playing: number | null): Mood {
   if (s.over) return s.over.winners.includes(i) ? 'pleased' : 'beaten';
   if (playing === i || (s.config.mode === 'turns' && playing === null && s.turn === i)) return 'thinking';
   let k = s.log.length - 1;
-  while (k >= 0 && !['line', 'lone', 'swap', 'stall'].includes(s.log[k].e)) k--;
+  const swapIsPass = !!s.config.rules?.swapIsPass;
+  while (k >= 0 && !['line', 'lone', 'stall', ...(swapIsPass ? [] : ['swap'])].includes(s.log[k].e)) k--;
   if (stuckSince(s, i, k)) return 'stuck';
   const e = s.log[k];
   return e && e.e === 'line' && e.p === i ? 'pleased' : 'neutral';
 }
 
-/** Whether bot i passed or went stuck after log index `from`, with no stall since. */
+/** Whether bot i passed (or swapped, where that counts as a pass) or went stuck after log index
+ *  `from`, with no stall since. */
 function stuckSince(s: GameState, i: number, from: number): boolean {
   if (s.config.mode === 'race') return s.stuck[i];
   for (let k = s.log.length - 1; k > from; k--) {
     const e = s.log[k];
     if (e.e === 'stall') return false;
-    if (e.e === 'pass' && e.p === i) return true;
+    if ((e.e === 'pass' || (e.e === 'swap' && s.config.rules?.swapIsPass)) && e.p === i) return true;
   }
   return false;
 }

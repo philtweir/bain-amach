@@ -38,6 +38,14 @@ describe('bot characters', () => {
     expect(moodOf(state(ps, 'turns', [passed, stall]), 1, null)).toBe('neutral');
   });
 
+  it('a swap reads as stuck where swaps count as passes', () => {
+    const ps = [human, bot('hard', 1)];
+    const swapped = { e: 'swap', p: 1, gave: 1, took: 2, turnNo: 1 } as GameEvent;
+    const s = state(ps, 'turns', [swapped]);
+    expect(moodOf(s, 1, null)).toBe('neutral');
+    expect(moodOf({ ...s, config: { ...s.config, rules: { swapIsPass: true } } }, 1, null)).toBe('stuck');
+  });
+
   it('is pleased if it won and beaten if not', () => {
     const ps = [human, bot('easy', 1), bot('hard', 2)];
     const s = { ...state(ps), over: { how: 'out' as const, winners: [2], tie: false, counts: [3, 2, 0] } };

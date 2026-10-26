@@ -39,7 +39,9 @@ and stats tests are unchanged.
    run out and RULES §8's "once both piles are empty" could never arrive: up to 21 in 200 simulated
    3-player games never finished. So a stall counts towards the end once the main deck is empty (the
    meaning pile no longer matters), and as a backstop four stalls in a row with no line or lone verb
-   laid also end the game. Fewest cards wins either way.
+   laid also end the game. Fewest cards wins either way. Confirmed by Phil after the simulations, as
+   was keeping draw and pass (the only way to fish for a verb or wildcard, and the fallback when you
+   can't swap).
 3. **New meaning cards pop up.** When another player puts a new meaning card down, it opens in full
    view (all three meanings) for about 2.5 s once their line lands; tap to dismiss. Several queue one
    after another. Not for your own cards, nor for lines ending on a card already down. In
