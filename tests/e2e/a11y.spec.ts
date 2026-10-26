@@ -13,7 +13,7 @@ const check = async (page: import('@playwright/test').Page, name: string) => {
 for (const theme of ['light', 'dark'] as const)
   test(`no serious axe violations (${theme})`, async ({ page }) => {
     await seedSettings(page, { theme });
-    await page.goto('/?e2e&seed=11');
+    await page.goto('./?e2e&seed=11');
     await check(page, 'home');
     for (const [btn, name] of [['Glossary', 'glossary'], ['Rules', 'rules'], ['Settings', 'settings']] as const) {
       await page.getByRole('button', { name: btn }).first().click();

@@ -8,6 +8,8 @@ import { readFileSync } from 'node:fs';
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 export default defineConfig({
+  // GitHub Pages serves the app from /<repo>/; the deploy workflow sets BASE_PATH.
+  base: process.env.BASE_PATH || '/',
   resolve: {
     alias: { '@deck': fileURLToPath(new URL('./handoff/data/deck.json', import.meta.url)) },
   },

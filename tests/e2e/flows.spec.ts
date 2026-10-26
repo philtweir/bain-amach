@@ -3,7 +3,7 @@ import { playTurn, seedSettings, waitForMyTurn } from './helpers';
 
 test('a full turn-mode game against a bot, to the recap', async ({ page }) => {
   await seedSettings(page);
-  await page.goto('/?e2e&seed=4242');
+  await page.goto('./?e2e&seed=4242');
   await page.getByRole('button', { name: 'New game' }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   let lines = 0;
@@ -20,7 +20,7 @@ test('a full turn-mode game against a bot, to the recap', async ({ page }) => {
 
 test('reload mid-game, then Continue restores the exact state', async ({ page }) => {
   await seedSettings(page);
-  await page.goto('/?e2e&seed=777');
+  await page.goto('./?e2e&seed=777');
   await page.getByRole('button', { name: 'New game' }).click();
   await page.getByRole('button', { name: 'Play', exact: true }).click();
   for (let i = 0; i < 3; i++) {
@@ -38,7 +38,7 @@ test('reload mid-game, then Continue restores the exact state', async ({ page })
 
 test('works offline after the first load', async ({ page, context }) => {
   await seedSettings(page);
-  await page.goto('/?e2e');
+  await page.goto('./?e2e');
   await page.evaluate(async () => {
     const reg = await navigator.serviceWorker.ready;
     if (!navigator.serviceWorker.controller) await new Promise((r) => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true }));

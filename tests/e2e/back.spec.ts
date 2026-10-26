@@ -5,7 +5,7 @@ import { seedSettings, waitForMyTurn } from './helpers';
 // sheets, opens Pause on the table, and never leaves the app mid-game.
 test('back button: screens pop, the table pauses, the pause sheet closes', async ({ page }) => {
   await seedSettings(page);
-  await page.goto('/?e2e&seed=9');
+  await page.goto('./?e2e&seed=9');
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   await page.goBack();
