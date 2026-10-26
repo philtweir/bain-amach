@@ -393,6 +393,20 @@ describe('swap counts as a pass for the river', () => {
   });
 });
 
+describe('picking a verb on the table', () => {
+  it('only lights lines that use that verb, not verbs in the hand', () => {
+    // cuir is on the table; the hand holds éist and LISTEN TO / PUT ON / SUCCEED, and the river has le and ar.
+    const m = M('m01'), ev = V('éist');
+    const s = fixture({ piles: [['le'], ['ar'], ['amach'], ['suas'], ['as']], hands: [[m, ev], [V('tóg')]] });
+    const cuir = s.board.find((b) => b.t === 'cuir')!;
+    const all = ways(s, 0, emptySelection());
+    expect(all.some((w) => 'hand' in w.verb && w.verb.hand === ev.id)).toBe(true);
+    const picked = ways(s, 0, { ...emptySelection(), verb: { table: { x: cuir.x, y: cuir.y } } });
+    expect(picked.length).toBeGreaterThan(0);
+    expect(picked.every((w) => 'table' in w.verb && w.verb.table.x === cuir.x && w.verb.table.y === cuir.y)).toBe(true);
+  });
+});
+
 describe('bots swap instead of passing', () => {
   // m01 (LISTEN TO / PUT ON / SUCCEED) is live: éist in hand, cuir on the table. m02 (STAND BY /
   // LOOK AT / REACH) has no verb in reach. The river has neither le nor ar, and the deck is empty.

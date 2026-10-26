@@ -128,8 +128,9 @@ export function ways(s: GameState, p: number, sel: Selection): Way[] {
             if (!verbOk(vs) || !tableVerbDirs(g, v.x, v.y, L).length) continue;
             for (const src of sourceCombos(s, c.ps, wildIds, -1)) if (srcOk(src)) out.push({ m: m.id, g: gl, c: c.id, verb: vs, src });
           }
-          // A verb from the hand: one way per distinct verb card picked (any copy will do).
-          const hvs = sel.verb && 'hand' in sel.verb ? handVerbs.filter((h) => h.id === (sel.verb as { hand: number }).hand) : handVerbs;
+          // A verb from the hand: one way per distinct verb card picked (any copy will do). None when
+          // the player picked a verb on the table: that's the verb the line must use.
+          const hvs = sel.verb && 'hand' in sel.verb ? handVerbs.filter((h) => h.id === (sel.verb as { hand: number }).hand) : sel.verb ? [] : handVerbs;
           const hv = hvs.find((h) => h.t === c.v);
           if (hv)
             for (const src of sourceCombos(s, c.ps, wildIds, -1))
