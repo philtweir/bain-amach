@@ -65,6 +65,8 @@ interface FaceProps extends CardState {
   hideAnswers?: boolean;
   tabIndex?: number;
   extraClass?: string;
+  /** Meaning cards on the board: the side the line it shows arrives from. */
+  arrive?: 'n' | 'e' | 's' | 'w';
 }
 
 /** A square card at hand, river or table size. Meaning cards at hand size use MeaningCard. */
@@ -95,6 +97,7 @@ export function Face(p: FaceProps) {
     >
       {inner}
       {placed.cross && <i class="ba-cross" />}
+      {p.arrive && <i class={'ba-arrive to-' + p.arrive} aria-hidden="true" />}
       {p.showOwner && p.owner !== undefined && p.owner >= 0 && <i class={'ba-own ba-p' + (p.owner + 1)} />}
     </Tag>
   );

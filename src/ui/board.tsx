@@ -472,6 +472,19 @@ export function Board({ c }: { c: Controller }) {
   const hiddenPicked = new Set(picks.flatMap((p) => ('cross' in p ? [p.cross.x + ',' + p.cross.y] : [])));
   const takenKey = taken && taken.cell && Date.now() - taken.at < 700 ? taken.cell : null;
   const lastLine = s.lines[s.lines.length - 1];
+  // Which side each meaning card's own line (the first to end on it, whose meaning it shows) arrives
+  // from: later lines can end on its other sides with other meanings.
+  const arrive = useMemo(() => {
+    const m = new Map<string, 'n' | 'e' | 's' | 'w'>();
+    for (const l of s.lines) {
+      const [mx, my] = l.cells[l.cells.length - 1];
+      const prev = l.cells[l.cells.length - 2];
+      const k = mx + ',' + my;
+      if (!prev || m.has(k)) continue;
+      m.set(k, prev[0] < mx ? 'w' : prev[0] > mx ? 'e' : prev[1] < my ? 'n' : 's');
+    }
+    return m;
+  }, [s.lines]);
 
   const cards = s.board.map((b) => {
     const k = b.x + ',' + b.y;
@@ -481,7 +494,7 @@ export function Board({ c }: { c: Controller }) {
     const was = prevIds.current.has(b.id) && !freshIds.has(b.id);
     return (
       <div key={b.id} class={'cell' + (was ? ' was-there' : '')} data-cell={k} data-card={b.id} style={{ transform: `translate(${b.x * PITCH}px, ${b.y * PITCH}px)` }}>
-        <Face card={b} size="table" lit={isLit} selected={selected} dim={dim} fresh={showFresh && freshIds.has(b.id)} taken={takenKey === k} owner={b.owner} showOwner label={cardLabel(b)} tabIndex={-1} />
+        <Face card={b} size="table" lit={isLit} selected={selected} dim={dim} fresh={showFresh && freshIds.has(b.id)} taken={takenKey === k} owner={b.owner} showOwner label={cardLabel(b)} tabIndex={-1} arrive={b.k === 'M' ? arrive.get(k) : undefined} />
       </div>
     );
   });

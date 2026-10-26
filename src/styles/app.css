@@ -1093,6 +1093,40 @@ button.list-row:active {
   left: 0;
   top: 0;
 }
+/* A meaning card on the board points into itself from the side its own line arrives from, so it's
+   clear which line the meaning shown belongs to when others end on its other sides. */
+.ba-arrive {
+  position: absolute;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  opacity: 0.75;
+}
+.ba-arrive.to-w {
+  left: 2px;
+  top: calc(50% - 5px);
+  border-left-color: var(--ink-muted);
+}
+.ba-arrive.to-e {
+  right: 2px;
+  top: calc(50% - 5px);
+  border-right-color: var(--ink-muted);
+}
+.ba-arrive.to-n {
+  top: 2px;
+  left: calc(50% - 5px);
+  border-top-color: var(--ink-muted);
+}
+.ba-arrive.to-s {
+  bottom: 2px;
+  left: calc(50% - 5px);
+  border-bottom-color: var(--ink-muted);
+}
+.board.is-glyph .ba-arrive,
+.ba-zoomed .ba-arrive {
+  display: none;
+}
 .board .ba-card {
   transition: transform var(--dur-snap) var(--ease-snap), box-shadow 600ms var(--ease-out), filter 160ms, opacity var(--dur-snap);
 }

@@ -480,8 +480,9 @@ export class Controller {
       }
       case 'swap':
         this.action.value = { seq: actionSeq++, kind: 'swap', p: ev.p, bot, cells: [], from: new Map(), stagger: 0 };
+        // Announced, but no toast: bots now swap instead of passing, and passes don't toast either.
+        // The swap animation, the new face-up card and the bot's stuck face show it.
         this.say(t('table.swapped', { name: this.name(ev.p) }));
-        if (bot) this.toast({ kind: 'quiet', msg: t('table.swapped', { name: this.name(ev.p) }) });
         return dur(bot ? 600 : 200);
       case 'pass': {
         this.say(ev.drew !== null ? t('table.passed', { name: this.name(ev.p) }) : t('table.passedNoDraw', { name: this.name(ev.p) }));
