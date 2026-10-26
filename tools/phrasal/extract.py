@@ -25,6 +25,7 @@ import json
 import os
 import re
 import unicodedata
+import urllib.parse
 from collections import Counter, defaultdict
 
 ADVERBS = {"amach", "isteach", "suas", "síos"}
@@ -40,7 +41,7 @@ PREP_FORMS = {
 }
 FORM_TO_PREP = {f: p for p, fs in PREP_FORMS.items() for f in fs.split()}
 # Words that turn a preposition into a compound one (ar son, ar fud, le haghaidh…), which isn't a particle.
-COMPOUND_PREP_NEXT = {"son", "fud", "feadh", "nós", "aghaidh", "haghaidh", "ais", "chúl", "bun", "lorg", "réir", "dheis", "chlé", "choinne"}
+COMPOUND_PREP_NEXT = {"son", "fud", "feadh", "nós", "aghaidh", "haghaidh", "ais", "chúl", "bun", "lorg", "réir", "dheis", "chlé", "choinne", "dtaobh", "thaobh", "dtuairim"}
 # Tatoeba's Irish set has some Scottish Gaelic in it; its grave accents give it away.
 GAELIC_GRAVE = re.compile(r"[àèìòùÀÈÌÒÙ]")
 # Standard verbal nouns of common verbs (grammar, not dictionary text). Wiktionary's glosses cover
@@ -278,6 +279,86 @@ def tatoeba_examples(bundle: str, forms: dict[str, set[str]]):
     return out
 
 
+# ---------------- public-domain texts (Wikisource, Gutenberg…) ----------------
+
+# Cló Gaelach writes lenition as a dot over the consonant.
+DOTTED = str.maketrans({c: b + "h" for c, b in zip("ḃċḋḟġṁṗṡṫḂĊḊḞĠṀṖṠṪ", "bcdfgmpstBCDFGMPST")})
+# Words common in Ulster writing and rare elsewhere. A rough signpost for which texts to read, not a classifier.
+ULSTER_MARKERS = {"chan", "char", "cha", "inteacht", "ínteacht", "goidé", "caidé", "tchí", "tchíonn", "tchífeá",
+                  "tchífidh", "domh", "fosta", "achan", "bhéarfaidh", "bhéarfainn", "bhéarfadh", "bhéarfas", "druid"}
+ULSTER_RATE = 3.0  # markers per 1,000 words for a text to count as Ulster-leaning
+
+
+def load_pairs(path: str | None) -> dict[str, set[str]]:
+    """Pre-standard → standard word pairs (caighdean's pairs.txt). Ambiguous words keep every option."""
+    pairs: dict[str, set[str]] = defaultdict(set)
+    if path:
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                w = line.rstrip("\n").split(" ", 1)
+                if len(w) == 2 and w[0] != w[1]:
+                    pairs[nfc(w[0]).lower()].add(nfc(w[1]).lower().split()[0])
+    return pairs
+
+
+def pd_texts(paths: list[str], forms: dict[str, set[str]], pairs: dict[str, set[str]]):
+    """Surface-match verb + particles in public-domain texts, through the pre-standard → standard pairs.
+
+    Returns (hits, works): hits maps a compound to (work, title, url, sentence, ulster-leaning?);
+    works maps a work to its size and Ulster-marker rate.
+    """
+    form_to_verb: dict[str, set[str]] = defaultdict(set)
+    for v, fs in forms.items():
+        for f in fs:
+            form_to_verb[f].add(v)
+    tok = re.compile(r"[\w'’-]+")
+    docs = []
+    for path in paths:
+        with open(path, encoding="utf-8") as fh:
+            docs += [json.loads(line) for line in fh if line.strip()]
+    works: dict[str, dict] = defaultdict(lambda: {"pages": 0, "words": 0, "markers": 0, "url": ""})
+    for d in docs:
+        words = [w.lower().strip("'’-") for w in tok.findall(nfc(d["text"]).translate(DOTTED))]
+        wk = works[d["work"]]
+        wk["pages"] += 1
+        wk["words"] += len(words)
+        wk["markers"] += sum(w in ULSTER_MARKERS for w in words)
+        wk["url"] = wk["url"] or d["url"].split("/wiki/")[0] + "/wiki/" + urllib.parse.quote(d["work"].replace(" ", "_"))
+    for wk in works.values():
+        wk["rate"] = 1000 * wk["markers"] / max(wk["words"], 1)
+    hits: dict[tuple, list] = defaultdict(list)
+    for d in docs:
+        ulster = works[d["work"]]["rate"] >= ULSTER_RATE
+        for sent in re.split(r"(?<=[.!?])\s+|\n+", nfc(d["text"]).translate(DOTTED)):
+            words = [w.lower().strip("'’-") for w in tok.findall(sent)]
+            if len(words) < 3 or GAELIC_GRAVE.search(sent):
+                continue
+            opts = [{w} | pairs.get(w, set()) for w in words]
+            for i, o in enumerate(opts):
+                verbs = set().union(*(form_to_verb.get(w, set()) for w in o))
+                if not verbs:
+                    continue
+                window = opts[i + 1 : i + 6]
+                adv = next((a for ws in window for a in ws if a in ADVERBS), None)
+                prep = None
+                for j, ws in enumerate(window):
+                    nxt = window[j + 1] if j + 1 < len(window) else set()
+                    p = next((FORM_TO_PREP[x] for x in ws if x in FORM_TO_PREP), None)
+                    if p and not (nxt & COMPOUND_PREP_NEXT):
+                        prep = p
+                        break
+                ref = (d["work"], d["title"], d["url"], sent.strip()[:400], ulster)
+                for v in verbs:
+                    if adv:
+                        hits[(v, adv)].append(ref)
+                    if prep:
+                        hits[(v, prep)].append(ref)
+                        if adv:
+                            hits[(v, adv, prep)].append(ref)
+                break
+    return hits, works
+
+
 # ---------------- main ----------------
 
 def main():
@@ -286,6 +367,8 @@ def main():
     ap.add_argument("--ud", required=True)
     ap.add_argument("--deck", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--texts", action="append", default=[], help="JSONL of public-domain texts (fetch_wikisource.py); repeatable")
+    ap.add_argument("--pairs", help="caighdean's pairs.txt, to read pre-standard spelling")
     a = ap.parse_args()
 
     deck = json.load(open(a.deck, encoding="utf-8"))
@@ -306,6 +389,7 @@ def main():
     vn, forms = verb_lexicon(wk, cand_verbs, a.ud)
     ud = ud_compounds(a.ud, vn)
     tt = tatoeba_examples(a.bundle, {v: forms[v] for v in cand_verbs if forms.get(v)})
+    pd, works = pd_texts(a.texts, {v: forms[v] for v in cand_verbs if forms.get(v)}, load_pairs(a.pairs)) if a.texts else ({}, {})
 
     keys = set(heads) | set(in_deck)
     for k, refs in ud.items():
@@ -316,6 +400,7 @@ def main():
         w = key.split()
         k = tuple(w)
         ud_refs, tt_refs = ud.get(k, []), tt.get(k, [])
+        pd_refs = sorted(pd.get(k, []), key=lambda r: not r[4])  # Ulster-leaning texts first
         ud_old = [r for r in ud_refs if r[0] in PRESTANDARD]
         ud_new = [r for r in ud_refs if r[0] not in PRESTANDARD]
         senses = [s for s in heads.get(key, []) if s.get("gloss") and not s["gloss"].startswith("Used other than")]
@@ -324,11 +409,13 @@ def main():
         status = "in deck" if any(not d for _, d in deck_now) else ("draft in deck" if deck_now else ("new compound" if w[0] in deck_verbs else "new verb"))
         refs = sorted(ud_new, key=lambda r: EXAMPLE_ORDER.index(r[0]))[:3] + [("Tatoeba", sid, f"{ga} = {en}") for _, sid, ga, en in tt_refs[:2]] + ud_old[:1]
         examples = [f"{t} [{b} {sid}{', pre-standard' if b in PRESTANDARD else ''}, {LICENCES.get(b, '?')}]" for b, sid, t in refs]
+        examples += [f"{t} [Wikisource: {title}{', Ulster-leaning' if ul else ''}, pre-standard, public domain]" for _, title, _, t, ul in pd_refs[:2]]
         # Signposts: where to look this up, not copies of what's there.
         links = []
         if senses:
             links.append(f"https://en.wiktionary.org/wiki/{key.replace(' ', '_')}#Irish")
         links += [f"https://tatoeba.org/en/sentences/show/{sid}" for _, sid, _, _ in tt_refs[:2] if sid and sid != "?"]
+        links += [url for _, _, url, _, _ in pd_refs[:2]]
         links.append(f"https://www.teanglann.ie/en/fgb/{w[0]}")
         rows.append({
             "compound": key,
@@ -341,6 +428,8 @@ def main():
             "ud_hits": len(ud_new),
             "ud_prestandard": len(ud_old),
             "tatoeba_hits": len(tt_refs),
+            "pd_hits": len(pd_refs),
+            "pd_ulster_hits": sum(1 for r in pd_refs if r[4]),
             "examples": "\n".join(examples),
             "lookup": "\n".join(links),
             "ulster_attested": "",
@@ -370,7 +459,7 @@ def main():
             ws.append([r[c] for c in cols])
         for cell in ws[1]:
             cell.font = Font(bold=True)
-        widths = {"compound": 18, "verb": 10, "particles": 12, "status": 14, "deck_meanings": 28, "wiktionary_senses": 60, "wiktionary_ulster": 10, "ud_hits": 8, "ud_prestandard": 8, "tatoeba_hits": 8, "examples": 90, "lookup": 45, "ulster_attested": 14, "proposed_meaning": 22, "phil_verdict": 14, "notes": 30}
+        widths = {"compound": 18, "verb": 10, "particles": 12, "status": 14, "deck_meanings": 28, "wiktionary_senses": 60, "wiktionary_ulster": 10, "ud_hits": 8, "ud_prestandard": 8, "tatoeba_hits": 8, "pd_hits": 8, "pd_ulster_hits": 8, "examples": 90, "lookup": 45, "ulster_attested": 14, "proposed_meaning": 22, "phil_verdict": 14, "notes": 30}
         for i, c in enumerate(cols):
             ws.column_dimensions[get_column_letter(i + 1)].width = widths.get(c, 14)
         yellow = PatternFill("solid", fgColor="FFF2CC")
@@ -386,6 +475,14 @@ def main():
     print(f"{len(rows)} rows → {a.out}/candidates.csv")
     by = Counter(r["status"] for r in rows)
     print(dict(by))
+    if works:
+        # The signpost list: which public-domain works were read, and how Ulster-leaning each looks.
+        with open(f"{a.out}/sources-public-domain.csv", "w", newline="", encoding="utf-8") as fh:
+            wr = csv.writer(fh)
+            wr.writerow(["work", "pages", "words", "ulster_markers_per_1000", "ulster_leaning", "url"])
+            for name, wk in sorted(works.items(), key=lambda kv: -kv[1]["rate"]):
+                wr.writerow([name, wk["pages"], wk["words"], f"{wk['rate']:.1f}", "yes" if wk["rate"] >= ULSTER_RATE else "", wk["url"]])
+        print(f"{len(works)} public-domain works → {a.out}/sources-public-domain.csv")
 
 
 if __name__ == "__main__":
