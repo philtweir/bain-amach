@@ -69,6 +69,8 @@ without the refill was too swingy (91–95% go out, fewer lines).
 
 | 8 | Spending wildcards | — | — | Never automatic. A line that can only be finished with a wildcard waits ("Use your wildcard?") until the player taps one; the tapped wildcard is the one spent. Bots are unaffected. (Phil, after playtesting) |
 | 9 | Choosing a spot with a mouse | — | Long-press | Long-press is touch and pen only; with a mouse, right-click the last card does the same, so a slow click never switches into spot-choosing. |
+| 10 | Bot opponents | "Bot B/C/D" | Characters proposal: one species per difficulty, five moods | Easy = Broc (badger), Normal = Corr (heron), Hard = Giorria (hare). Picking a difficulty picks the face, so setup keeps one Easy/Normal/Hard control and the face and name follow it. A second or third bot of one difficulty is "Óg" / "Mór" (Broc Óg); seat colour and pattern also tell them apart. Moods: thinking on its turn or mid-play, pleased after its line until the next play (and on winning), stuck after passing until the river turns, beaten at the end. Faces appear in the status strip, setup, line toasts, new-meaning pop-ups, the end card and the recap. Names and moods are derived, not saved, so older saved games show them too. |
+| 11 | Three opponents on a phone | — | — | The status strip has no room for three avatars and the turn label, so below 480px the label is hidden visually (still announced) and the dot plus the avatar's turn ring show whose turn it is. |
 
 ## Numbers the brief left to the build (playtest these)
 
@@ -83,6 +85,7 @@ without the refill was too swingy (91–95% go out, fewer lines).
 - **Compound list** (Ulster check). A new `handoff/data/deck.json` is all that's needed; nothing else hard-codes a card.
 - **iOS status bar.** It uses `default` (opaque bar, dark text) so it stays readable on the light felt. `black-translucent` would let the felt run under the clock, but iOS then forces white text, which is unreadable on the light table. Worth checking on a device.
 - **Sound** is a stub toggle (no audio in v1).
+- **Character art.** `src/ui/critters.tsx` draws stand-in faces from the design screenshots: the SVG export of the characters proposal had no image data in it. Swap in the design's own files there (one component, 3 species × 5 moods). The Óg / Mór naming for repeated species is also a stand-in.
 
 ## Draft meanings (in the app now, Phil to check)
 

@@ -1,4 +1,5 @@
 // Home: continue a saved game, start a new one, glossary progress, install nudge, update banner.
+import { botName } from '../../game/critters';
 import { canInstall, installEvent, restartForUpdate, updateReady } from '../../app/session';
 import { COMPOUND_BY_ID, COMPOUNDS, DECK, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import type { Card } from '../../engine/types';
@@ -85,7 +86,7 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
   if (saved) {
     const cfg = saved.state.config;
     const humans = cfg.players.filter((p) => p.kind === 'human');
-    const bots = cfg.players.filter((p) => p.kind === 'bot').map((p) => t('setup.bot', { letter: p.name }));
+    const bots = cfg.players.map((p, i) => (p.kind === 'bot' ? botName(cfg.players, i) : '')).filter(Boolean);
     const youIdx = cfg.players.findIndex((p) => p.kind === 'human');
     savedInfo = {
       title: humans.length > 1 ? t('home.passPlay', { who: humans.map((h) => h.name).join(', ') }) : t('home.vsBots', { mode: cfg.mode === 'race' ? t('home.race') : t('home.turns'), who: bots.join(', ') }),

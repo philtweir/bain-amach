@@ -3,7 +3,9 @@ import type { JSX } from 'preact';
 import { PARTICLE_TYPE, answersFor, printedAnswer } from '../engine/deck';
 import { meaningsOf } from '../engine/game';
 import type { Card as CardT, Placed } from '../engine/types';
+import type { CritterFace } from '../game/critters';
 import { t } from '../i18n';
+import { Critter } from './critters';
 
 export type Size = 'hand' | 'river' | 'table';
 export interface CardState {
@@ -122,14 +124,14 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
   );
 }
 
-export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean }) {
+export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean; critter?: CritterFace }) {
   return (
     <span
       class={'ba-avatar ba-p' + (p.player + 1) + (p.turn ? ' is-turn' : '') + (p.playing ? ' is-playing' : '') + (p.big ? ' av-big' : '')}
       role="img"
       aria-label={p.name ? t('a11y.player', { name: p.name, n: p.count ?? 0 }) + (p.stuck ? ', ' + t('table.stuckTag') : '') : undefined}
     >
-      <span class="ba-disc">{p.initial}</span>
+      <span class={'ba-disc' + (p.critter ? ' has-critter' : '')}>{p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={37} /> : p.initial}</span>
       {p.name && p.big && <span class="av-name">{p.name}</span>}
       {p.count !== undefined && <span class="ba-cnt">{p.count}</span>}
       {p.stuck && <span class="av-flag">{t('table.stuckTag')}</span>}
@@ -138,10 +140,11 @@ export function Avatar(p: { player: number; initial: string; count?: number; tur
   );
 }
 
-export function Disc(p: { player: number; initial: string; size?: number }) {
+export function Disc(p: { player: number; initial: string; size?: number; critter?: CritterFace }) {
+  const size = p.size ?? 34;
   return (
-    <span class={'ba-disc-solo ba-p' + (p.player + 1)} style={p.size ? { width: p.size, height: p.size, fontSize: p.size * 0.44 } : undefined} aria-hidden="true">
-      {p.initial}
+    <span class={'ba-disc-solo ba-p' + (p.player + 1) + (p.critter ? ' has-critter' : '')} style={p.size ? { width: p.size, height: p.size, fontSize: p.size * 0.44 } : undefined} aria-hidden="true">
+      {p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={Math.round((size * 37) / 34)} /> : p.initial}
     </span>
   );
 }

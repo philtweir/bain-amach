@@ -590,9 +590,43 @@ p {
 .player-row .ba-seg {
   flex: none;
 }
-.bot-name {
+/* Bot rows: face, name over species, difficulty, remove. Where the row is too narrow for all four
+   (a phone), the difficulty drops under the name instead of squeezing it out. */
+.bot-row {
+  container-type: inline-size;
+}
+.bot-row-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  width: 100%;
+}
+.bot-row-in .ba-icon-btn {
+  margin-left: auto;
+}
+@container (max-width: 460px) {
+  .bot-row-in .ba-seg {
+    order: 3;
+    flex: 1 1 100%;
+    margin-left: 56px;
+  }
+}
+.bot-label {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.bot-name {
   font: 700 calc(18px * var(--ts)) / 1.2 var(--font-ui);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bot-kind {
+  font: 400 calc(14px * var(--ts)) / 1.2 var(--font-ui);
+  color: var(--ink-muted);
 }
 .disc-btn {
   flex: none;
@@ -894,6 +928,21 @@ button.list-row:active {
   align-items: center;
   min-width: 0;
 }
+.st-avatars > span {
+  flex: none;
+}
+/* Three opponents fill a phone's strip: the turn label goes (screen readers still hear it) and
+   the dot plus the avatar's turn ring carry whose turn it is. */
+@media (max-width: 480px) {
+  .st-crowded .st-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 .st-turn,
 .st-clock {
   display: flex;
@@ -941,6 +990,33 @@ button.list-row:active {
 }
 .ba-avatar {
   transition: box-shadow 200ms;
+}
+
+/* Bot faces: the die-cut paper edge round the whole silhouette, and the face standing on its
+   seat disc (a little bigger than the disc, so ears and beak overhang it). */
+.critter {
+  display: block;
+  overflow: visible;
+}
+.critter-edge * {
+  fill: #fbf8f1;
+  stroke: #fbf8f1;
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.has-critter {
+  position: relative;
+}
+.has-critter > .critter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -56%);
+  pointer-events: none;
+}
+.ba-toast > .critter {
+  flex: none;
 }
 
 .river {
@@ -1891,4 +1967,9 @@ button.list-row:active {
   font: 700 13px/16px var(--font-card);
   color: var(--meaning-answer);
   opacity: 0.75;
+}
+.peek-label .critter {
+  display: inline-block;
+  vertical-align: middle;
+  margin: -4px 4px 0 0;
 }

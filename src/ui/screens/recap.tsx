@@ -2,6 +2,7 @@
 import { COMPOUND_BY_ID, compoundText } from '../../engine/deck';
 import type { GameState } from '../../engine/types';
 import { t } from '../../i18n';
+import { botName, moodOf, speciesOf } from '../../game/critters';
 import { Disc, initialOf } from '../cards';
 import { IconChevron, IconClose, IconHint } from '../icons';
 import { Screen, Scroll } from '../kit';
@@ -13,17 +14,17 @@ export function RecapScreen({ state, onAgain, onReplay, onClose, onCompound }: {
   const players = s.config.players;
   const humans = players.map((p, i) => (p.kind === 'human' ? i : -1)).filter((i) => i >= 0);
   const solo = humans.length === 1;
-  const name = (i: number) => (solo && players[i].kind === 'human' ? t('table.you') : players[i].kind === 'bot' ? t('setup.bot', { letter: players[i].name }) : players[i].name);
-  const short = (i: number) => (solo && players[i].kind === 'human' ? t('table.you') : players[i].name);
+  const name = (i: number) => (solo && players[i].kind === 'human' ? t('table.you') : players[i].kind === 'bot' ? botName(players, i) : players[i].name);
+  const face = (i: number) => (players[i].kind === 'bot' ? { species: speciesOf(players[i].level), mood: moodOf(s, i, null) } : null);
   const w = o.winners[0];
   let eyebrow: string;
   let title: string;
   if (o.how === 'out') {
-    eyebrow = solo && players[w].kind === 'human' ? t('recap.youWentOut') : t('recap.wentOut', { name: short(w) });
-    title = solo && players[w].kind === 'human' ? t('recap.youWin') : t('recap.theyWin', { name: short(w) });
+    eyebrow = solo && players[w].kind === 'human' ? t('recap.youWentOut') : t('recap.wentOut', { name: name(w) });
+    title = solo && players[w].kind === 'human' ? t('recap.youWin') : t('recap.theyWin', { name: name(w) });
   } else {
     eyebrow = t('recap.fewestHead');
-    title = o.tie ? t('recap.shared') : solo && players[w].kind === 'human' ? t('recap.youWin') : t('recap.theyWin', { name: short(w) });
+    title = o.tie ? t('recap.shared') : solo && players[w].kind === 'human' ? t('recap.youWin') : t('recap.theyWin', { name: name(w) });
   }
   const hintsUsed = humans.some((h) => s.hintsUsed[h]);
   const order = players.map((_, i) => i).sort((a, b) => s.hands[a].length - s.hands[b].length);
@@ -39,7 +40,7 @@ export function RecapScreen({ state, onAgain, onReplay, onClose, onCompound }: {
           const nl = s.lines.filter((l) => l.p === i).length;
           return (
             <div class="stand-row" key={i}>
-              <Disc player={players[i].color} initial={initialOf(short(i))} size={40} />
+              <Disc player={players[i].color} initial={initialOf(name(i))} size={40} critter={face(i)} />
               <span class="sr-name">{name(i)}</span>
               <span class="sr-n tabnum">{n === 1 ? t('table.oneCard') : t('table.cards', { n })}</span>
               <span class="sr-n tabnum">{nl === 1 ? t('recap.oneLine') : t('recap.lines', { n: nl })}</span>
@@ -74,7 +75,7 @@ export function RecapScreen({ state, onAgain, onReplay, onClose, onCompound }: {
               <span class="lr-text">
                 <span class="lr-ga">{compoundText(c)}</span>
                 <span class="lr-en">
-                  {l.g.toLowerCase()} · {short(l.p)}
+                  {l.g.toLowerCase()} · {name(l.p)}
                 </span>
               </span>
               <IconChevron size={22} />
@@ -93,7 +94,7 @@ export function RecapScreen({ state, onAgain, onReplay, onClose, onCompound }: {
                   <span class="lr-en">
                     {m.g.toLowerCase()} ·{' '}
                     {m.river.length ? t('recap.missedRiver', { words: m.river.join(', '), n: m.turnNo }) : m.wild ? t('recap.missedWild', { n: m.turnNo }) : t('recap.missedTurn', { n: m.turnNo })}
-                    {!solo ? ' · ' + short(m.p) : ''}
+                    {!solo ? ' · ' + name(m.p) : ''}
                   </span>
                 </span>
               </div>

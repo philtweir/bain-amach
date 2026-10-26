@@ -7,6 +7,7 @@ import { canDraw, lineMoves, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
 import { t } from '../i18n';
+import { Critter } from './critters';
 import { Avatar, Disc, MeaningCard, cardLabel, glossClass, initialOf, stateClass, typeClass, wordClass } from './cards';
 import { Board } from './board';
 import { IconClock, IconHint, IconNotQuite, IconPause, IconRefused, IconRiverTurns, IconTaken } from './icons';
@@ -36,9 +37,9 @@ function Status({ c }: { c: Controller }) {
     const turn = s.turn;
     const label = playing !== null ? t('table.playing', { name: c.name(playing) }) : turn === viewer && !c.passAndPlay ? t('table.yourTurn') : t('table.theirTurn', { name: c.name(turn) });
     status = (
-      <span class="st-turn" aria-live="polite">
+      <span class={'st-turn' + (players.length >= 3 ? ' st-crowded' : '')} aria-live="polite">
         <span class={'st-dot ba-p' + (s.config.players[turn].color + 1)} />
-        {label}
+        <span class="st-label">{label}</span>
       </span>
     );
   }
@@ -57,6 +58,7 @@ function Status({ c }: { c: Controller }) {
               stuck={c.race && s.stuck[i]}
               plus={plus[i]}
               big={c.passAndPlay}
+              critter={c.critter(i)}
             />
           </span>
         ))}
@@ -467,7 +469,11 @@ function Toasts({ c }: { c: Controller }) {
         if (x.kind === 'made')
           return (
             <div class="ba-toast toast-in" key={x.id}>
-              <span class={'ba-dot ba-p' + ((c.gs.value.config.players[x.player ?? 0]?.color ?? 0) + 1)} />
+              {c.critter(x.player ?? 0) ? (
+                <Critter species={c.critter(x.player ?? 0)!.species} mood="pleased" size={34} />
+              ) : (
+                <span class={'ba-dot ba-p' + ((c.gs.value.config.players[x.player ?? 0]?.color ?? 0) + 1)} />
+              )}
               <div>
                 <div class="ba-ga">{x.ga}</div>
                 <div class="ba-en">{x.en}</div>
@@ -525,7 +531,7 @@ function NewMeaning({ c }: { c: Controller }) {
   return (
     <div class={'peek is-new' + (low ? ' is-low' : '')} key={sh.id} aria-live="polite">
       <div class="peek-label">
-        {by && <span class={'ba-dot dot-sm ba-p' + (by.color + 1)} aria-hidden="true" />}
+        {by && (c.critter(sh.by) ? <Critter species={c.critter(sh.by)!.species} size={24} /> : <span class={'ba-dot dot-sm ba-p' + (by.color + 1)} aria-hidden="true" />)}
         {t('table.newOnTable', { name: c.name(sh.by) })}
       </div>
       <MeaningCard card={card} hidden={c.hidden} used={card.used} alts />
@@ -561,8 +567,8 @@ export function Standings({ c, lines }: { c: Controller; lines?: boolean }) {
         const nl = s.lines.filter((l) => l.p === i).length;
         return (
           <div class="stand-row" key={i}>
-            <Disc player={pl.color} initial={initialOf(pl.kind === 'human' && !c.passAndPlay ? t('table.you') : pl.name)} size={40} />
-            <span class="sr-name">{pl.kind === 'bot' ? t('setup.bot', { letter: pl.name }) : c.name(i)}</span>
+            <Disc player={pl.color} initial={initialOf(c.name(i))} size={40} critter={c.critter(i)} />
+            <span class="sr-name">{c.name(i)}</span>
             <span class="sr-n tabnum">{n === 1 ? t('table.oneCard') : t('table.cards', { n })}</span>
             {lines && <span class="sr-n tabnum">{nl === 1 ? t('recap.oneLine') : t('recap.lines', { n: nl })}</span>}
             {!lines && o.winners.includes(i) && <span class="win-badge">{t('end.wins')}</span>}
@@ -627,11 +633,11 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
   if (!open) return null;
   const cfg = c.config;
   const who = cfg.players
-    .filter((p) => p.kind === 'bot')
-    .map((p) => t('setup.bot', { letter: p.name }))
+    .map((p, i) => (p.kind === 'bot' ? c.name(i) : ''))
+    .filter(Boolean)
     .join(', ');
   const summary = [
-    c.passAndPlay ? t('home.passPlay', { who: cfg.players.map((p) => p.name).join(', ') }) : t('home.vsBots', { mode: cfg.mode === 'race' ? t('home.race') : t('home.turns'), who }),
+    c.passAndPlay ? t('home.passPlay', { who: cfg.players.map((_, i) => c.name(i)).join(', ') }) : t('home.vsBots', { mode: cfg.mode === 'race' ? t('home.race') : t('home.turns'), who }),
     cfg.answers === 'shown' ? t('pause.answersShown') : t('pause.answersHidden'),
     cfg.hints === 'off' ? t('pause.hintsOff') : cfg.hints === 'request' ? t('pause.hintsRequest') : t('pause.hintsAuto'),
   ].join(' · ');

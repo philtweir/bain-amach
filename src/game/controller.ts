@@ -1,6 +1,7 @@
 // Game controller: the turn loop, the race loop (timers, bot reaction delays), pass-and-play,
 // and the line builder's selection. The engine decides every rule; this file only sequences it.
 import { batch, computed, signal } from '@preact/signals';
+import { botName, moodOf, speciesOf, type CritterFace } from './critters';
 import { botMove, reactionDelay } from '../engine/bot';
 import {
   distinctCompounds,
@@ -170,7 +171,12 @@ export class Controller {
     const pl = this.gs.value.config.players[p];
     if (!pl) return '';
     if (pl.kind === 'human' && !this.passAndPlay) return t('table.you');
-    return pl.name;
+    return pl.kind === 'bot' ? botName(this.gs.value.config.players, p) : pl.name;
+  }
+  /** A bot's face and current mood, or null for a human. */
+  critter(p: number, s = this.gs.value): CritterFace {
+    const pl = s.config.players[p];
+    return pl?.kind === 'bot' ? { species: speciesOf(pl.level), mood: moodOf(s, p, this.botPlaying.value) } : null;
   }
   /** True when the viewer may act now. */
   canAct = computed(() => {
