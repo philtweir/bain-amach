@@ -8,6 +8,7 @@ import type { Card } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
 import { t } from '../i18n';
 import { Critter } from './critters';
+import { meaningUses } from './meaningUses';
 import { Avatar, Disc, MeaningCard, cardLabel, glossClass, initialOf, stateClass, typeClass, wordClass } from './cards';
 import { Board } from './board';
 import { IconClock, IconHint, IconNotQuite, IconPause, IconRefused, IconRiverTurns, IconTaken } from './icons';
@@ -517,7 +518,7 @@ function MeaningPeek({ c }: { c: Controller }) {
   return (
     <div class={'peek' + (low ? ' is-low' : '')} role="status" onClick={() => (c.peek.value = null)}>
       <div class="peek-label">{usable ? t('table.peekUsable') : t('table.peek')}</div>
-      <MeaningCard card={card} hidden={c.hidden} used={card.used} alts />
+      <MeaningCard card={card} hidden={c.hidden} used={card.used} alts uses={meaningUses(s.lines).get(pk.x + ',' + pk.y)} />
     </div>
   );
 }

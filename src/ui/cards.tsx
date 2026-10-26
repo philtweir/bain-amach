@@ -4,8 +4,9 @@ import { PARTICLE_TYPE, answersFor, printedAnswer, senseOf } from '../engine/dec
 import { meaningsOf } from '../engine/game';
 import type { Card as CardT, Placed } from '../engine/types';
 import type { CritterFace } from '../game/critters';
-import { t } from '../i18n';
+import { t, type Key } from '../i18n';
 import { Critter } from './critters';
+import { SIDE_ARROW, byMeaning, splitHalves, type Side, type Use } from './meaningUses';
 
 export type Size = 'hand' | 'river' | 'table';
 export interface CardState {
@@ -65,8 +66,8 @@ interface FaceProps extends CardState {
   hideAnswers?: boolean;
   tabIndex?: number;
   extraClass?: string;
-  /** Meaning cards on the board: the side the line it shows arrives from. */
-  arrive?: 'n' | 'e' | 's' | 'w';
+  /** Meaning cards on the board: the lines ending on it, with the meaning each used and its side. */
+  uses?: Use[];
 }
 
 /** A square card at hand, river or table size. Meaning cards at hand size use MeaningCard. */
@@ -75,17 +76,38 @@ export function Face(p: FaceProps) {
   const placed = c as Placed;
   const size = p.size === 'hand' ? '' : p.size === 'river' ? ' ba-river' : ' ba-table';
   const vert = placed.axis === 'v' && (c.k === 'P' || c.k === 'W') ? ' ba-v' : '';
-  const cls = 'ba-card ' + typeClass(c) + size + vert + stateClass(p) + (p.extraClass ? ' ' + p.extraClass : '');
+  const cls0 = 'ba-card ' + typeClass(c) + size + vert + stateClass(p) + (p.extraClass ? ' ' + p.extraClass : '');
   let inner: JSX.Element | JSX.Element[];
+  let extra = '';
+  let arrows: Side[] = [];
   if (c.k === 'W') inner = placed.stands ? <span class="ba-stands">{placed.stands}</span> : <span class="ba-star" />;
   else if (c.k === 'M') {
     const g = placed.used ?? meaningsOf(c)[0] ?? '';
-    inner = <span class={'ba-en' + glossClass(g)}>{g}</span>;
+    const ms = p.uses ? byMeaning(p.uses) : [];
+    if (ms.length >= 3) {
+      // Three or four meanings in use: the zoomed-out tile symbol with the count. Tap to see them.
+      extra = ' is-multi';
+      inner = <span class="ba-multi tabnum">{ms.length}</span>;
+    } else if (ms.length === 2) {
+      // Two: split the card, each half against the side its line arrives from, the second reversed.
+      extra = ' is-split';
+      const halves = splitHalves(ms[0].sides[0], ms[1].sides[0]);
+      inner = ms.map((m, i) => (
+        <span class={'ba-half' + (i ? ' is-rev' : '')} style={{ clipPath: halves[i].clip }} key={m.g}>
+          <span class={'ba-en ba-half-en' + (halves[i].box.w === 50 && halves[i].box.h === 100 ? ' is-narrow' : '')} style={{ left: halves[i].box.left + '%', top: halves[i].box.top + '%', width: halves[i].box.w + '%', height: halves[i].box.h + '%' }}>
+            {m.g}
+          </span>
+        </span>
+      ));
+    } else {
+      inner = <span class={'ba-en' + glossClass(g)}>{g}</span>;
+      arrows = ms.length ? ms[0].sides : [];
+    }
   } else inner = <span class={'ba-word' + wordClass(c.t)}>{c.t}</span>;
   const Tag = p.onTap ? 'button' : 'div';
   return (
     <Tag
-      class={cls}
+      class={cls0 + extra}
       style={p.style}
       onClick={p.onTap}
       aria-label={p.label ?? cardLabel(c)}
@@ -97,14 +119,19 @@ export function Face(p: FaceProps) {
     >
       {inner}
       {placed.cross && <i class="ba-cross" />}
-      {p.arrive && <i class={'ba-arrive to-' + p.arrive} aria-hidden="true" />}
+      {arrows.map((a) => (
+        <i class={'ba-arrive to-' + a} aria-hidden="true" key={a} />
+      ))}
       {p.showOwner && p.owner !== undefined && p.owner >= 0 && <i class={'ba-own ba-p' + (p.owner + 1)} />}
     </Tag>
   );
 }
 
 /** The wide meaning card in the hand: three meanings, the Irish answer under each (or a dotted rule). */
-export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string; alts?: boolean } & CardState) {
+export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string; alts?: boolean; uses?: Use[] } & CardState) {
+  // On the board: every meaning in use is marked, with an arrow towards each of its lines.
+  const inUse = p.uses ? byMeaning(p.uses) : [];
+  const sidesOf = (g: string) => inUse.find((m) => m.g === g)?.sides ?? [];
   const ms = meaningsOf(p.card);
   const Tag = p.onTap ? 'button' : 'div';
   const label = t('a11y.meaning', {
@@ -113,8 +140,18 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
   return (
     <Tag class={'ba-card ba-meaning' + stateClass(p)} onClick={p.onTap} aria-label={label} aria-pressed={p.onTap ? (p.selected ? 'true' : 'false') : undefined} data-card={p.card.id} type={p.onTap ? 'button' : undefined}>
       {ms.map((g) => (
-        <div class={'ba-m' + (p.used === g ? ' is-used' : '') + (!p.hidden && senseOf(printedAnswer(p.card.t, g), g) ? ' has-sense' : '')} key={g}>
-          <span class="ba-en">{g}</span>
+        <div class={'ba-m' + (p.used === g || sidesOf(g).length ? ' is-used' : '') + (!p.hidden && senseOf(printedAnswer(p.card.t, g), g) ? ' has-sense' : '')} key={g}>
+          <span class="ba-en">
+            {sidesOf(g).length > 0 && (
+              <>
+                <span class="ba-dir" aria-hidden="true">
+                  {sidesOf(g).map((sd) => SIDE_ARROW[sd]).join('')}{' '}
+                </span>
+                <span class="sr-only">{sidesOf(g).map((sd) => t(`a11y.side.${sd}` as Key)).join(', ')}: </span>
+              </>
+            )}
+            {g}
+          </span>
           {!p.hidden && <SenseCount text={printedAnswer(p.card.t, g)} g={g} />}
           <span class={'ba-ga' + (p.hidden ? ' is-hidden' : '')}>{p.hidden ? '·' : printedAnswer(p.card.t, g)}</span>
           {p.alts && !p.hidden && answersFor(g).filter((a) => a !== printedAnswer(p.card.t, g)).map((a) => (
@@ -164,6 +201,14 @@ export function Disc(p: { player: number; initial: string; size?: number; critte
       {p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={Math.round((size * 44) / 34)} /> : p.initial}
     </span>
   );
+}
+
+/** A board meaning card's label: with two or more meanings in use, each one and where its line is. */
+export function meaningLabel(c: CardT, uses: Use[] | undefined): string {
+  const ms = uses ? byMeaning(uses) : [];
+  if (ms.length < 2) return cardLabel(c);
+  const list = ms.map((m) => m.g.toLowerCase() + ' (' + m.sides.map((sd) => t(`a11y.side.${sd}` as Key)).join(', ') + ')').join('; ');
+  return t('a11y.meaningUses', { list });
 }
 
 export function initialOf(name: string) {

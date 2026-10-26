@@ -1127,6 +1127,58 @@ button.list-row:active {
 .ba-zoomed .ba-arrive {
   display: none;
 }
+/* Two different meanings in use: the card splits, each half against the side its line arrives from
+   (the second reversed). Barely readable at this size on purpose: a hint; tap for all three. */
+.ba-meaning.ba-table.is-split {
+  padding: 0;
+  overflow: hidden;
+}
+.ba-half {
+  position: absolute;
+  inset: 0;
+  background: var(--meaning-paper);
+  color: var(--meaning-ink);
+}
+.ba-half.is-rev {
+  background: var(--meaning-answer);
+  color: var(--meaning-paper);
+}
+.ba-meaning.ba-table .ba-half .ba-half-en {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  overflow: hidden;
+  color: inherit;
+  font: 700 8px/9px var(--font-ui);
+  letter-spacing: 0;
+  text-align: center;
+}
+/* Side-by-side halves are only ~28px wide: smaller, and a long word is cut off rather than split. */
+.ba-meaning.ba-table .ba-half .ba-half-en.is-narrow {
+  padding: 3px 2px;
+  font-size: 7px;
+  line-height: 8px;
+  letter-spacing: -0.02em;
+}
+/* Three or four: the zoomed-out tile symbol, with the count. */
+.ba-meaning.ba-table.is-multi .ba-multi {
+  margin: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--meaning-ink);
+  color: var(--meaning-paper);
+  display: grid;
+  place-items: center;
+  font: 800 15px/1 var(--font-card);
+}
+.board.is-glyph .ba-multi,
+.ba-zoomed .ba-multi {
+  display: none;
+}
 .board .ba-card {
   transition: transform var(--dur-snap) var(--ease-snap), box-shadow 600ms var(--ease-out), filter 160ms, opacity var(--dur-snap);
 }
@@ -2040,6 +2092,10 @@ button.list-row:active {
   font: 700 11px/14px var(--font-ui);
   color: var(--ink-muted);
   letter-spacing: 0.02em;
+}
+.ba-meaning .ba-dir {
+  font-weight: 800;
+  letter-spacing: 0.1em;
 }
 .ba-meaning .ba-alt {
   font: 700 13px/16px var(--font-card);
