@@ -97,7 +97,8 @@ PAGES_TAG = re.compile(r"<pages\s+([^>]*?)/?>", re.I)
 
 
 def page_titles(tag_attrs: str) -> list[str]:
-    a = dict(re.findall(r'(\w+)\s*=\s*"?([^"\s/>]+)"?', tag_attrs))
+    # Values may be quoted and contain spaces (index="Aesop a tháinig go h-Éirinn.djvu").
+    a = {k: q or u for k, q, u in re.findall(r'(\w+)\s*=\s*(?:"([^"]*)"|([^\s/>]+))', tag_attrs)}
     index = a.get("index")
     if not index:
         return []
