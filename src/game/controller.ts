@@ -416,9 +416,12 @@ export class Controller {
     const newEvents = next.log.slice(prev.log.length);
     batch(() => {
       this.gs.value = next;
-      if (!bot && p === this.viewer.value) this.clearSelection();
-      this.spot.value = null;
-      this.hintVerb.value = null;
+      // Your own move ends your line. Someone else's only drops what it made invalid (validateSelection).
+      if (!bot && p === this.viewer.value) {
+        this.clearSelection();
+        this.spot.value = null;
+        this.hintVerb.value = null;
+      }
     });
     this.botIdle.clear();
     this.lastPlayAt = Date.now();
@@ -1101,6 +1104,7 @@ export class Controller {
           }
         }
       if (sel.meaning !== undefined && !hand.some((c) => c.id === sel.meaning)) this.clearSelection();
+      this.keepLegalSpots();
       return;
     }
     if (selEmpty(sel)) return;
@@ -1120,11 +1124,13 @@ export class Controller {
       onto,
     };
     const changed = JSON.stringify(kept) !== JSON.stringify(sel);
+    const hv = this.hintVerb.value;
+    if (hv && 'hand' in hv && !inHand(hv.hand)) this.hintVerb.value = null;
     if (ways(s, p, kept).length) {
       if (changed) {
         this.sel.value = kept;
         this.spot.value = null;
-      }
+      } else this.keepLegalSpots();
       return;
     }
     // Nothing left makes a line: keep the one card you chose, as if you had just tapped it.
@@ -1133,6 +1139,19 @@ export class Controller {
     if (kept.meaning !== undefined) this.sel.value = { ...emptySelection(), meaning: kept.meaning };
     else if (kept.verb) this.sel.value = { ...emptySelection(), verb: kept.verb };
     else this.clearSelection();
+  }
+
+  /** Choosing a spot when someone else moves: drop the spots that are no longer legal, keep the rest. */
+  private keepLegalSpots() {
+    const sp = this.spot.value;
+    if (!sp) return;
+    const s = this.gs.value;
+    const p = this.viewer.value;
+    const legal = (pl: Placement) => apply(s, p, sp.way ? wayToMove(sp.way, pl) : { type: 'lone', v: sp.lone!, x: pl.x, y: pl.y }).ok;
+    const options = sp.options.filter(legal);
+    if (options.length === sp.options.length) return;
+    const chosen = options.indexOf(sp.options[sp.chosen]);
+    this.spot.value = options.length ? { ...sp, options, chosen: Math.max(0, chosen) } : null;
   }
 
   // ---------- hints ----------

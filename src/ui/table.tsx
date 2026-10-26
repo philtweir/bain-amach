@@ -2,7 +2,7 @@
 // the end card, the pass-and-play cover and the pause sheet.
 import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { COMPOUND_BY_ID, COMPOUNDS, compoundText } from '../engine/deck';
+import { COMPOUND_BY_ID, COMPOUNDS, compoundText, printedAnswer } from '../engine/deck';
 import { canDraw, lineMoves, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
@@ -462,9 +462,14 @@ function HandOver({ c }: { c: Controller }) {
 // ---------- overlays ----------
 
 function Toasts({ c }: { c: Controller }) {
-  const list = c.toasts.value;
+  // In a race, the line that put a new meaning card down is shown by that card's toast (its used
+  // meaning highlighted), so its own "made" toast would only repeat it.
+  const sh = c.race ? c.shown.value : null;
+  const shownCard = sh ? c.gs.value.board.find((b) => b.id === sh.id) : undefined;
+  const list = c.toasts.value.filter((x) => !(shownCard && x.kind === 'made' && x.player === sh!.by && x.en?.startsWith((shownCard.used ?? '').toLowerCase() + ' ·')));
   return (
     <div class="toasts" aria-live="polite">
+      {c.race && <NewMeaningToast c={c} />}
       {list.map((x) => {
         if (x.kind === 'made')
           return (
@@ -518,10 +523,35 @@ function MeaningPeek({ c }: { c: Controller }) {
 }
 
 /** A meaning card someone else just put down, in full view for a moment: new options on the table. */
-function NewMeaning({ c }: { c: Controller }) {
+/** In a race, an opponent's new meaning card shows small, with the toasts, instead of over the
+ *  table: you're mid-tap there, and the big card would cover what you're about to press. */
+function NewMeaningToast({ c }: { c: Controller }) {
   const sh = c.shown.value;
   const s = c.gs.value;
   if (!sh || c.peek.value || c.made.value) return null;
+  const card = s.board.find((b) => b.id === sh.id);
+  if (!card) return null;
+  const face = c.critter(sh.by);
+  return (
+    <div class="ba-toast toast-in nm-toast" key={'nm' + sh.id}>
+      {face ? <Critter species={face.species} size={30} /> : <span class={'ba-dot ba-p' + ((s.config.players[sh.by]?.color ?? 0) + 1)} />}
+      <div class="nm-body">
+        <div class="nm-head">{t('table.newOnTableShort', { name: c.name(sh.by) })}</div>
+        {meaningsOf(card).map((g) => (
+          <div class={'nm-row' + (g === card.used ? ' is-used' : '')} key={g}>
+            <span class="nm-en">{g}</span>
+            {!c.hidden && <span class="nm-ga">{printedAnswer(card.t, g)}</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NewMeaning({ c }: { c: Controller }) {
+  const sh = c.shown.value;
+  const s = c.gs.value;
+  if (!sh || c.peek.value || c.made.value || c.race) return null;
   const card = s.board.find((b) => b.id === sh.id);
   if (!card) return null;
   const cell = document.querySelector(`[data-cell="${sh.x},${sh.y}"]`)?.getBoundingClientRect();

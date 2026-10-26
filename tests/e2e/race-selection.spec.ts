@@ -52,3 +52,19 @@ test('a river card you picked that someone takes: a Taken toast, the rest of the
   await expect(meaning).toHaveAttribute('aria-pressed', 'true');
   expect(await page.evaluate(() => (window as any).__game.sel.value.river.length)).toBe(0);
 });
+
+test("someone else's move keeps your hint (it used to vanish with any play)", async ({ page }) => {
+  await startWithLitRiver(page);
+  const hinted = await page.evaluate(() => {
+    const c = (window as any).__game;
+    c.hint();
+    return !!c.hintVerb.value;
+  });
+  test.skip(!hinted, 'no hint for this card on this seed');
+  // Another player's move lands (an unchanged state is enough to run the same path).
+  await page.evaluate(() => {
+    const c = (window as any).__game;
+    c.commit(structuredClone(c.gs.value), 1, null, true);
+  });
+  expect(await page.evaluate(() => !!(window as any).__game.hintVerb.value)).toBe(true);
+});

@@ -323,6 +323,7 @@
   "rules.refillBody": "If laying a line leaves you with no meaning cards, draw one from the meaning pile straight away.",
   "a11y.meaningMeanings": "Meaning card on the table, used as {used}. Its meanings: {list}",
   "table.newOnTable": "New on the table from {name} · any meaning can end a line",
+  "table.newOnTableShort": "New on the table from {name}",
   "table.newOnTableSay": "{name} put down a meaning card: {list}",
   "table.ontoHandVerb": "A line onto a meaning card on the table needs a verb from your hand",
   "home.discard": "Discard",
