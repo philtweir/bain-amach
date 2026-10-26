@@ -79,6 +79,10 @@ export function Tutorial({ c }: { c: Controller }) {
     if (step === 6) return document.querySelector('.tray-head .th-actions');
     return null;
   };
+  useEffect(() => {
+    if (step === 3 && cuir) c.reveal.value = { cells: [[cuir.x, cuir.y]], seq: Date.now() };
+  }, [step]);
+
   useLayoutEffect(() => {
     let raf = 0;
     // Bring the target into view first (a hand card may be scrolled off the lane).

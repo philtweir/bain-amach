@@ -18,6 +18,8 @@ const CARD = 64;
 const Z_MIN = 26 / CARD;
 const Z_MAX = 96 / CARD;
 const GLYPH_BELOW = 32 / CARD;
+/** The opening view keeps words readable even if that leaves a starter verb off screen. */
+const OPEN_MIN = 40 / CARD;
 const LONG_PRESS = 430;
 const SLOP = 8;
 
@@ -147,7 +149,7 @@ export function Board({ c }: { c: Controller }) {
         for (const [x, y] of cells) (x0 = Math.min(x0, x)), (y0 = Math.min(y0, y)), (x1 = Math.max(x1, x)), (y1 = Math.max(y1, y));
         const pad = 20;
         const fitZ = Math.min((size.current.w - pad * 2) / ((x1 - x0) * PITCH + CARD), (size.current.h - pad * 2) / ((y1 - y0) * PITCH + CARD));
-        cam.current = { x: ((x0 + x1) / 2) * PITCH + CARD / 2, y: ((y0 + y1) / 2) * PITCH + CARD / 2, z: Math.max(Z_MIN, Math.min(1, fitZ)) };
+        cam.current = { x: ((x0 + x1) / 2) * PITCH + CARD / 2, y: ((y0 + y1) / 2) * PITCH + CARD / 2, z: Math.max(OPEN_MIN, Math.min(1, fitZ)) };
       }
       applyCam();
     };
@@ -380,6 +382,12 @@ export function Board({ c }: { c: Controller }) {
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
   }, []);
+
+  // Requests to bring cells into view (the tutorial uses this).
+  const reveal = c.reveal.value;
+  useEffect(() => {
+    if (reveal) frame(reveal.cells, { ms: 260 });
+  }, [reveal?.seq]);
 
   // ---------- flights and auto-follow ----------
   useLayoutEffect(() => {

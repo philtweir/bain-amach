@@ -99,6 +99,8 @@ export class Controller {
   announce = signal('');
   headerNote = signal<string | null>(null);
   elapsed = signal(0);
+  /** Ask the board to bring these cells into view. */
+  reveal = signal<{ cells: [number, number][]; seq: number } | null>(null);
   /** World-space point the camera looks at; set by the board, used to place lines near the view. */
   focus: { x: number; y: number } | undefined;
   /** Whether the board should follow the next play (the board sets this from user panning). */
