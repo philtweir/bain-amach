@@ -32,8 +32,11 @@ export default defineConfig({
         display: 'standalone',
         display_override: ['standalone'],
         orientation: 'any',
-        background_color: '#bfd3cc',
-        theme_color: '#bfd3cc',
+        // Android paints its navigation bar in the manifest colour when it won't draw the app behind
+        // it, and the manifest can't vary by theme. The dark tray colour reads as a normal system bar
+        // under either theme; the light felt looked broken under the dark one.
+        background_color: '#1c2523',
+        theme_color: '#1c2523',
         categories: ['games', 'education'],
         icons: [
           { src: 'icons/icon-48.png', sizes: '48x48', type: 'image/png', purpose: 'any' },

@@ -83,6 +83,7 @@ without the refill was too swingy (91–95% go out, fewer lines).
 - **Name.** Wordmark, manifest name and splash are placeholders.
 - **Irish UI strings.** `src/i18n/ga.json` holds only the strings fixed in the design. Everything else falls back to English. Open the app with `?ga-missing` to see the missing strings marked ⟨like this⟩. `missingIrish()` in `src/i18n/index.ts` lists their keys.
 - **Compound list** (Ulster check). A new `handoff/data/deck.json` is all that's needed; nothing else hard-codes a card.
+- **Android navigation bar.** Where Chrome doesn't draw the installed app behind the gesture bar (edge-to-edge), it paints the bar in the manifest colour, which can't follow the theme. It is the dark tray colour `#1c2523` (Phil's call after playtesting); the cost is a dark bar, and possibly a dark launch splash, under the light theme.
 - **iOS status bar.** It uses `default` (opaque bar, dark text) so it stays readable on the light felt. `black-translucent` would let the felt run under the clock, but iOS then forces white text, which is unreadable on the light table. Worth checking on a device.
 - **Sound** is a stub toggle (no audio in v1).
 - **Repeated species names.** A second or third bot of one difficulty is "Óg" / "Mór" (Broc Óg, Broc Mór). A stand-in until there are proper names.
