@@ -118,6 +118,8 @@ export function Tutorial({ c }: { c: Controller }) {
 
   if (step > TOTAL + 1) return null;
   const done = step === 7;
+  // The tutorial's opponent is player 1: its name now comes from its character (Broc, …).
+  const names = { name: c.name(1) };
   const key = (k: string) => (done ? `tut.end.${k}` : `tut.${step}.${k}`) as Key;
   const W = typeof window !== 'undefined' ? window.innerWidth : 390;
   const H = typeof window !== 'undefined' ? window.innerHeight : 844;
@@ -128,7 +130,7 @@ export function Tutorial({ c }: { c: Controller }) {
   // Steps where the player acts: the hole is open; info steps block the whole table.
   const acting = step === 1 || step === 2 || step === 3 || step === 6;
   return (
-    <div class="tut" role="dialog" aria-live="polite" aria-label={t(key('title'))}>
+    <div class="tut" role="dialog" aria-live="polite" aria-label={t(key('title'), names)}>
       {hole ? (
         <>
           <div class="tut-block" style={{ left: 0, top: 0, width: W, height: Math.max(0, hole.y) }} />
@@ -142,8 +144,8 @@ export function Tutorial({ c }: { c: Controller }) {
       )}
       <div class="tut-card" style={cardStyle}>
         {!done && <div class="eyebrow">{t('tut.step', { n: step, total: TOTAL })}</div>}
-        <h2 class="tut-title">{t(key('title'))}</h2>
-        <p class="body">{t(key('body'))}</p>
+        <h2 class="tut-title">{t(key('title'), names)}</h2>
+        <p class="body">{t(key('body'), names)}</p>
         <div class="tut-actions">
           {!done && (
             <button class="ba-btn ba-btn-quiet" onClick={skip}>
