@@ -51,6 +51,8 @@ export default defineConfig({
         globIgnores: ['splash/**'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
+        // Take control of the first page load so it works offline straight away. Updates still wait for Restart.
+        clientsClaim: true,
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },
       devOptions: { enabled: false },

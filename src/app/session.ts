@@ -47,7 +47,13 @@ export function learnerSetup(): SetupPrefs {
   return { ...defaultSetup(), who: 'solo', mode: 'turns', answers: 'shown', hints: 'request', bots: ['easy'] };
 }
 
-export function configFrom(p: SetupPrefs, seed = (Math.random() * 2 ** 31) >>> 0): GameConfig {
+/** A fixed seed from ?seed=N (end-to-end tests), else random. */
+function freshSeed(): number {
+  const m = typeof location !== 'undefined' ? /[?&]seed=(\d+)/.exec(location.search) : null;
+  return m ? Number(m[1]) : (Math.random() * 2 ** 31) >>> 0;
+}
+
+export function configFrom(p: SetupPrefs, seed = freshSeed()): GameConfig {
   const players: PlayerConfig[] = [];
   if (p.who === 'solo') {
     players.push({ name: t('table.you'), kind: 'human', color: 0 });
