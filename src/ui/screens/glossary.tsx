@@ -44,10 +44,10 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
       <Scroll>
         <div class="pad">
           <Header title={t('glossary.title')} right={<span class="caption muted tabnum">{t('home.made', { n: made, total: COMPOUNDS.length })}</span>} />
-          {made === 0 && <p class="body muted">{t('glossary.emptyHead')}</p>}
+          {made === 0 && !onlyDrafts && <p class="body muted">{t('glossary.emptyHead')}</p>}
           {DRAFT_COMPOUNDS.size > 0 && (
             <button class={'draft-filter' + (onlyDrafts ? ' is-on' : '')} aria-pressed={onlyDrafts ? 'true' : 'false'} onClick={() => setOnlyDrafts(!onlyDrafts)}>
-              <span class="draft-chip">{t('glossary.draft')}</span> {t('glossary.draftFilter', { n: DRAFT_COMPOUNDS.size })}
+              <span class="draft-chip">{t('glossary.draft')}</span> {t(onlyDrafts ? 'glossary.draftFilterOn' : 'glossary.draftFilter', { n: DRAFT_COMPOUNDS.size })}
             </button>
           )}
           <input class="search" type="search" placeholder={t('glossary.search')} aria-label={t('glossary.search')} value={q} onInput={(e) => setQ((e.target as HTMLInputElement).value)} autocomplete="off" spellcheck={false} />
