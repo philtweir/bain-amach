@@ -1,10 +1,10 @@
 // RULES §10 edge cases, determinism and the builder queries.
 import { describe, expect, it } from 'vitest';
-import { botTurn } from './bot';
+import { botMove, botTurn } from './bot';
 import { MEANING_CARD, migrateGlosses } from './deck';
 import { emptySelection, hint, judge, lit, placements, preferredWay, ways, wayToMove } from './builder';
 import { FINAL_STALLS, apply, lineMoves, loneMoves, newGame, pass, raceStall, setStuck } from './game';
-import type { Card, GameConfig, GameState, Placed } from './types';
+import type { Card, GameConfig, GameState, LineMove, Placed } from './types';
 
 const bots = (n: number) => Array.from({ length: n }, (_, i) => ({ name: 'P' + i, kind: (i === 0 ? 'human' : 'bot') as 'human' | 'bot', level: 'hard' as const, color: i }));
 const cfg = (o: Partial<GameConfig> = {}): GameConfig => ({ seed: 1, mode: 'turns', answers: 'shown', hints: 'off', players: bots(2), firstPlayer: 0, ...o });
@@ -465,5 +465,30 @@ describe('renamed glosses', () => {
     expect((s.log[0] as { g: string }).g).toBe('PUT ON (CLOTHES)');
     expect(s.missed[0][0].g).toBe('TAKE OFF (CLOTHES)');
     expect(migrateGlosses(s)).toEqual(s);
+  });
+});
+
+describe('table particle or river, by difficulty', () => {
+  // éist le can cross the 'le' in cuir suas le (no draw) or take 'le' from the river (a fresh line: draw 2).
+  const position = (level: 'easy' | 'normal' | 'hard', rng: number) => {
+    const s = fixture({
+      board: [at(V('cuir'), 0, 0), { ...at(P('suas'), 1, 0), axis: 'h' }, { ...at(P('le'), 2, 0), axis: 'h' }, { ...at(M('m35'), 3, 0), used: 'PUT UP WITH' }],
+      piles: [['ar'], ['le'], ['amach'], ['do'], ['as']],
+      hands: [[M('m01'), V('éist'), V('fan')], [V('tóg')]],
+      config: { rules: { refillMeaning: true, tableMeanings: true, freshLineDraw: 2 } },
+    });
+    return { ...s, rng, config: { ...s.config, players: s.config.players.map((p) => ({ ...p, level })) } };
+  };
+  it('hard always builds on the table', () => {
+    for (let r = 1; r <= 20; r++) {
+      const mv = botMove(position('hard', r * 7919), 0).move as LineMove;
+      expect(mv.src.some((x) => 'existing' in x)).toBe(true);
+    }
+  });
+  it('easy always takes the river and pays the draw', () => {
+    for (let r = 1; r <= 20; r++) {
+      const mv = botMove(position('easy', r * 7919), 0).move as LineMove;
+      expect(mv.src).toEqual([{ river: 1 }]);
+    }
   });
 });

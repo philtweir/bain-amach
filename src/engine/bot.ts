@@ -1,8 +1,8 @@
 // Bots: the reference engine's planner, plus swaps and difficulty.
 import { COMPOUNDS } from './deck';
-import { apply, bestLine, isStraddle, lineMoves, loneMoves, meaningsOf, pass } from './game';
+import { apply, bestLine, isFresh, isStraddle, lineMoves, lineScore, loneMoves, meaningsOf, pass } from './game';
 import { next } from './rng';
-import type { GameState, Level, Move } from './types';
+import type { GameState, Level, LineMove, Move } from './types';
 
 /** How often a bot spots a line through a particle already down. */
 export const STRADDLE_SIGHT: Record<Level, number> = { easy: 0.25, normal: 0.6, hard: 1 };
@@ -36,7 +36,7 @@ export function botMove(s: GameState, p: number): BotChoice {
     rngState = st;
     if (r >= STRADDLE_SIGHT[level]) lines = lines.filter((l) => !subtle(l));
   }
-  const line = bestLine(lines, s);
+  const line = level === 'easy' ? riverFirst(lines) : bestLine(lines, s);
   if (line) return { move: line, rng: rngState };
 
   const hand = s.hands[p];
@@ -87,6 +87,15 @@ function leastUseful(s: GameState, p: number): number | null {
     if (!best || live < best.live) best = { id: m.id, live };
   }
   return best?.id ?? null;
+}
+
+/**
+ * Easy's pick: the line that sheds most from its hand, blind to the fresh-line draw, and given the choice
+ * it takes the particle from the river rather than building on the table (Phil: easy always goes river,
+ * hard always table; the cases where the river's 2-card cost pays are niche).
+ */
+function riverFirst(lines: LineMove[]): LineMove | null {
+  return [...lines].sort((a, b) => lineScore(b) - lineScore(a) || Number(isFresh(b)) - Number(isFresh(a)))[0] ?? null;
 }
 
 /** A random reaction delay for a race bot, and the next RNG state. */
