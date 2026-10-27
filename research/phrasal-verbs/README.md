@@ -188,10 +188,47 @@ words the river doesn't have: *anuas*, *aníos*, *sall*, *thar*, *thart*, *timpe
 | *bualadh le chéile* | the verbal noun of *buail le (chéile)*: MEET, already a card |
 | *taitin le* | **strong** (Wiktionary; 14 treebank and 4 Tatoeba hits): PLEASE, i.e. LIKE turned round |
 | *cuir isteach* | real, but as PUT IN / SUBMIT (*chuir sé litir isteach*) or CUT IN (*chuir sé isteach sa chomhrá*). INTERFERE is *cuir isteach ar*, or *do ladar a chur isteach* |
-| *caith amach* | THROW OUT (Wiktionary); almost all hits are older texts. Literal, but sound |
+| *caith amach* | THROW OUT (Wiktionary). In current use (*Níl aon deifir orthu an corn a chaitheamh amach!*, a tweet); see the caith table below |
 | *pioc suas* | PICK UP, including picking up knowledge (*do phioc na buachaillí suas an t‑eolas*); 1 treebank and 5 Wikisource hits, colloquial. Could be a second answer to PICK UP beside *tóg suas* |
 | *déan suas* | no real hits (they are *cur suas le*, *fásta suas*). Looks like a calque of "make up" |
 | *cuir ar ceal*, *rith ar shiúl* | real (CANCEL; RUN AWAY, with Ulster *ar shiúl*), but *ceal* and *ar shiúl* aren't river cards |
+
+**Corpus size, before reading any counts.** The modern treebanks are small (IDT 116k tokens,
+mostly news and legal text; TwittIrish 48k) and Wikisource is large (1.33M words, all
+pre-1955). Every compound gets roughly eight times as many Wikisource hits as treebank hits.
+So a mostly-Wikisource count says the treebanks are formal, not that the word is old: *cuir
+amach* is 10 treebank to 212 Wikisource. Many raw *caith* hits are *caithfidh* ("must"), too.
+
+**caith, read compound by compound:**
+
+| compound | what the examples show | take |
+|---|---|---|
+| *caith le* | TREAT (*an bealach a chaitear le seandaoine*, *caitheadh go hiontach liom*); also THROW AT (*bean a chaith pióg le Bertie Ahern*) | **strong** |
+| *caith ó* (*caith uait*) | THROW AWAY, cast aside (*caith uait an páipéar nuaíochta sin*, *chaith mé uaim an gléas*) | **strong** |
+| *caith de* (*caith díot*) | THROW OFF, as in clothes or a load; figuratively shake off (*chaith mé díom mála na bhfód*, *an bhuairt a chaitheamh díom*) | **strong** |
+| *caith ar* | SPEND ON, time or money (*a chaith tréimhse ar thaithí oibre*); many hits are *caith súil ar* (take a look at, a noun phrase) | good |
+| *caith amach* | THROW OUT: cargo, bait, a trophy | good |
+| *caith isteach* | THROW IN, including the sports throw-in | literal |
+| *caith suas*, *síos*, *as*, *do*, *faoi* | literal, a rare "tot up" (*figiúirí a chaitheamh suas*), noun phrases (*urchar as gunna*, *vóta do*), or noise | no |
+
+**téigh, read compound by compound.** Most of its idioms need words the river doesn't have (*i
+bhfeidhm ar*, *thar fóir*, *chun cinn*, *ar aghaidh*, *i dteagmháil le*). With river particles:
+
+| compound | what the examples show | take |
+|---|---|---|
+| *téigh faoi* | SET, of the sun or moon (*chuaigh an ghrian faoi*, *chuaidh an ghealach faoi*) | **strong** |
+| *téigh le* | TAKE UP (*chuaigh tú le sagartóireacht*); go with, suit | good |
+| *téigh as* | ESCAPE (*is ar éigin do chuaidh Mac Coinnigh as*); of a fire or light, go out | good |
+| *téigh ó* (*dul uathu*) | GET AWAY FROM (*ní dheachaidh sé uatha*) | good |
+| *téigh amach le* | GO OUT WITH, as in date (one Tatoeba sentence) | check |
+| *téigh de* | FAIL TO, "it beat me" (*do chuaidh díom é bhaint arís as an bpoll*); one clear example | check |
+| *téigh suas*, *síos*, *isteach*, *amach*, *ar*, *do* | literal motion, or noun phrases (*ar aghaidh*, *ar imirce*, *ar scoil*) | literal |
+
+**tig le: CAN.** It is Ulster (*thig liom*) but not only Ulster. The treebanks have 12 hits, all
+CAN (*Thiocfadh leat caint agus scríobh fá seo*; *An dtig liom mo fóin cluasa a fháil?*), and
+Wikisource 77, including *Séadna*, *Leabhar Sgeulaigheachta* and Ó Conaire's
+*Deoraidheacht*. The treebanks lemmatise *thig* as *tar*, so it is counted under the *tar le* row,
+which Wiktionary glosses "agree with | put up with | can, be able".
 
 **No phrasal headword is tagged Ulster in Wiktionary**, and Wikisource's Ulster material is three
 short poems. Ulster evidence still has to come from Corpas Stairiúil (b) or a dictionary (d).
