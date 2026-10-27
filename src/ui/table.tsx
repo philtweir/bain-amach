@@ -311,6 +311,10 @@ function Header({ c }: { c: Controller }) {
     title = t('table.needWildTitle');
     sub = t(nw.n > 1 ? 'table.needWildSub2' : 'table.needWildSub', { compound: nw.compound, n: nw.n });
     actions.push(cancel);
+  } else if (c.sourceChoice.value && canAct) {
+    title = t('table.whichParticle');
+    sub = t('table.whichParticleSub', { compound: c.sourceChoice.value.compound });
+    actions.push(cancel);
   } else if (choices.length > 1 && canAct) {
     title = t('table.twoWays');
     sub = t('table.twoWaysSub');

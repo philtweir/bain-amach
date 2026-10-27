@@ -354,6 +354,8 @@
   "table.alsoAnswer": "also {answer}",
   "table.litMakes": "Lit cards make {list}",
   "table.needWildTitle": "Use your wildcard?",
+  "table.whichParticle": "From the table or the river?",
+  "table.whichParticleSub": "{compound} can use the particle already on the table, or take it from the river and draw 2. Tap the one you want.",
   "table.needWildSub": "{compound} needs a wildcard here. Tap the lit wildcard to use it.",
   "table.needWildSub2": "{compound} needs {n} wildcards here. Tap the lit wildcards to use them."
 }

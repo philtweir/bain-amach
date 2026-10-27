@@ -85,6 +85,8 @@ without the refill was too swingy (91–95% go out, fewer lines).
 
 | 12 | Several lines ending on one meaning card | — | — | One meaning in use: the card shows it, with a small inward arrow on each side a line using it arrives from. Two different meanings: the card splits, each half against its line's side (down the middle for opposite sides, diagonally through the shared corner for adjacent ones), the second half reversed; small text, a hint. Three or four: the zoomed-out tile symbol with the count. Tapping the card lists all three meanings, each one in use followed by an arrow for the way its line runs into the card (a line from the left: PUT UP WITH →); after the gloss so the glosses stay aligned (Phil, after playtesting). Rules has a "Symbols on the table" key that draws each of these marks, and the zoomed-out glyphs, with the real card faces. |
 
+| 13 | A line that can use a table particle or a river one | — | — | Never chosen for the player when it matters: if the one compound picked can cross a particle already down or take that particle from the river, and the river way would draw 2 (fresh-line rule), nothing is laid until the player taps the table particle or the river pile ("From the table or the river?"). Both stay lit. Where the builder does choose (a compound picked from "two ways"), it prefers the way that builds on the table. (Phil, after playtesting) |
+
 ## Numbers the brief left to the build (playtest these)
 
 - **Bots swap instead of passing** (turn mode, with rule 6). With no line to lay, a Hard bot swaps its

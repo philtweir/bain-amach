@@ -11,6 +11,7 @@ import {
   lit,
   placements,
   preferredWay,
+  usesTable,
   ways,
   wayToMove,
   type Attempt,
@@ -195,6 +196,18 @@ export class Controller {
     const empty = selEmpty(sel);
     if (this.hidden || empty || !this.canAct.value) return null;
     return lit(this.gs.value, this.viewer.value, sel, this.ways.value);
+  });
+  /**
+   * The one compound picked can take its particle from the table or from the river, and the river way
+   * draws 2 (fresh-line rule). Then nothing is laid until the player taps the particle they want.
+   */
+  sourceChoice = computed(() => {
+    const sel = this.sel.value;
+    if (!this.gs.value.config.rules?.freshLineDraw || !hasMeaning(sel) || !sel.verb) return null;
+    const ws = this.ways.value.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
+    const cs = distinctCompounds(ws);
+    if (cs.length !== 1 || !ws.some(usesTable) || ws.every(usesTable)) return null;
+    return { compound: compoundText(COMPOUND_BY_ID[cs[0]]) };
   });
   /** Distinct compounds once a meaning and a verb are both chosen ("two ways to finish"). */
   choices = computed(() => {
@@ -876,6 +889,7 @@ export class Controller {
     this.needWild.value = null;
     const cs = distinctCompounds(ws);
     if (cs.length !== 1) return; // the tray offers the choice
+    if (this.sourceChoice.value) return; // table particle or river: the player taps which
     const way = preferredWay(ws)!;
     const pls = placements(this.gs.value, way, this.focus);
     if (!pls.length) return this.bad(key, t('table.noRoom'));

@@ -59,8 +59,13 @@ export async function playTurn(page: Page): Promise<'line' | 'pass'> {
         if (!(await wild.count())) break;
         await wild.first().click();
       }
+      // A particle that could come from the table or the river waits for a tap: take the river one.
+      if (((await page.locator('.th-title').textContent()) ?? '') === 'From the table or the river?') {
+        const pile = page.locator('.river .ba-stack:has(.ba-card.is-lit)');
+        if (await pile.count()) await pile.first().click();
+      }
       const title = (await page.locator('.th-title').textContent()) ?? '';
-      if (!/Pick a verb|Two ways|Choose a spot|Use your wildcard/.test(title)) return 'line';
+      if (!/Pick a verb|Two ways|Choose a spot|Use your wildcard|From the table or the river/.test(title)) return 'line';
     }
     const cancel = page.getByRole('button', { name: 'Cancel' });
     if (await cancel.count()) await cancel.click();

@@ -213,11 +213,17 @@ export function wayToMove(w: Way, pl: Placement): LineMove {
   return mv;
 }
 
-/** Fewest wildcards, then river piles in order: the default way among equals. */
+/** Whether a way builds on the table (a verb or particle already down, or onto a meaning card), so the
+ *  fresh-line rule doesn't make it draw. */
+export function usesTable(w: Way): boolean {
+  return !('hand' in w.verb) || !!w.onto || w.src.some((x) => 'existing' in x);
+}
+
+/** Fewest wildcards, then one that builds on the table (no fresh-line draw), then river piles in order. */
 export function preferredWay(ws: Way[]): Way | null {
   if (!ws.length) return null;
   const wilds = (w: Way) => w.src.filter((x) => 'wild' in x).length;
-  return [...ws].sort((a, b) => wilds(a) - wilds(b))[0];
+  return [...ws].sort((a, b) => wilds(a) - wilds(b) || Number(usesTable(b)) - Number(usesTable(a)))[0];
 }
 
 export interface Lit {
