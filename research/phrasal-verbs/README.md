@@ -6,6 +6,9 @@ they say where to look, so the deck itself can be written from first-hand checki
 
 - `candidates.xlsx`: the sheet to work in. Yellow columns are for review.
 - `candidates.csv`: the same data, kept for diffs.
+- `literal.txt`: rows left out after reading their examples, each with its reason: *literal* (the
+  meaning is just verb plus particle, like *tar ó* = come from) or *noise* (noun phrases, chance
+  co-occurrence). Delete a line to bring a row back.
 - `sources-public-domain.csv`: every Wikisource work read, with its size and how Ulster-leaning it
   looks. A reading list, not a verdict.
 - `../../tools/phrasal/extract.py`: regenerates all three (see [Rerun](#rerun)).
@@ -16,7 +19,7 @@ they say where to look, so the deck itself can be written from first-hand checki
 | column | what it is |
 |---|---|
 | `compound`, `verb`, `particles` | e.g. `cuir isteach ar` |
-| `status` | `in deck` (any sense already a card), `new compound` (verb already in the deck), `new verb` |
+| `status` | `in deck` (any sense already a card), `draft in deck` (only draft cards so far), `new compound` (verb already in the deck), `new verb` |
 | `deck_meanings` | the senses the deck has now; drafts are marked `(draft)` |
 | `wiktionary_senses` | English Wiktionary glosses for the phrasal headword (blank = no entry). Spelling and dialect forms are folded in as "also …" (*déan as* lists the Connacht *díon as* forms) instead of getting their own rows |
 | `wiktionary_ulster` | a sense is tagged Ulster, or its gloss mentions Ulster |
@@ -173,6 +176,11 @@ counts:
 So *glac* earns a card with two senses, *gabh* doesn't, and the bigger gap was *faigh amach* and
 *téigh (amach) le*. *gabh ort féin* is under the *gabh ar* row.
 
+**Now draft cards in the app (2026-10-27):** *glac le* (ACCEPT; ASSUME (SUPPOSE)), *taitin le*,
+*tig le* (BE ABLE), *cuidigh le* (HELP), *téigh le* (GO IN FOR), *téigh faoi* (SET (SUN)), *téigh as*
+(ESCAPE), *caith le/ó/de/ar* (TREAT (SOMEONE), THROW AWAY, THROW OFF, SPEND ON), *faigh amach* (FIND
+OUT) and *cuir isteach* (HAND IN). See `docs/DECISIONS.md`, "Draft verbs".
+
 **The live Wiktionary category** (73 pages, checked against a copy Phil pasted on 2026-10-26)
 matches the bundle's snapshot except for two pages: *cuir isteach*, which the sheet already has
 from the counts though without a Wiktionary gloss, and *taitnigh le*, a spelling of *taitin le*.
@@ -247,7 +255,8 @@ git clone --depth 1 https://github.com/UniversalDependencies/UD_Irish-Cadhan    
 python3 tools/phrasal/fetch_wikisource.py --out ws/
 git clone --depth 1 https://github.com/kscanne/caighdean
 python3 tools/phrasal/extract.py --bundle greasan/ --ud ud/ --deck data/deck.json --out research/phrasal-verbs \
-  --texts ws/wikisource-ga.jsonl --pairs caighdean/pairs.txt --verbs gabh
+  --texts ws/wikisource-ga.jsonl --pairs caighdean/pairs.txt --verbs gabh \
+  --drop research/phrasal-verbs/literal.txt
 ```
 
 Rerunning overwrites the sheet. Copy any review columns you've filled in somewhere else first, or

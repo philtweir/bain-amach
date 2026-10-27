@@ -1,0 +1,204 @@
+# Rows dropped from the candidate sheet after reading their examples (Phil, 2026-10-27: "any trivially
+# obvious entries can probably be removed"). extract.py --drop reads this file; a compound in the deck
+# is never dropped. One compound per line, then a tab and why:
+#   literal: the meaning is just the verb plus the particle (tar ó = come from)
+#   noise:   the hits are noun phrases or words that only happen to sit together
+# To restore a row, delete its line and rerun.
+tar ó	literal: come from
+tar isteach	literal: come in
+tar amach	literal: come out
+tar amach as	literal: come out of
+tar as	literal: come out of (tar slán as is a noun phrase)
+tar suas	literal: come up (tar suas le, catch up with, stays)
+tar isteach ar	literal
+tar isteach do	literal
+tar de	noise
+tabhair do	literal: give to
+tabhair síos	literal: bring down
+tabhair isteach ar	literal
+tabhair suas do	literal
+tabhair ó	noise
+tabhair as	noise
+tabhair de	noise
+tit síos	literal: fall down
+tit isteach	literal: fall in
+tit as	literal: fall out of
+tit ó	literal: fall from
+tit de	literal: fall off
+tit le	noise: titim i ngrá le is a noun phrase
+tóg amach	literal: take out
+tóg isteach	literal: take in
+tóg as	literal: take out of
+tóg ó	literal: take from
+tóg do	noise
+seas suas	literal: stand up
+seas ar	literal: stand on
+éirigh suas	literal: rise up
+éirigh ó	literal: rise from
+éirigh ar	noise: éirí ar mire is a noun phrase
+fan ar	literal: stay on, stay at
+fan amach	literal (fan amach ó is a card)
+fan ó	literal (fan amach ó is a card)
+fan faoi	literal
+fan do	noise
+fág le	literal: leave with
+fág ar	literal: leave (a mark) on
+fág do	noise
+fág as	noise
+lig isteach	literal: let in
+lig ó	literal: let go from
+lig as	literal: let (a cry) out of
+bain ó	literal: take from
+bain ar	noise
+bain amach do	noise
+bain amach as	noise
+buail ar	literal: knock on
+buail faoi	literal: head (down a street)
+buail do	noise
+cuir suas do	literal: put up (an altar) for
+cuir isteach faoi	noise: apply under (a scheme)
+cuir de	noise
+cuir ó	noise
+déan ó	noise
+déan suas	noise: no real hits; looks like a calque of make up
+déan amach ar	noise
+éist ar	noise
+éist do	noise: éist do bhéal, where do is "your"
+caith isteach	literal: throw in
+caith suas	literal: throw up, toss
+caith síos	literal: throw down
+caith as	noise: urchar a chaitheamh as gunna is a noun phrase
+caith do	noise: vóta a chaitheamh do is a noun phrase
+caith faoi	noise
+téigh suas	literal: go up
+téigh síos	literal: go down
+téigh isteach	literal: go in
+téigh amach	literal: go out (téigh amach le stays)
+téigh ar	noise: dul ar aghaidh, ar imirce, ar scoil are noun phrases
+téigh do	noise
+téigh amach ar	literal
+téigh amach as	literal
+téigh amach do	literal
+téigh amach ó	literal
+téigh isteach ar	literal
+téigh isteach do	literal
+téigh síos ar	literal
+téigh síos do	literal
+téigh suas ar	literal
+téigh suas do	literal
+gabh amach	literal: go out
+gabh isteach	literal: go in
+gabh síos	literal: go down
+gabh suas	literal: go up
+gabh ó	noise
+glac ó	literal: take from
+glac do	noise
+glac de	noise
+glac faoi	noise
+faigh ar	noise: locht a fháil ar, taithí a fháil ar are noun phrases
+faigh do	noise: ar fáil do is a noun phrase
+faigh ó	literal: get from
+faigh de	noise
+faigh as	literal: get out of
+faigh le	noise: faigh réidh le is a noun phrase
+faigh faoi	noise
+faigh isteach	literal
+faigh síos	literal
+bí as	literal: be from
+bí de	noise
+bí amach	literal
+bí isteach	literal
+bí suas	literal
+bí síos	literal
+bí suas le	literal: up to (a number)
+bí isteach ar	literal
+bí síos ar	noise
+bí amach ar	literal
+bí amach as	literal
+bí isteach do	literal
+abair do	literal: say for
+abair ar	noise
+abair ó	noise
+abair faoi	literal: say about
+abair de	noise
+abair as	noise: as Gaeilge
+abair suas	noise
+abair suas le	noise
+abair isteach	noise
+beir do	literal: born to
+beir ó	literal
+beir isteach	literal
+labhair le	literal: speak to
+labhair do	literal
+labhair ar	literal: speak about
+labhair faoi	literal: talk about
+féach do	noise
+féach ó	literal
+féach faoi	noise
+feic ar	noise
+feic le	noise
+feic ó	literal: see from
+feic de	noise
+feic faoi	noise
+taitin as	noise: taitneamh a bhaint as is a noun phrase
+bronn ar	literal: present to
+bronn as	noise
+tarlaigh do	literal: happen to
+tarlaigh ar	noise
+tarlaigh de	noise
+tarlaigh le	noise
+ceap ar	noise
+ceap do	literal: appoint for
+ceap le	noise
+ceap faoi	noise
+clois ar	noise
+clois le	noise
+clois do	noise
+clois ó	literal: hear from
+imigh ó	literal: go from
+imigh do	noise
+imigh amach	literal: go out
+síl ar	noise
+meas ar	noise: meas ag X ar Y is a noun phrase
+meas do	noise
+tuig ar	noise
+tuig le	noise
+caill ar	noise
+caill do	noise
+caill amach	noise: calque of miss out
+caill amach ar	noise: calque of miss out on
+tosaigh ar	literal: start on
+tosaigh le	literal: start with
+tosaigh do	noise
+airigh ar	noise
+airigh do	noise
+mair do	noise
+mair ar	noise
+oibrigh le	literal: work with
+oibrigh as	noise
+léigh faoi	literal: read about
+léigh ó	literal
+cas do	noise
+mol le	noise
+lean do	noise
+scríobh do	literal: write to
+scríobh faoi	literal: write about
+scríobh ar	literal: write on
+scríobh le	literal: write with
+ceannaigh do	literal: buy for
+ceannaigh ó	literal: buy from
+foilsigh ar	noise
+foilsigh do	noise
+léirigh do	noise
+léirigh ar	noise
+léirigh le	noise
+pléigh ar	noise
+áirigh ar	noise
+úsáid de	noise
+déan do	noise: dochar a dhéanamh do is a noun phrase
+déan le	noise: gnó a dhéanamh le is a noun phrase
+cuir do	noise: cuir i gcuimhne do is a noun phrase
+tar do	noise
+bí do	noise
+tar faoi	noise
+déan isteach	noise

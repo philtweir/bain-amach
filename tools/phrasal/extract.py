@@ -426,6 +426,7 @@ def main():
     ap.add_argument("--pairs", help="caighdean's pairs.txt, to read pre-standard spelling")
     ap.add_argument("--top-verbs", type=int, default=40, help="also look at the N commonest verbs in the treebanks")
     ap.add_argument("--verbs", nargs="*", default=[], help="further verbs to look at (e.g. gabh, rarer in the treebanks)")
+    ap.add_argument("--drop", help="reviewed rows to leave out (literal.txt: compound, tab, reason); deck compounds are kept")
     a = ap.parse_args()
 
     deck = json.load(open(a.deck, encoding="utf-8"))
@@ -457,6 +458,9 @@ def main():
     for k in set(tt) | set(pd):
         if k[0] in cand_verbs and (len(tt[k]) if k in tt else 0) + len(pd.get(k, [])) / 4 >= 3:
             keys.add(" ".join(k))
+    if a.drop:
+        dropped = {ln.split("\t")[0].strip() for ln in open(a.drop, encoding="utf-8") if ln.strip() and not ln.startswith("#")}
+        keys = {k for k in keys if k not in dropped or k in in_deck}
     rows = []
     for key in keys:
         w = key.split()
