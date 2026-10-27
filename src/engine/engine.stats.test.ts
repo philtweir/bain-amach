@@ -1,13 +1,14 @@
 // Milestone 1 acceptance: 300 seeded bot games per player count, within noise of the reference engine
-// run on the same deck. On the app deck (handoff deck + 13 draft meaning cards) the reference makes
-// 31.5 / 38.6 / 37.6 lines, wildcard lines 3.8, straddles 1.6–2.8. (Handoff deck: 28.2 / 31.9 / 31.3.)
+// run on the same deck. On the app deck (handoff deck + 27 draft meaning cards and the draft verbs) the
+// reference makes 42.8 / 49.2 / 48.3 lines, wildcard lines 3.9, straddles 2.8–3.8. (With only the
+// first 13 draft cards: 31.5 / 38.6 / 37.6, straddles 1.6–2.8. Handoff deck: 28.2 / 31.9 / 31.3.)
 import { describe, expect, it } from 'vitest';
 import { botTurn } from './bot';
 import { DECK } from './deck';
 import { newGame } from './game';
 import type { GameConfig } from './types';
 
-const REF_LINES: Record<number, number> = { 2: 31.5, 3: 38.6, 4: 37.6 };
+const REF_LINES: Record<number, number> = { 2: 42.8, 3: 49.2, 4: 48.3 };
 
 function run(n: number, games: number, extra: Partial<GameConfig> = {}) {
   let out = 0, lines = 0, straddles = 0, wild = 0, unfinished = 0, short = 0, ties = 0, firstWins = 0, decided = 0;
@@ -45,7 +46,7 @@ describe('bot games match the reference within noise', () => {
       expect(Math.abs(r.lines - REF_LINES[n]) / REF_LINES[n]).toBeLessThan(0.1);
       expect(r.wild).toBeGreaterThan(3.0);
       expect(r.wild).toBeLessThan(4.5);
-      expect(r.straddles).toBeGreaterThan(1.0);
-      expect(r.straddles).toBeLessThan(3.4);
+      expect(r.straddles).toBeGreaterThan(1.5);
+      expect(r.straddles).toBeLessThan(5.0);
     });
 });

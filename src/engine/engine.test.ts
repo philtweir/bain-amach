@@ -1,6 +1,7 @@
 // RULES §10 edge cases, determinism and the builder queries.
 import { describe, expect, it } from 'vitest';
 import { botTurn } from './bot';
+import { MEANING_CARD, migrateGlosses } from './deck';
 import { emptySelection, hint, judge, lit, placements, preferredWay, ways, wayToMove } from './builder';
 import { FINAL_STALLS, apply, lineMoves, loneMoves, newGame, pass, raceStall, setStuck } from './game';
 import type { Card, GameConfig, GameState, Placed } from './types';
@@ -12,7 +13,7 @@ let nid = 1000;
 const V = (t: string): Card => ({ id: nid++, k: 'V', t });
 const P = (t: string): Card => ({ id: nid++, k: 'P', t });
 const W = (): Card => ({ id: nid++, k: 'W', t: '*' });
-/** Meaning card by deck id: m01 = LISTEN TO, PUT ON, SUCCEED; m02 = STAND BY, LOOK AT, REACH … */
+/** Meaning card by deck id: m01 = LISTEN TO, PUT ON (CLOTHES), SUCCEED; m02 = STAND BY (SUPPORT), LOOK AT, REACH … */
 const M = (t: string): Card => ({ id: nid++, k: 'M', t });
 const at = (c: Card, x: number, y: number, axis: Placed['axis'] = null, owner = -1): Placed => ({ ...c, x, y, axis, owner });
 
@@ -273,7 +274,7 @@ describe('builder', () => {
 
 describe('app rules: lines onto table meaning cards, meaning refill', () => {
   const rules = { refillMeaning: true, tableMeanings: true };
-  // cuir suas le already down, ending on m04 (TAKE OFF / PUT UP WITH / LET OUT).
+  // cuir suas le already down, ending on m04 (TAKE OFF (CLOTHES) / PUT UP WITH / LET OUT).
   const base = () => [at(V('cuir'), 0, 0), at(P('suas'), 1, 0, 'h', 1), at(P('le'), 2, 0, 'h', 1), { ...at(M('m04'), 3, 0, 'h', 1), used: 'PUT UP WITH' }];
 
   it('a line can end on a table meaning card as another of its meanings', () => {
@@ -343,7 +344,7 @@ describe('fresh-line draw', () => {
     expect(e.e === 'line' && e.drew?.length).toBe(2);
     // éist (2 cards out: meaning + verb), refill a meaning, draw 2: 3 - 2 + 1 + 2 = 4
     expect(r.state.hands[0].length).toBe(4);
-    const m2 = M(findMeaningCard('PUT ON'));
+    const m2 = M(findMeaningCard('PUT ON (CLOTHES)'));
     const s2 = fixture({ board: [at(V('cuir'), 0, 0)], piles: [['ar'], ['le'], ['amach'], ['suas'], ['as']], hands: [[m2, V('fan')], [V('tóg')]], config: { rules } });
     const off = lineMoves(s2, 0).find((l) => l.c === 'c06' && 'table' in l.verb)!;
     const r2 = apply(s2, 0, off);
@@ -395,7 +396,7 @@ describe('swap counts as a pass for the river', () => {
 
 describe('picking a verb on the table', () => {
   it('only lights lines that use that verb, not verbs in the hand', () => {
-    // cuir is on the table; the hand holds éist and LISTEN TO / PUT ON / SUCCEED, and the river has le and ar.
+    // cuir is on the table; the hand holds éist and LISTEN TO / PUT ON (CLOTHES) / SUCCEED, and the river has le and ar.
     const m = M('m01'), ev = V('éist');
     const s = fixture({ piles: [['le'], ['ar'], ['amach'], ['suas'], ['as']], hands: [[m, ev], [V('tóg')]] });
     const cuir = s.board.find((b) => b.t === 'cuir')!;
@@ -408,7 +409,7 @@ describe('picking a verb on the table', () => {
 });
 
 describe('bots swap instead of passing', () => {
-  // m01 (LISTEN TO / PUT ON / SUCCEED) is live: éist in hand, cuir on the table. m02 (STAND BY /
+  // m01 (LISTEN TO / PUT ON (CLOTHES) / SUCCEED) is live: éist in hand, cuir on the table. m02 (STAND BY (SUPPORT) /
   // LOOK AT / REACH) has no verb in reach. The river has neither le nor ar, and the deck is empty.
   const position = (rules: GameConfig['rules']) => {
     const live = M('m01'), dead = M('m02');
@@ -439,5 +440,30 @@ describe('wildcards in the line builder', () => {
     const ws = ways(s, 0, { ...emptySelection(), meaning: m.id, verb: { hand: ev.id }, wild: [w2.id] });
     expect(ws.length).toBeGreaterThan(0);
     expect(ws.every((w) => w.src.some((x) => 'wild' in x && x.wild === w2.id))).toBe(true);
+  });
+});
+
+describe('renamed glosses', () => {
+  it('no meaning card still prints an old gloss', () => {
+    const all = new Set(Object.values(MEANING_CARD).flat());
+    for (const old of ['PUT ON', 'TAKE OFF', 'GET FROM', 'MAKE (SOMEONE)', 'CALL']) expect(all.has(old)).toBe(false);
+    expect(all.has('PUT ON (CLOTHES)')).toBe(true);
+  });
+
+  it('a game saved before the rename reads in the new wording', () => {
+    const s0 = newGame({ seed: 1, mode: 'turns', answers: 'shown', hints: 'off', players: [{ name: 'A', kind: 'human', color: 0 }, { name: 'B', kind: 'bot', level: 'easy', color: 1 }] });
+    const old: GameState = {
+      ...s0,
+      board: [{ id: 999, k: 'M', t: 'm01', x: 3, y: 0, axis: null, owner: 0, used: 'PUT ON' }],
+      lines: [{ p: 0, c: 'c06', g: 'PUT ON', cells: [[0, 0], [1, 0], [2, 0], [3, 0]], wild: false, straddle: false, turnNo: 1 }],
+      log: [{ e: 'line', p: 0, c: 'c06', g: 'PUT ON', cells: [], wild: false, straddle: false, river: [], turnNo: 1 }],
+      missed: [[{ c: 'c03', g: 'TAKE OFF', turnNo: 1, wild: false, river: [], verbOnTable: false }], []],
+    };
+    const s = migrateGlosses(old);
+    expect(s.board[0].used).toBe('PUT ON (CLOTHES)');
+    expect(s.lines[0].g).toBe('PUT ON (CLOTHES)');
+    expect((s.log[0] as { g: string }).g).toBe('PUT ON (CLOTHES)');
+    expect(s.missed[0][0].g).toBe('TAKE OFF (CLOTHES)');
+    expect(migrateGlosses(s)).toEqual(s);
   });
 });

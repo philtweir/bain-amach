@@ -46,7 +46,7 @@ const SYMBOLS: { key: 'cross' | 'owner' | 'arrive' | 'split' | 'multi'; card: Pl
   { key: 'owner', card: at('V', 'cuir', 0, 0), owner: 1 },
   { key: 'arrive', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }] },
   { key: 'split', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }, { g: 'LET OUT', side: 'n' }] },
-  { key: 'multi', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }, { g: 'LET OUT', side: 'n' }, { g: 'TAKE OFF', side: 'e' }] },
+  { key: 'multi', card: m('m04', 'PUT UP WITH'), uses: [{ g: 'PUT UP WITH', side: 'w' }, { g: 'LET OUT', side: 'n' }, { g: 'TAKE OFF (CLOTHES)', side: 'e' }] },
 ];
 
 /** What each mark on the table's cards means, drawn with the real card faces. */
@@ -74,7 +74,7 @@ function SymbolKey() {
         ))}
         <li class="sym-row is-wide">
           <div aria-hidden="true">
-            <MeaningCard card={at('M', 'm01', 0, 0)} uses={[{ g: 'LISTEN TO', side: 'w' }, { g: 'PUT ON', side: 'n' }]} />
+            <MeaningCard card={at('M', 'm01', 0, 0)} uses={[{ g: 'LISTEN TO', side: 'w' }, { g: 'PUT ON (CLOTHES)', side: 'n' }]} />
           </div>
           <p class="body muted">{t('rules.sym.peek')}</p>
         </li>

@@ -1,6 +1,6 @@
 {
-  "version": "2026-10-25+draft-senses",
-  "notes": "Compound list awaits Phil's Ulster check. Meanings are English glosses; answers are the Irish compounds. GIVE UP has two answers. Draft: 13 extra senses of existing compounds (c37 to c49) on 13 extra meaning cards (m37 to m49), added for playtesting; Phil to check. The handoff original is handoff/data/deck.json.",
+  "version": "2026-10-27+draft-verbs",
+  "notes": "Compound list awaits Phil's Ulster check. Meanings are English glosses; answers are the Irish compounds. GIVE UP has two answers. Draft: 13 extra senses of existing compounds (c37 to c49) on 13 extra meaning cards (m37 to m49), added for playtesting; Phil to check. Draft verbs (2026-10-27): 14 more meanings (c50 to c63: glac, taitin, tig, téigh, caith, faigh, cuidigh, cuir isteach) on m50 to m63, with their verbs and more le, ó, de, faoi and isteach to keep particle scarcity near the old ratio. The handoff original is handoff/data/deck.json.",
   "compounds": [
     {
       "id": "c01",
@@ -17,7 +17,7 @@
       "particles": [
         "as"
       ],
-      "meaning": "GET FROM",
+      "meaning": "GET (USE) OUT OF",
       "check_note": ""
     },
     {
@@ -26,7 +26,7 @@
       "particles": [
         "de"
       ],
-      "meaning": "TAKE OFF",
+      "meaning": "TAKE OFF (CLOTHES)",
       "check_note": ""
     },
     {
@@ -35,7 +35,7 @@
       "particles": [
         "le"
       ],
-      "meaning": "CONCERN",
+      "meaning": "CONCERN (RELATE TO)",
       "check_note": "CONCERN / touch — pick one gloss"
     },
     {
@@ -44,7 +44,7 @@
       "particles": [
         "amach"
       ],
-      "meaning": "THROW UP",
+      "meaning": "THROW UP (VOMIT)",
       "check_note": "THROW UP (vomit) — check register for learners"
     },
     {
@@ -53,7 +53,7 @@
       "particles": [
         "ar"
       ],
-      "meaning": "PUT ON",
+      "meaning": "PUT ON (CLOTHES)",
       "check_note": ""
     },
     {
@@ -130,7 +130,7 @@
       "particles": [
         "ar"
       ],
-      "meaning": "MAKE (SOMEONE)",
+      "meaning": "MAKE (SOMEONE DO)",
       "check_note": "MAKE (SOMEONE) / also 'call' — pick one gloss"
     },
     {
@@ -220,7 +220,7 @@
       "particles": [
         "suas"
       ],
-      "meaning": "KEEP UP",
+      "meaning": "KEEP UP (MAINTAIN)",
       "check_note": "KEEP UP — check sense"
     },
     {
@@ -320,7 +320,7 @@
       "particles": [
         "le"
       ],
-      "meaning": "STAND BY",
+      "meaning": "STAND BY (SUPPORT)",
       "check_note": ""
     },
     {
@@ -329,7 +329,7 @@
       "particles": [
         "ar"
       ],
-      "meaning": "COME ACROSS",
+      "meaning": "COME ACROSS (FIND)",
       "check_note": "COME ACROSS (find) — check"
     },
     {
@@ -368,7 +368,7 @@
       "particles": [
         "amach"
       ],
-      "meaning": "PUT OUT",
+      "meaning": "PUT OUT (EJECT)",
       "check_note": "Draft sense: cuir amach an madadh = put the dog out. Check.",
       "draft": true
     },
@@ -419,7 +419,7 @@
       "particles": [
         "ar"
       ],
-      "meaning": "CALL",
+      "meaning": "CALL (NAME)",
       "check_note": "Draft sense: tugann siad X air = they call it X. Check.",
       "draft": true
     },
@@ -439,7 +439,7 @@
       "particles": [
         "amach"
       ],
-      "meaning": "FALL OUT",
+      "meaning": "FALL OUT (QUARREL)",
       "check_note": "Draft sense: thit siad amach = they fell out (quarrelled). Check.",
       "draft": true
     },
@@ -462,6 +462,146 @@
       "meaning": "WATCH",
       "check_note": "Draft sense: ag amharc ar an teilifís = watching TV. Check.",
       "draft": true
+    },
+    {
+      "id": "c50",
+      "verb": "glac",
+      "particles": [
+        "le"
+      ],
+      "meaning": "ACCEPT",
+      "check_note": "Draft: ghlac sí leis an tairiscint = she accepted the offer. Treebank and Tatoeba.",
+      "draft": true
+    },
+    {
+      "id": "c51",
+      "verb": "glac",
+      "particles": [
+        "le"
+      ],
+      "meaning": "ASSUME (SUPPOSE)",
+      "check_note": "Draft: glactar leis go… = it is assumed that…. Treebank and Tatoeba.",
+      "draft": true
+    },
+    {
+      "id": "c52",
+      "verb": "taitin",
+      "particles": [
+        "le"
+      ],
+      "meaning": "PLEASE (SOMEONE)",
+      "check_note": "Draft: taitníonn an ceol liom = the music pleases me, I like it. Wiktionary.",
+      "draft": true
+    },
+    {
+      "id": "c53",
+      "verb": "tig",
+      "particles": [
+        "le"
+      ],
+      "meaning": "BE ABLE",
+      "check_note": "Draft: thig liom = I can (Ulster form of tar; also in Munster and Connacht writing). Treebank and Wikisource.",
+      "draft": true
+    },
+    {
+      "id": "c54",
+      "verb": "téigh",
+      "particles": [
+        "le"
+      ],
+      "meaning": "GO IN FOR",
+      "check_note": "Draft: chuaigh sé le múinteoireacht = he took up teaching. Treebank.",
+      "draft": true
+    },
+    {
+      "id": "c55",
+      "verb": "téigh",
+      "particles": [
+        "faoi"
+      ],
+      "meaning": "SET (SUN)",
+      "check_note": "Draft: tá an ghrian ag dul faoi = the sun is setting. Wikisource.",
+      "draft": true
+    },
+    {
+      "id": "c56",
+      "verb": "téigh",
+      "particles": [
+        "as"
+      ],
+      "meaning": "ESCAPE",
+      "check_note": "Draft: is ar éigean a chuaigh sé as = he barely escaped. Wikisource. Also: of a fire or light, go out.",
+      "draft": true
+    },
+    {
+      "id": "c57",
+      "verb": "caith",
+      "particles": [
+        "le"
+      ],
+      "meaning": "TREAT (SOMEONE)",
+      "check_note": "Draft: caitheadh go maith linn = we were treated well. Treebank.",
+      "draft": true
+    },
+    {
+      "id": "c58",
+      "verb": "caith",
+      "particles": [
+        "ó"
+      ],
+      "meaning": "THROW AWAY",
+      "check_note": "Draft: caith uait é = throw it away. Treebank and Wikisource.",
+      "draft": true
+    },
+    {
+      "id": "c59",
+      "verb": "caith",
+      "particles": [
+        "de"
+      ],
+      "meaning": "THROW OFF",
+      "check_note": "Draft: chaith sé de a chóta = he threw off his coat (also shake off a worry). Treebank and Wikisource.",
+      "draft": true
+    },
+    {
+      "id": "c60",
+      "verb": "caith",
+      "particles": [
+        "ar"
+      ],
+      "meaning": "SPEND ON",
+      "check_note": "Draft: chaith sí a cuid airgid ar leabhair = she spent her money on books. Treebank.",
+      "draft": true
+    },
+    {
+      "id": "c61",
+      "verb": "faigh",
+      "particles": [
+        "amach"
+      ],
+      "meaning": "FIND OUT",
+      "check_note": "Draft: fuair mé amach é = I found it out. Treebank.",
+      "draft": true
+    },
+    {
+      "id": "c62",
+      "verb": "cuir",
+      "particles": [
+        "isteach"
+      ],
+      "meaning": "HAND IN",
+      "check_note": "Draft: chuir sé litir isteach = he sent in a letter. Treebank.",
+      "draft": true
+    },
+    {
+      "id": "c63",
+      "verb": "cuidigh",
+      "particles": [
+        "le"
+      ],
+      "meaning": "HELP",
+      "check_note": "Draft: chuidigh sé liom = he helped me (cabhraigh le in the standard). Treebank and Wikisource.",
+      "draft": true
     }
   ],
   "meaningCards": [
@@ -469,14 +609,14 @@
       "id": "m01",
       "meanings": [
         "LISTEN TO",
-        "PUT ON",
+        "PUT ON (CLOTHES)",
         "SUCCEED"
       ]
     },
     {
       "id": "m02",
       "meanings": [
-        "STAND BY",
+        "STAND BY (SUPPORT)",
         "LOOK AT",
         "REACH"
       ]
@@ -485,14 +625,14 @@
       "id": "m03",
       "meanings": [
         "LEAVE OUT",
-        "KEEP UP",
+        "KEEP UP (MAINTAIN)",
         "REBEL"
       ]
     },
     {
       "id": "m04",
       "meanings": [
-        "TAKE OFF",
+        "TAKE OFF (CLOTHES)",
         "PUT UP WITH",
         "LET OUT"
       ]
@@ -517,8 +657,8 @@
       "id": "m07",
       "meanings": [
         "MEET",
-        "MAKE (SOMEONE)",
-        "PUT ON"
+        "MAKE (SOMEONE DO)",
+        "PUT ON (CLOTHES)"
       ]
     },
     {
@@ -533,14 +673,14 @@
       "id": "m09",
       "meanings": [
         "GIVE UP",
-        "CONCERN",
-        "PUT ON"
+        "CONCERN (RELATE TO)",
+        "PUT ON (CLOTHES)"
       ]
     },
     {
       "id": "m10",
       "meanings": [
-        "TAKE OFF",
+        "TAKE OFF (CLOTHES)",
         "DISTURB",
         "LET OUT"
       ]
@@ -548,7 +688,7 @@
     {
       "id": "m11",
       "meanings": [
-        "STAND BY",
+        "STAND BY (SUPPORT)",
         "PICK UP",
         "REACH"
       ]
@@ -557,8 +697,8 @@
       "id": "m12",
       "meanings": [
         "HOLD AGAINST",
-        "TAKE OFF",
-        "THROW UP"
+        "TAKE OFF (CLOTHES)",
+        "THROW UP (VOMIT)"
       ]
     },
     {
@@ -573,7 +713,7 @@
       "id": "m14",
       "meanings": [
         "GIVE UP",
-        "GET FROM",
+        "GET (USE) OUT OF",
         "LET OUT"
       ]
     },
@@ -589,7 +729,7 @@
       "id": "m16",
       "meanings": [
         "DESCRIBE",
-        "COME ACROSS",
+        "COME ACROSS (FIND)",
         "MEET"
       ]
     },
@@ -612,7 +752,7 @@
     {
       "id": "m19",
       "meanings": [
-        "MAKE (SOMEONE)",
+        "MAKE (SOMEONE DO)",
         "WAIT FOR",
         "LEAVE ALONE"
       ]
@@ -620,7 +760,7 @@
     {
       "id": "m20",
       "meanings": [
-        "STAND BY",
+        "STAND BY (SUPPORT)",
         "SCOLD",
         "LEAVE OUT"
       ]
@@ -629,14 +769,14 @@
       "id": "m21",
       "meanings": [
         "PRETEND",
-        "GET FROM",
+        "GET (USE) OUT OF",
         "DESCRIBE"
       ]
     },
     {
       "id": "m22",
       "meanings": [
-        "THROW UP",
+        "THROW UP (VOMIT)",
         "LISTEN TO",
         "KEEP GOING"
       ]
@@ -661,7 +801,7 @@
       "id": "m25",
       "meanings": [
         "LEAVE OUT",
-        "COME ACROSS",
+        "COME ACROSS (FIND)",
         "GIVE UP"
       ]
     },
@@ -669,14 +809,14 @@
       "id": "m26",
       "meanings": [
         "APPLY FOR",
-        "KEEP UP",
+        "KEEP UP (MAINTAIN)",
         "LEAVE ALONE"
       ]
     },
     {
       "id": "m27",
       "meanings": [
-        "GET FROM",
+        "GET (USE) OUT OF",
         "DROP IN",
         "GIVE UP"
       ]
@@ -686,7 +826,7 @@
       "meanings": [
         "DROP IN",
         "ATTEMPT",
-        "COME ACROSS"
+        "COME ACROSS (FIND)"
       ]
     },
     {
@@ -710,13 +850,13 @@
       "meanings": [
         "HOLD AGAINST",
         "FIGURE OUT",
-        "MAKE (SOMEONE)"
+        "MAKE (SOMEONE DO)"
       ]
     },
     {
       "id": "m32",
       "meanings": [
-        "KEEP UP",
+        "KEEP UP (MAINTAIN)",
         "MEET",
         "REBEL"
       ]
@@ -725,8 +865,8 @@
       "id": "m33",
       "meanings": [
         "HEAD FOR",
-        "CONCERN",
-        "THROW UP"
+        "CONCERN (RELATE TO)",
+        "THROW UP (VOMIT)"
       ]
     },
     {
@@ -741,7 +881,7 @@
       "id": "m35",
       "meanings": [
         "PUT UP WITH",
-        "CONCERN",
+        "CONCERN (RELATE TO)",
         "LEAVE ALONE"
       ]
     },
@@ -758,7 +898,7 @@
       "meanings": [
         "ACHIEVE",
         "PUBLISH",
-        "CALL"
+        "CALL (NAME)"
       ],
       "draft": true
     },
@@ -776,14 +916,14 @@
       "meanings": [
         "TOUCH",
         "INTERFERE WITH",
-        "FALL OUT"
+        "FALL OUT (QUARREL)"
       ],
       "draft": true
     },
     {
       "id": "m40",
       "meanings": [
-        "PUT OUT",
+        "PUT OUT (EJECT)",
         "ATTACK",
         "ALLOW"
       ],
@@ -793,7 +933,7 @@
       "id": "m41",
       "meanings": [
         "PUBLISH",
-        "CALL",
+        "CALL (NAME)",
         "WATCH"
       ],
       "draft": true
@@ -811,7 +951,7 @@
       "id": "m43",
       "meanings": [
         "INTERFERE WITH",
-        "FALL OUT",
+        "FALL OUT (QUARREL)",
         "CLEAR OFF"
       ],
       "draft": true
@@ -828,9 +968,9 @@
     {
       "id": "m45",
       "meanings": [
-        "CALL",
+        "CALL (NAME)",
         "WATCH",
-        "PUT OUT"
+        "PUT OUT (EJECT)"
       ],
       "draft": true
     },
@@ -846,7 +986,7 @@
     {
       "id": "m47",
       "meanings": [
-        "FALL OUT",
+        "FALL OUT (QUARREL)",
         "CLEAR OFF",
         "BOTHER"
       ],
@@ -865,8 +1005,134 @@
       "id": "m49",
       "meanings": [
         "WATCH",
-        "PUT OUT",
+        "PUT OUT (EJECT)",
         "ATTACK"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m50",
+      "meanings": [
+        "ACCEPT",
+        "GO IN FOR",
+        "THROW OFF"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m51",
+      "meanings": [
+        "ASSUME (SUPPOSE)",
+        "SET (SUN)",
+        "SPEND ON"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m52",
+      "meanings": [
+        "PLEASE (SOMEONE)",
+        "ESCAPE",
+        "FIND OUT"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m53",
+      "meanings": [
+        "BE ABLE",
+        "TREAT (SOMEONE)",
+        "HAND IN"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m54",
+      "meanings": [
+        "GO IN FOR",
+        "THROW AWAY",
+        "HELP"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m55",
+      "meanings": [
+        "SET (SUN)",
+        "THROW OFF",
+        "ACCEPT"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m56",
+      "meanings": [
+        "ESCAPE",
+        "SPEND ON",
+        "ASSUME (SUPPOSE)"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m57",
+      "meanings": [
+        "TREAT (SOMEONE)",
+        "FIND OUT",
+        "PLEASE (SOMEONE)"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m58",
+      "meanings": [
+        "THROW AWAY",
+        "HAND IN",
+        "BE ABLE"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m59",
+      "meanings": [
+        "THROW OFF",
+        "HELP",
+        "GO IN FOR"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m60",
+      "meanings": [
+        "SPEND ON",
+        "ACCEPT",
+        "SET (SUN)"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m61",
+      "meanings": [
+        "FIND OUT",
+        "ASSUME (SUPPOSE)",
+        "ESCAPE"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m62",
+      "meanings": [
+        "HAND IN",
+        "PLEASE (SOMEONE)",
+        "TREAT (SOMEONE)"
+      ],
+      "draft": true
+    },
+    {
+      "id": "m63",
+      "meanings": [
+        "HELP",
+        "BE ABLE",
+        "THROW AWAY"
       ],
       "draft": true
     }
@@ -888,7 +1154,14 @@
       "tar": 1,
       "tit": 1,
       "tóg": 1,
-      "éist": 1
+      "éist": 1,
+      "caith": 2,
+      "téigh": 1,
+      "glac": 1,
+      "taitin": 1,
+      "tig": 1,
+      "faigh": 1,
+      "cuidigh": 1
     },
     "pack3to4": {
       "bain": 2,
@@ -900,10 +1173,12 @@
       "coinnigh": 1,
       "fan": 1,
       "lig": 1,
-      "buail": 1
+      "buail": 1,
+      "caith": 1,
+      "téigh": 1
     },
-    "baseTotal": 22,
-    "withPackTotal": 36
+    "baseTotal": 30,
+    "withPackTotal": 46
   },
   "particles": [
     {
@@ -919,7 +1194,7 @@
     {
       "word": "le",
       "type": "preposition",
-      "copies": 7
+      "copies": 12
     },
     {
       "word": "suas",
@@ -939,17 +1214,17 @@
     {
       "word": "isteach",
       "type": "adverb",
-      "copies": 2
+      "copies": 3
     },
     {
       "word": "de",
       "type": "preposition",
-      "copies": 1
+      "copies": 2
     },
     {
       "word": "faoi",
       "type": "preposition",
-      "copies": 1
+      "copies": 2
     },
     {
       "word": "síos",
@@ -959,7 +1234,7 @@
     {
       "word": "ó",
       "type": "preposition",
-      "copies": 1
+      "copies": 2
     }
   ],
   "wildcards": 4,

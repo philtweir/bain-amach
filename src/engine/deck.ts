@@ -1,5 +1,6 @@
 // Deck data, loaded at build time. Deck changes are data changes: never hard-code a count here.
 import raw from '@deck';
+import type { GameState } from './types';
 
 export interface DeckCompound {
   id: string;
@@ -90,7 +91,7 @@ const PRINTED: Record<string, Record<string, string>> = {};
 }
 
 /**
- * Which of its compound's meanings `g` is, in deck order: [1, 2] for cuir ar PUT ON when cuir ar also
+ * Which of its compound's meanings `g` is, in deck order: [1, 2] for cuir ar PUT ON (CLOTHES) when cuir ar also
  * means BOTHER. Null when the compound has only the one meaning.
  */
 export function senseOf(text: string, g: string): [number, number] | null {
@@ -102,4 +103,32 @@ export function senseOf(text: string, g: string): [number, number] | null {
 /** The Irish answer printed under meaning `g` on meaning card `cardT` (m01…). */
 export function printedAnswer(cardT: string, g: string): string {
   return PRINTED[cardT]?.[g] ?? answersFor(g)[0] ?? '';
+}
+
+/** Glosses renamed to say which sense they mean (Phil, 2026-10-27): old → new. */
+const GLOSS_RENAMED: Record<string, string> = {
+  'PUT ON': 'PUT ON (CLOTHES)',
+  'TAKE OFF': 'TAKE OFF (CLOTHES)',
+  'THROW UP': 'THROW UP (VOMIT)',
+  'GET FROM': 'GET (USE) OUT OF',
+  'MAKE (SOMEONE)': 'MAKE (SOMEONE DO)',
+  'COME ACROSS': 'COME ACROSS (FIND)',
+  'KEEP UP': 'KEEP UP (MAINTAIN)',
+  'CONCERN': 'CONCERN (RELATE TO)',
+  'STAND BY': 'STAND BY (SUPPORT)',
+  'PUT OUT': 'PUT OUT (EJECT)',
+  'CALL': 'CALL (NAME)',
+  'FALL OUT': 'FALL OUT (QUARREL)',
+};
+
+/** A saved game from before a gloss was renamed, with its lines, cards and log in the new wording. */
+export function migrateGlosses(s: GameState): GameState {
+  const r = (g: string) => GLOSS_RENAMED[g] ?? g;
+  return {
+    ...s,
+    board: s.board.map((c) => (c.used ? { ...c, used: r(c.used) } : c)),
+    lines: s.lines.map((l) => ({ ...l, g: r(l.g) })),
+    log: s.log.map((e) => (e.e === 'line' ? { ...e, g: r(e.g) } : e)),
+    missed: s.missed.map((ms) => ms.map((m) => ({ ...m, g: r(m.g) }))),
+  };
 }

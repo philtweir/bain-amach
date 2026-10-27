@@ -1,6 +1,7 @@
 // Screen flow: language → welcome → (tutorial) → home → setup → table → recap → home.
 import { effect } from '@preact/signals';
 import { APP_RULES, type GameConfig, type GameState } from '../engine/types';
+import { migrateGlosses } from '../engine/deck';
 import type { Controller } from '../game/controller';
 import { savedGame, settings, updateSettings } from '../storage';
 import { Navigator, nav, stack, type Entry } from '../ui/nav';
@@ -55,8 +56,9 @@ function renderEntry(e: Entry) {
         <HomeScreen
           onContinue={() => {
             const sg = savedGame.value;
-            // Games saved before a rule change pick the current rules up: they only add options.
-            if (sg) play({ state: { ...sg.state, config: { ...sg.state.config, rules: { ...APP_RULES, ...sg.state.config.rules } } }, elapsed: sg.elapsed });
+            // Games saved before a rule change pick the current rules up: they only add options. Glosses
+            // renamed since are brought up to date.
+            if (sg) play({ state: migrateGlosses({ ...sg.state, config: { ...sg.state.config, rules: { ...APP_RULES, ...sg.state.config.rules } } }), elapsed: sg.elapsed });
           }}
           onNew={() => nav.push('setup', { prefs: defaultSetup() })}
         />

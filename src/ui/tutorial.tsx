@@ -9,8 +9,9 @@ import { t, type Key } from '../i18n';
 import { updateSettings } from '../storage';
 import { nav } from './nav';
 
-/** Seed 912 deals DESCRIBE / GIVE UP / STAY AWAY FROM to you, cuir on the table and síos, ar on the river (app deck). */
-export const TUTORIAL_SEED = 912;
+/** Seed 9928 deals DESCRIBE / GIVE UP / STAY AWAY FROM and a wildcard to you, cuir on the table and síos, ar on the
+ *  river (app deck with the draft verbs; a deck change moves every deal, so recheck it then). */
+export const TUTORIAL_SEED = 9928;
 
 export function tutorialConfig(): GameConfig {
   return {

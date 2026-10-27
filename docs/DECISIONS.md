@@ -142,6 +142,51 @@ Effect with all app rules (300 games, normal bots): no-meaning turns 0–1%; lin
 cards is the usual ending again at 3–4 players. The tutorial moved to seed 912 (same opening hand
 as the design render). The stats test now compares against the reference engine run on this deck.
 
+## Draft verbs (in the app now, Phil to check, 2026-10-27)
+
+Fourteen more meanings from the phrasal-verb research (`research/phrasal-verbs/README.md`), each
+checked by reading attested sentences, not from counts: `c50` to `c63`, marked `"draft": true`, on 14
+new draft meaning cards (`m50` to `m63`, each meaning on three cards; ACCEPT and ASSUME never share
+one). Literal combinations were left out (Phil: "trivially obvious entries can probably be removed").
+
+| Compound | Meaning | Verb cards (base + 3–4 pack) |
+|---|---|---|
+| glac le | ACCEPT; ASSUME (SUPPOSE) | glac 1 |
+| taitin le | PLEASE (SOMEONE) | taitin 1 |
+| tig le | BE ABLE (Ulster *thig liom*; also in Munster and Connacht writing) | tig 1 |
+| cuidigh le | HELP | cuidigh 1 |
+| téigh le | GO IN FOR (a career; "take up" would clash with *tóg suas*) | téigh 1 + 1 |
+| téigh faoi | SET (SUN) | |
+| téigh as | ESCAPE | |
+| caith le | TREAT (SOMEONE) | caith 2 + 1 |
+| caith ó | THROW AWAY | |
+| caith de | THROW OFF | |
+| caith ar | SPEND ON | |
+| faigh amach | FIND OUT | faigh 1 |
+| cuir isteach | HAND IN | (cuir) |
+
+taitin, tig, cuidigh and faigh each have one compound. Phil accepts that: like *seas*, such a verb can
+go down alone for +2 or wait for a wildcard. Particles went up to keep scarcity near the old ratio
+(0.75 copies per meaning overall): le 7 → 12 (15 meanings), ó, de, faoi and isteach 1 more each. Left
+out for now: *caith amach* (THROW OUT, literal), *téigh ó* (GET AWAY, too close to ESCAPE), *téigh amach
+le* (GO OUT WITH, one example), *pioc suas* (could be a second answer to PICK UP).
+
+Effect with all app rules (300 games, mixed bots, old deck → this deck): turns 39 → 52 / 58 → 71 /
+55 → 65; lines 31.6 → 37.5 / 42.0 → 47.5 / 40.3 → 44.6; swaps 6.8 → 12.1 / 11.4 → 16.1 / 10.9 →
+15.1; someone goes out 91% → 89% / 70% → 76% / 83% → 91%; every game finishes. Games run about a
+fifth longer and swaps rise, as expected from more meanings per verb. The reference engine on this
+deck makes 42.8 / 49.2 / 48.3 lines; the stats test compares against that. The tutorial moved to seed
+9928, which deals the same opening hand as before.
+
+**Glosses that said which sense** (Phil: "PUT ON is not clear which interpretations do and do not
+map"). Renamed: PUT ON (CLOTHES), TAKE OFF (CLOTHES), THROW UP (VOMIT), GET (USE) OUT OF (was GET
+FROM, which reads as *faigh ó*), MAKE (SOMEONE DO), COME ACROSS (FIND), KEEP UP (MAINTAIN), CONCERN
+(RELATE TO), STAND BY (SUPPORT), PUT OUT (EJECT), CALL (NAME), FALL OUT (QUARREL), and among the new
+ones ASSUME (SUPPOSE), TREAT (SOMEONE), HAND IN (not SUBMIT). Progress is kept by compound id, and a
+saved game is brought up to the new wording on Continue (`migrateGlosses`). Still close pairs across
+compounds, for Phil: DISTURB / BOTHER / INTERFERE WITH, FIGURE OUT / FIND OUT, CLEAR OFF / ESCAPE,
+LOOK AT / WATCH.
+
 ## Deck depth (Phil, open)
 
 Each of the 36 compounds has exactly one meaning, and no verb + particles appears twice. Many phrasal
