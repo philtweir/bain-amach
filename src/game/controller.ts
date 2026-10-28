@@ -11,6 +11,7 @@ import {
   lit,
   placements,
   preferredWay,
+  judgeSf,
   usesTable,
   ways,
   wayToMove,
@@ -20,7 +21,9 @@ import {
   type Way,
 } from '../engine/builder';
 import { COMPOUND_BY_ID, COMPOUNDS_BY_VERB, compoundText } from '../engine/deck';
-import { apply, canDraw, FINAL_STALLS, meaningsOf, newGame, pass, raceStall, setStuck, useHint, view, wrongLine } from '../engine/game';
+import { SF_CARD_ID, lineGloss, lineParticles, lineText } from '../engine/storfhocail';
+import { noteSeen } from '../app/storfhocail';
+import { apply, canDraw, FINAL_STALLS, holdsTile, meaningsOf, newGame, pass, pouchPut, pouchTake, raceStall, setStuck, useHint, view, wrongLine } from '../engine/game';
 import type { GameConfig, GameEvent, GameState, LineMove, Move, Rejection, VerbSrc } from '../engine/types';
 import { t } from '../i18n';
 import { platform } from '../platform';
@@ -29,7 +32,7 @@ import { dur, haptic } from '../ui/motion';
 import { COMPOUNDS } from '../engine/deck';
 
 /** Hidden-mode picks in order. River picks remember the card, so a race can tell when it went. */
-export type Pick = { river: number; cid: number } | { wild: number } | { cross: { x: number; y: number } };
+export type Pick = { river: number; cid: number } | { wild: number } | { cross: { x: number; y: number } } | { tile: true };
 
 export interface Toast {
   id: number;
@@ -72,7 +75,9 @@ export interface SpotChoice {
 
 /** A line has its meaning once a hand meaning card or a table meaning card is picked. */
 export const hasMeaning = (sel: Selection) => sel.meaning !== undefined || !!sel.onto;
-export const selEmpty = (sel: Selection) => !hasMeaning(sel) && !sel.verb && !sel.river.length && !sel.wild.length && !sel.cross;
+/** What the line will mean: a meaning card, or a stórfhocal tile (its own phrases). */
+export const hasTarget = (sel: Selection) => hasMeaning(sel) || !!sel.tile;
+export const selEmpty = (sel: Selection) => !hasTarget(sel) && !sel.verb && !sel.river.length && !sel.wild.length && !sel.cross;
 
 const SPEED: Record<string, number> = { slow: 0.6, normal: 1, fast: 1.6 };
 const LOCKOUT_MS = 3000;
@@ -109,6 +114,10 @@ export class Controller {
   shown = signal<{ id: number; x: number; y: number; by: number } | null>(null);
   /** The line picked so far can only be finished with a wildcard the player hasn't tapped yet. */
   needWild = signal<{ compound: string; n: number } | null>(null);
+  /** The bag picker is open (stórfhocail games). */
+  sfPicker = signal(false);
+  /** The "the winner keeps it" warning has been seen this game. */
+  sfWarned = false;
   /** A table meaning card being looked at: shows all three of its meanings. */
   peek = signal<{ x: number; y: number } | null>(null);
   /** Ask the board to bring these cells into view. */
@@ -207,12 +216,12 @@ export class Controller {
     const ws = this.ways.value.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
     const cs = distinctCompounds(ws);
     if (cs.length !== 1 || !ws.some(usesTable) || ws.every(usesTable)) return null;
-    return { compound: compoundText(COMPOUND_BY_ID[cs[0]]) };
+    return { compound: lineText(cs[0]) };
   });
   /** Distinct compounds once a meaning and a verb are both chosen ("two ways to finish"). */
   choices = computed(() => {
     const sel = this.sel.value;
-    if (this.hidden || !hasMeaning(sel) || (!sel.verb && !sel.cross)) return [] as string[];
+    if (this.hidden || !hasTarget(sel) || (!sel.verb && !sel.cross)) return [] as string[];
     return distinctCompounds(this.ways.value);
   });
   locked = computed(() => this.lockUntil.value > this.now.value);
@@ -454,10 +463,11 @@ export class Controller {
   private feedback(ev: GameEvent, prev: GameState, next: GameState, bot: boolean, from?: Map<number, DOMRect>): number {
     switch (ev.e) {
       case 'line': {
-        const c = COMPOUND_BY_ID[ev.c];
-        const text = compoundText(c);
+        const text = lineText(ev.c);
         const byHuman = this.isHuman(ev.p);
-        const isNew = recordLine(ev.c, byHuman);
+        // A stórfhocal phrase is seen (glossary and bag); a compound counts in the glossary.
+        if (ev.sf) noteSeen(ev.c);
+        const isNew = ev.sf ? false : recordLine(ev.c, byHuman);
         const n = ev.cells.length;
         const stagger = bot ? dur(420) : dur(60);
         const flight = (n - 1) * stagger + dur(200);
@@ -713,7 +723,8 @@ export class Controller {
     if (this.tutorialHook?.('tapMeaning', id) === false) return;
     this.touch();
     if (this.hidden) {
-      this.sel.value = { ...this.sel.value, meaning: this.sel.value.meaning === id ? undefined : id, onto: undefined };
+      this.sel.value = { ...this.sel.value, meaning: this.sel.value.meaning === id ? undefined : id, onto: undefined, tile: undefined };
+      this.picks.value = this.picks.value.filter((p) => !('tile' in p));
       this.peek.value = null;
       return;
     }
@@ -724,11 +735,51 @@ export class Controller {
       return;
     }
     this.hintVerb.value = null;
-    const next = { ...sel, meaning: id, onto: undefined };
+    const next = { ...sel, meaning: id, onto: undefined, tile: undefined };
     this.peek.value = null;
     if (ways(this.gs.value, this.viewer.value, next).length) this.sel.value = next;
     else this.sel.value = { ...emptySelection(), meaning: id };
     this.afterPick(`m:${id}`);
+  }
+
+  /** A stórfhocal tile in the pouch: the line will be one of its phrases. */
+  tapTile(word: string, long = false) {
+    if (!this.canAct.value) return;
+    this.touch();
+    const sel = this.sel.value;
+    if (this.hidden) {
+      // Its place among the picks is its place in the line.
+      const on = sel.tile !== word;
+      this.sel.value = { ...sel, tile: on ? word : undefined, meaning: on ? undefined : sel.meaning, onto: on ? undefined : sel.onto };
+      this.picks.value = [...this.picks.value.filter((p) => !('tile' in p)), ...(on ? [{ tile: true as const }] : [])];
+      return;
+    }
+    if (sel.tile === word) {
+      this.sel.value = { ...sel, tile: undefined };
+      return;
+    }
+    const next: Selection = { ...sel, tile: word, meaning: undefined, onto: undefined };
+    if (ways(this.gs.value, this.viewer.value, next).length) this.sel.value = next;
+    else this.sel.value = { ...emptySelection(), tile: word };
+    this.afterPick(`s:${word}`, long);
+  }
+
+  /** Bring a tile from the bag into the pouch. Doesn't use a turn. */
+  bringIn(word: string): boolean {
+    const r = pouchPut(this.gs.value, this.viewer.value, word);
+    if (!r.ok) return false;
+    this.gs.value = r.state;
+    this.save();
+    return true;
+  }
+
+  /** Put an unlaid tile back in the bag. */
+  putBack(word: string) {
+    const r = pouchTake(this.gs.value, this.viewer.value, word);
+    if (!r.ok) return;
+    if (this.sel.value.tile === word && !(r.state.sf?.pouch[this.viewer.value] ?? []).includes(word)) this.clearSelection();
+    this.gs.value = r.state;
+    this.save();
   }
 
   tapHandVerb(id: number, long = false) {
@@ -876,14 +927,14 @@ export class Controller {
   private afterPick(key: string, long = false) {
     const sel = this.sel.value;
     if (this.tutorialHook?.('afterPick', sel) === false) return;
-    if (!hasMeaning(sel) || (!sel.verb && !sel.cross)) return;
+    if (!hasTarget(sel) || (!sel.verb && !sel.cross)) return;
     const all = ways(this.gs.value, this.viewer.value, sel);
     if (!all.length) return this.bad(key);
     // Never spend a wildcard the player hasn't tapped: they're precious late in the game.
     const ws = all.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
     if (!ws.length) {
       const need = all.reduce((a, w) => Math.min(a, w.src.filter((x) => 'wild' in x).length - sel.wild.length), 9);
-      this.needWild.value = { compound: compoundText(COMPOUND_BY_ID[all[0].c]), n: Math.max(1, need) };
+      this.needWild.value = { compound: lineText(all[0].c), n: Math.max(1, need) };
       return;
     }
     this.needWild.value = null;
@@ -906,7 +957,7 @@ export class Controller {
     const all = this.ways.value.filter((w) => w.c === cid);
     const ws = all.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
     if (!ws.length && all.length) {
-      this.needWild.value = { compound: compoundText(COMPOUND_BY_ID[cid]), n: 1 };
+      this.needWild.value = { compound: lineText(cid), n: 1 };
       return;
     }
     const way = preferredWay(ws);
@@ -992,9 +1043,17 @@ export class Controller {
     if (!this.canAct.value || this.locked.value) return;
     const sel = this.sel.value;
     if (!this.hidden) return;
+    if (sel.tile) {
+      if (!sel.verb || !this.picks.value.some((p) => !('tile' in p))) return this.bad('lay', t('table.buildingSub'));
+      const parts = this.picks.value.map((p) => ('tile' in p ? { tile: true as const } : 'river' in p ? { river: p.river } : p));
+      const j = judgeSf(this.gs.value, this.viewer.value, { word: sel.tile, verb: sel.verb, parts });
+      if (j.ok) return this.play(j.move);
+      return this.refuse(j.reason);
+    }
     if (!hasMeaning(sel) || !sel.verb || !this.picks.value.length) return this.bad('lay', t('table.buildingSub'));
     const onto = sel.onto;
-    const a: Attempt = { meaning: onto ? view(this.gs.value).at(onto.x, onto.y)!.id : sel.meaning!, verb: sel.verb, parts: this.picks.value, onto };
+    const parts = this.picks.value.filter((p): p is Exclude<Pick, { tile: true }> => !('tile' in p));
+    const a: Attempt = { meaning: onto ? view(this.gs.value).at(onto.x, onto.y)!.id : sel.meaning!, verb: sel.verb, parts, onto };
     const j = judge(this.gs.value, this.viewer.value, a, this.focus);
     if (j.ok) return this.play(j.move);
     this.refuse(j.reason);
@@ -1028,9 +1087,9 @@ export class Controller {
     if (r.card && 'river' in r.card) {
       const pile = r.card.river;
       this.taken.value = { river: pile, at: Date.now() };
-      if (mv?.type === 'line') {
+      if (mv?.type === 'line' || mv?.type === 'sf') {
         const i = mv.src.findIndex((x) => 'river' in x && x.river === pile);
-        word = i >= 0 ? COMPOUND_BY_ID[mv.c].ps[i] : '';
+        word = i >= 0 ? lineParticles(mv.type === 'sf' ? mv.phrase : mv.c)[i] : '';
       }
     } else if (r.card) {
       this.taken.value = { cell: r.card.x + ',' + r.card.y, at: Date.now() };
@@ -1065,13 +1124,18 @@ export class Controller {
       if (r) m.set(mv.v, r);
       return m;
     }
-    if (mv.type !== 'line') return m;
+    if (mv.type !== 'line' && mv.type !== 'sf') return m;
     const s = this.gs.value;
     const add = (id: number) => {
       const r = rect(`.tray [data-card="${id}"], .yourline [data-card="${id}"]`);
       if (r) m.set(id, r);
     };
-    add(mv.m);
+    if (mv.type === 'line') add(mv.m);
+    else {
+      // The tile's card id on the table is fixed by the engine; it flies from the pouch.
+      const r = rect(`.pouch [data-tile="${mv.word}"]`);
+      if (r) m.set(SF_CARD_ID + s.lines.length, r);
+    }
     if ('hand' in mv.verb) add(mv.verb.hand);
     const tops = s.piles.map((p) => p.length);
     for (const src of mv.src) {
@@ -1103,7 +1167,7 @@ export class Controller {
       if (stalled) return;
       const last = [...s.log].reverse().find((e) => e.e === 'line') as Extract<GameEvent, { e: 'line' }> | undefined;
       const by = last && last.river.includes(pile) ? last.p : null;
-      const word = last ? COMPOUND_BY_ID[last.c].ps.find((_, i) => last.river[i] === pile) : undefined;
+      const word = last ? lineParticles(last.c).find((_, i) => last.river[i] === pile) : undefined;
       this.toast({ kind: 'quiet', icon: 'taken', msg: t('table.taken'), sub: by !== null && word ? t('table.takenBy', { name: this.name(by), word }) : t('table.takenAnon') });
       haptic('light');
     };
@@ -1136,6 +1200,7 @@ export class Controller {
       river: sel.river.filter((r) => !gone.includes(r)),
       wild: sel.wild.filter(inHand),
       onto,
+      tile: sel.tile && holdsTile(s, p, sel.tile) ? sel.tile : undefined,
     };
     const changed = JSON.stringify(kept) !== JSON.stringify(sel);
     const hv = this.hintVerb.value;
@@ -1151,6 +1216,7 @@ export class Controller {
     this.spot.value = null;
     this.hintVerb.value = null;
     if (kept.meaning !== undefined) this.sel.value = { ...emptySelection(), meaning: kept.meaning };
+    else if (kept.tile) this.sel.value = { ...emptySelection(), tile: kept.tile };
     else if (kept.verb) this.sel.value = { ...emptySelection(), verb: kept.verb };
     else this.clearSelection();
   }
@@ -1215,7 +1281,7 @@ export class Controller {
     const s = this.gs.value;
     const tops = s.piles.map((p) => p.length);
     const parts = w.src.map((x) => ('river' in x ? t('table.wayRiver', { word: s.piles[x.river][--tops[x.river]].t }) : 'wild' in x ? t('table.wayWild') : ''));
-    return COMPOUND_BY_ID[cid].g.toLowerCase() + (parts.filter(Boolean).length ? ' · ' + parts.filter(Boolean).join(', ') : '');
+    return lineGloss(cid).toLowerCase() + (parts.filter(Boolean).length ? ' · ' + parts.filter(Boolean).join(', ') : '');
   }
 
   missedText() {

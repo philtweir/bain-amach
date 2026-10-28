@@ -4,9 +4,10 @@ import { APP_RULES, type GameConfig, type Level, type PlayerConfig } from '../en
 import { Controller } from '../game/controller';
 import { t } from '../i18n';
 import { platform } from '../platform';
-import { settings, type SetupPrefs } from '../storage';
+import { settings, type SetupPrefs, sfProgress } from '../storage';
 import { useDeck } from '../engine/deck';
 import { deckForSetup } from './decks';
+import { dealFor, sfUnlocked } from '../engine/storfhocail';
 
 export const game = signal<Controller | null>(null);
 
@@ -74,7 +75,9 @@ export function configFrom(p: SetupPrefs, seed = freshSeed()): GameConfig {
     });
   }
   const deck = deckForSetup(p.deck);
-  return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints, rules: APP_RULES, ...(deck ? { deck } : {}) };
+  // Stórfhocail: solo, unlocked, and only with a Hard bot (only Hard bots carry one).
+  const sf = p.sf && p.who === 'solo' && p.bots.includes('hard') && sfUnlocked(sfProgress.value) ? dealFor(sfProgress.value) : undefined;
+  return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints, rules: APP_RULES, ...(deck ? { deck } : {}), ...(sf ? { sf } : {}) };
 }
 
 // ---------- install and update ----------

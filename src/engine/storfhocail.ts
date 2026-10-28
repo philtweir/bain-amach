@@ -2,7 +2,7 @@
 // make, the bots' carry roll at the deal, and settling up at the end. Every tuning number lives in
 // data/storfhocail.json → settings.
 import raw from '../../data/storfhocail.json';
-import { BASE, DECK, type DeckData } from './deck';
+import { BASE, BASE_COMPOUND_BY_ID, DECK, compoundText, type DeckData } from './deck';
 import { rng } from './rng';
 import type { GameConfig, GameState } from './types';
 
@@ -157,4 +157,93 @@ export function settleStorfhocail(s: GameState, quit = false): Settlement {
   if (s.over.tie) return { gained: [], lost: [], vanished: bots };
   if (s.over.winners[0] === human) return { gained: bots, lost: [], vanished: [] };
   return { gained: [], lost: mine, vanished: bots };
+}
+
+// ---------- the player's progress (stored on the device) ----------
+
+export interface SfProgress {
+  finishedSoloGames: number;
+  /** Unlocked early (the secret), whatever the count. */
+  unlocked: boolean;
+  /** The bag shows on Home from the first tile owned, and stays. */
+  bagRevealed: boolean;
+  /** Word id → count owned. */
+  owned: Record<string, number>;
+  /** Phrase id → seen laid on the table (by anyone). */
+  seen: Record<string, { times: number; last: string }>;
+  /** Word ids lost to bots and not won back since. */
+  lostByPlayer: string[];
+  /** Word id → times the player laid it. */
+  laid: Record<string, number>;
+  /** The last 50 games with a transfer. */
+  history: { date: string; gained: string[]; lost: string[] }[];
+}
+
+export const emptySfProgress = (): SfProgress => ({ finishedSoloGames: 0, unlocked: false, bagRevealed: false, owned: {}, seen: {}, lostByPlayer: [], laid: {}, history: [] });
+
+export function sfUnlocked(pr: SfProgress): boolean {
+  return pr.unlocked || pr.finishedSoloGames >= SF_SETTINGS.unlockAfterGames;
+}
+
+/** The player has seen this word: they own it, or have seen one of its phrases laid. Owning a tile
+ *  counts as seeing its phrases, as they're printed on it. */
+export function wordSeen(pr: SfProgress, word: string): boolean {
+  return (pr.owned[word] ?? 0) > 0 || (SF_WORD[word]?.phrases ?? []).some((ph) => pr.seen[ph.id]);
+}
+
+export function phraseSeen(pr: SfProgress, phrase: string): boolean {
+  return !!pr.seen[phrase] || (pr.owned[SF_PHRASE[phrase]?.word] ?? 0) > 0;
+}
+
+/** The bag at the deal, for the bots' carry roll. */
+export function dealFor(pr: SfProgress): SfDeal {
+  return { on: true, lost: pr.lostByPlayer, owned: Object.keys(pr.owned).filter((w) => pr.owned[w] > 0), seenAny: Object.keys(pr.seen).length > 0 };
+}
+
+/** A phrase seen laid. */
+export function recordSeen(pr: SfProgress, phrase: string, date: string): SfProgress {
+  const cur = pr.seen[phrase];
+  return { ...pr, seen: { ...pr.seen, [phrase]: { times: (cur?.times ?? 0) + 1, last: date } } };
+}
+
+/** Apply a settlement: +1 for each tile won, −1 for each lost (lost ones remembered until won back). */
+export function applySettlement(pr: SfProgress, st: Settlement, laidByPlayer: string[], date: string): SfProgress {
+  const owned = { ...pr.owned };
+  for (const w of st.gained) owned[w] = (owned[w] ?? 0) + 1;
+  for (const w of st.lost) owned[w] = Math.max(0, (owned[w] ?? 0) - 1);
+  for (const w of Object.keys(owned)) if (!owned[w]) delete owned[w];
+  const lostByPlayer = [...new Set([...pr.lostByPlayer.filter((w) => !st.gained.includes(w)), ...st.lost])];
+  const laid = { ...pr.laid };
+  for (const w of laidByPlayer) laid[w] = (laid[w] ?? 0) + 1;
+  const history = st.gained.length || st.lost.length ? [...pr.history, { date, gained: st.gained, lost: st.lost }].slice(-50) : pr.history;
+  return { ...pr, owned, lostByPlayer, laid, history, bagRevealed: pr.bagRevealed || Object.keys(owned).length > 0 };
+}
+
+// ---------- line ids: a compound, or a stórfhocal phrase ----------
+
+/** The Irish of a line: "cuir suas le", or a phrase with its tile's word ("tabhair aire do"). */
+export function lineText(id: string): string {
+  const ph = SF_PHRASE[id];
+  return ph ? phraseText(ph) : compoundText(BASE_COMPOUND_BY_ID[id]);
+}
+
+export function lineGloss(id: string): string {
+  return SF_PHRASE[id]?.meaning ?? BASE_COMPOUND_BY_ID[id]?.g ?? '';
+}
+
+/** The particles of a line, in order. */
+export function lineParticles(id: string): string[] {
+  const ph = SF_PHRASE[id];
+  return ph ? phraseParticles(ph) : (BASE_COMPOUND_BY_ID[id]?.ps ?? []);
+}
+
+/** The words of a line after its verb, in order (the tile's word in its place). */
+export function lineWords(id: string): string[] {
+  const ph = SF_PHRASE[id];
+  if (ph) return ph.pattern.map((t) => (t === '~' ? SF_WORD[SF_PHRASE[id].word].word : t));
+  return BASE_COMPOUND_BY_ID[id]?.ps ?? [];
+}
+
+export function lineVerb(id: string): string {
+  return SF_PHRASE[id]?.verb ?? BASE_COMPOUND_BY_ID[id]?.v ?? '';
 }

@@ -6,6 +6,8 @@ import type { Card as CardT, Placed } from '../engine/types';
 import type { CritterFace } from '../game/critters';
 import { t, type Key } from '../i18n';
 import { Critter } from './critters';
+import { IconBag } from './icons';
+import { SF_PHRASE, SF_WORD } from '../engine/storfhocail';
 import { SIDE_ARROW, byMeaning, splitHalves, type Side, type Use } from './meaningUses';
 
 export type Size = 'hand' | 'river' | 'table';
@@ -34,6 +36,7 @@ export function typeClass(c: CardT): string {
   if (c.k === 'V') return 'ba-verb';
   if (c.k === 'W') return 'ba-wild';
   if (c.k === 'M') return 'ba-meaning';
+  if (c.k === 'S') return 'ba-sf';
   return PARTICLE_TYPE[c.t] === 'adverb' ? 'ba-adverb' : 'ba-preposition';
 }
 
@@ -44,6 +47,7 @@ export function cardLabel(c: CardT | Placed): string {
   else if (c.k === 'W') s = p.stands ? t('a11y.wildAs', { word: p.stands }) : t('a11y.wild');
   else if (c.k === 'M')
     s = p.used ? t('a11y.meaningUsed', { meaning: p.used.toLowerCase() }) : t('a11y.meaning', { list: meaningsOf(c).map((g) => g.toLowerCase()).join('; ') });
+  else if (c.k === 'S') s = t('a11y.sfOnTable', { word: SF_WORD[c.t]?.word ?? '', meaning: (SF_PHRASE[p.phrase ?? '']?.meaning ?? '').toLowerCase() });
   else s = PARTICLE_TYPE[c.t] === 'adverb' ? t('a11y.adverb', { word: c.t }) : t('a11y.preposition', { word: c.t });
   if (p.cross) s += ', ' + t('a11y.crossing');
   return s;
@@ -81,7 +85,10 @@ export function Face(p: FaceProps) {
   let extra = '';
   let arrows: Side[] = [];
   if (c.k === 'W') inner = placed.stands ? <span class="ba-stands">{placed.stands}</span> : <span class="ba-star" />;
-  else if (c.k === 'M') {
+  else if (c.k === 'S') {
+    const word = SF_WORD[c.t]?.word ?? '';
+    inner = <span class={'ba-word' + wordClass(word)}>{word}</span>;
+  } else if (c.k === 'M') {
     const g = placed.used ?? meaningsOf(c)[0] ?? '';
     const ms = p.uses ? byMeaning(p.uses) : [];
     if (ms.length >= 3) {
@@ -180,18 +187,23 @@ function SenseCount({ text, g }: { text: string; g: string }) {
   ) : null;
 }
 
-export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean; critter?: CritterFace }) {
+export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean; critter?: CritterFace; bag?: boolean }) {
   return (
     <span
       class={'ba-avatar ba-p' + (p.player + 1) + (p.turn ? ' is-turn' : '') + (p.playing ? ' is-playing' : '') + (p.big ? ' av-big' : '')}
       role="img"
-      aria-label={p.name ? t('a11y.player', { name: p.name, n: p.count ?? 0 }) + (p.stuck ? ', ' + t('table.stuckTag') : '') : undefined}
+      aria-label={p.name ? t('a11y.player', { name: p.name, n: p.count ?? 0 }) + (p.stuck ? ', ' + t('table.stuckTag') : '') + (p.bag ? ', ' + t('sf.carrying') : '') : undefined}
     >
       <span class={'ba-disc' + (p.critter ? ' has-critter' : '')}>{p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={44} /> : p.initial}</span>
       {p.name && p.big && <span class="av-name">{p.name}</span>}
       {p.count !== undefined && <span class="ba-cnt">{p.count}</span>}
       {p.stuck && <span class="av-flag">{t('table.stuckTag')}</span>}
       {!!p.plus && <span class="av-plus">+{p.plus}</span>}
+      {p.bag && (
+        <span class="av-bag" aria-hidden="true">
+          <IconBag size={14} />
+        </span>
+      )}
     </span>
   );
 }

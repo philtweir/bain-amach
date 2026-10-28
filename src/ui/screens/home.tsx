@@ -5,12 +5,13 @@ import { BASE as DECK, BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, BASE_COMPOUNDS as 
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
 import { platform } from '../../platform';
-import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame, customDecks } from '../../storage';
+import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame, customDecks, sfProgress } from '../../storage';
 import { useState } from 'preact/hooks';
 import { Avatar, Face, MeaningCard, initialOf } from '../cards';
 import { IconRules, IconSettings, IconShare } from '../icons';
 import { Screen, Scroll } from '../kit';
 import { nav } from '../nav';
+import { gameAbandoned } from '../../app/storfhocail';
 
 // A real meaning card from the deck with GIVE UP on it, for the sample at the top.
 const sampleMeaning: Card = { id: -10, k: 'M', t: DECK.meaningCards.find((m) => m.meanings.includes('GIVE UP'))?.id ?? 'm01' };
@@ -144,6 +145,8 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
                     <button
                       class="ba-btn ba-btn-primary danger"
                       onClick={() => {
+                        // Discarding counts as quitting: a tile of yours already laid is lost.
+                        gameAbandoned(saved!.state);
                         writeGame(null);
                         setDiscarding(false);
                       }}
@@ -184,6 +187,12 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
             </div>
             <div class="caption muted">{last ? t('home.lastMade', { compound: compoundText(last), meaning: last.g.toLowerCase() }) : t('home.glossaryEmpty')}</div>
           </button>
+          {sfProgress.value.bagRevealed && (
+            <button class="panel bag-card" onClick={() => nav.push('bag')}>
+              <span class="panel-title">{t('bag.title')}</span>
+              <span class="caption muted tabnum">{t('bag.homeSub', { n: Object.values(sfProgress.value.owned).filter((n) => n > 0).length })}</span>
+            </button>
+          )}
           <button class="panel decks-card" onClick={() => nav.push('decks')}>
             <span class="panel-title">{t('home.decks')}</span>
             <span class="caption muted">{customDecks.value.length ? t('home.decksSubN', { n: customDecks.value.length }) : t('home.decksSub')}</span>

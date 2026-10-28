@@ -4,6 +4,7 @@ import { signal, effect } from '@preact/signals';
 import { platform } from '../platform';
 import type { Answers, GameState, Hints, Level, Mode } from '../engine/types';
 import type { CustomDeck } from '../engine/deckTools';
+import { emptySfProgress, type SfProgress } from '../engine/storfhocail';
 
 function load<T>(key: string, v: number, fallback: T): T {
   const raw = platform.storage.get(key);
@@ -40,6 +41,8 @@ export interface SetupPrefs {
   humans: SetupPlayer[];
   /** A custom deck's id; the default deck otherwise. */
   deck?: string;
+  /** Stórfhocail on for this game (never carried over: every new game starts with it off). */
+  sf?: boolean;
 }
 
 export interface Settings {
@@ -128,8 +131,10 @@ export function recordLine(compoundId: string, byHuman: boolean, now = Date.now(
   return first;
 }
 
+/** Clear glossary progress and the stórfhocal bag. The unlock (and its count) stays. */
 export function resetProgress() {
   progress.value = { byCompound: {}, lastMadeId: null };
+  sfProgress.value = { ...emptySfProgress(), finishedSoloGames: sfProgress.value.finishedSoloGames, unlocked: sfProgress.value.unlocked };
 }
 
 // ---------- saved game ----------
@@ -156,4 +161,12 @@ const DECKS_KEY = 'ba.decks';
 export const customDecks = signal<CustomDeck[]>(load<CustomDeck[]>(DECKS_KEY, 1, []));
 effect(() => {
   if (!save(DECKS_KEY, 1, customDecks.value)) saveError.value = true;
+});
+
+// ---------- stórfhocail ----------
+
+const SF_KEY = 'ba.sf';
+export const sfProgress = signal<SfProgress>({ ...emptySfProgress(), ...load<Partial<SfProgress>>(SF_KEY, 1, {}) });
+effect(() => {
+  if (!save(SF_KEY, 1, sfProgress.value)) saveError.value = true;
 });

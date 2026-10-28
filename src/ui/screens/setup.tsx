@@ -1,11 +1,13 @@
 // Game setup: one screen, no wizard. Defaults are always valid; Play is always enabled.
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 import { BOT_LETTERS } from "../../app/session";
 import { botName, speciesOf } from "../../game/critters";
 import { BASE } from "../../engine/deck";
 import { validateDeck } from "../../engine/deckTools";
 import { cardTotal, deckById, deckFit } from "../../app/decks";
-import { customDecks } from "../../storage";
+import { customDecks, sfProgress } from "../../storage";
+import { SF_SETTINGS, sfUnlocked } from "../../engine/storfhocail";
+import { unlockNow } from "../../app/storfhocail";
 import type { Level } from "../../engine/types";
 import { t } from "../../i18n";
 import {
@@ -15,7 +17,7 @@ import {
 } from "../../storage";
 import { Disc, initialOf } from "../cards";
 import { IconClose, IconPlus } from "../icons";
-import { Header, Note, Screen, Scroll, Section, Seg } from "../kit";
+import { Header, Note, Screen, Scroll, Section, Seg, Toggle } from "../kit";
 
 export function SetupScreen({
   initial,
@@ -24,7 +26,9 @@ export function SetupScreen({
   initial: SetupPrefs;
   onPlay: (p: SetupPrefs) => void;
 }) {
-  const [p, setP] = useState<SetupPrefs>(initial);
+  // Stórfhocail start off for every new game.
+  const [p, setP] = useState<SetupPrefs>({ ...initial, sf: false });
+  const secret = useRef<number[]>([]);
   const set = (patch: Partial<SetupPrefs>) => setP((x) => ({ ...x, ...patch }));
   const pass = p.who === "pass";
   const humans = pass ? p.humans : [];
@@ -296,6 +300,42 @@ export function SetupScreen({
           ))}
         </select>
       </Section>
+      {!pass && (
+        <Section label={t("sf.title")}>
+          {sfUnlocked(sfProgress.value) ? (
+            <div class="group">
+              <div class="row">
+                <span class="row-text">
+                  <span class="row-label">{t("sf.toggle")}</span>
+                  <span class="row-sub">{p.bots.includes("hard") ? t("sf.toggleSub") : t("sf.needsHard")}</span>
+                </span>
+                <Toggle on={!!p.sf && p.bots.includes("hard")} disabled={!p.bots.includes("hard")} onChange={(on) => set({ sf: on })} label={t("sf.toggle")} />
+              </div>
+            </div>
+          ) : (
+            // Locked until enough finished solo games. The secret: seven quick taps on this row.
+            <div
+              class="group sf-locked"
+              onClick={() => {
+                const now = Date.now();
+                secret.current = [...secret.current.filter((x) => now - x < 4000), now];
+                if (secret.current.length >= 7) {
+                  secret.current = [];
+                  unlockNow();
+                }
+              }}
+            >
+              <div class="row">
+                <span class="row-text">
+                  <span class="row-label">{t("sf.toggle")}</span>
+                  <span class="row-sub">{t("sf.locked", { n: Math.min(sfProgress.value.finishedSoloGames, SF_SETTINGS.unlockAfterGames), total: SF_SETTINGS.unlockAfterGames })}</span>
+                </span>
+                <span class="lock-chip">{t("decks.locked")}</span>
+              </div>
+            </div>
+          )}
+        </Section>
+      )}
       <div class="deck-note">
         <span class="deck-chip" aria-hidden="true" />
         <span>

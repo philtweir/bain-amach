@@ -3,7 +3,9 @@ import { effect } from '@preact/signals';
 import { APP_RULES, type GameConfig, type GameState } from '../engine/types';
 import { migrateGlosses } from '../engine/deck';
 import type { Controller } from '../game/controller';
-import { savedGame, settings, updateSettings } from '../storage';
+import { savedGame, settings, sfProgress, updateSettings } from '../storage';
+import { dealFor, type Settlement } from '../engine/storfhocail';
+import { gameAbandoned, gameFinished } from './storfhocail';
 import { Navigator, nav, stack, type Entry } from '../ui/nav';
 import { TableView } from '../ui/table';
 import { GlossaryScreen } from '../ui/screens/glossary';
@@ -14,6 +16,7 @@ import { RulesScreen } from '../ui/screens/rules';
 import { SettingsScreen } from '../ui/screens/settings';
 import { SetupScreen } from '../ui/screens/setup';
 import { DeckEditScreen, DecksScreen } from '../ui/screens/decks';
+import { BagScreen } from '../ui/screens/bag';
 import { Tutorial, tutorialConfig } from '../ui/tutorial';
 import { configFrom, defaultSetup, endGame, game, learnerSetup, startGame } from './session';
 
@@ -72,12 +75,13 @@ function renderEntry(e: Entry) {
       return (
         <TableView
           c={c}
-          onRecap={() => nav.replace('recap', { state: c.gs.value })}
+          onRecap={() => nav.replace('recap', { state: c.gs.value, settlement: gameFinished(c.gs.value) })}
           onRules={() => nav.push('rules')}
           onSettings={() => nav.push('settings')}
           onRestart={() => {
             c.pause(false);
-            const cfg = { ...c.config, seed: (Math.random() * 2 ** 31) >>> 0 };
+            gameAbandoned(c.gs.value);
+            const cfg = { ...c.config, seed: (Math.random() * 2 ** 31) >>> 0, ...(c.config.sf ? { sf: dealFor(sfProgress.value) } : {}) };
             const nc = startGame({ config: cfg });
             nav.reset([{ id: 'home' }, { id: 'table', params: { c: nc } }], 'fade');
           }}
@@ -95,8 +99,9 @@ function renderEntry(e: Entry) {
       return (
         <RecapScreen
           state={st}
-          onAgain={() => play({ config: { ...st.config, seed: (Math.random() * 2 ** 31) >>> 0, tutorial: false, firstPlayer: undefined, rules: APP_RULES } }, 'fade')}
-          onReplay={() => play({ config: st.config }, 'fade')}
+          settlement={e.params?.settlement as Settlement | null | undefined}
+          onAgain={() => play({ config: { ...st.config, seed: (Math.random() * 2 ** 31) >>> 0, tutorial: false, firstPlayer: undefined, rules: APP_RULES, ...(st.config.sf ? { sf: dealFor(sfProgress.value) } : {}) } }, 'fade')}
+          onReplay={() => play({ config: { ...st.config, ...(st.config.sf ? { sf: dealFor(sfProgress.value) } : {}) } }, 'fade')}
           onClose={() => nav.backTo('home')}
           onCompound={(id) => nav.push('glossary', { focus: id })}
         />
@@ -112,10 +117,12 @@ function renderEntry(e: Entry) {
       return <DecksScreen />;
     case 'deckEdit':
       return <DeckEditScreen id={e.params?.id as string} />;
+    case 'bag':
+      return <BagScreen />;
   }
 }
 
-const SWIPE: Record<string, boolean> = { setup: true, glossary: true, rules: true, settings: true, welcome: true, decks: true };
+const SWIPE: Record<string, boolean> = { setup: true, glossary: true, rules: true, settings: true, welcome: true, decks: true, bag: true };
 
 export function App() {
   return <Navigator render={renderEntry} swipeBack={(e) => !!SWIPE[e.id]} />;

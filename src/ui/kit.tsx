@@ -38,9 +38,9 @@ export function Seg<T extends string>({ value, options, onChange, label, small }
   );
 }
 
-export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) {
+export function Toggle({ on, onChange, label, disabled }: { on: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
   return (
-    <button class={'toggle' + (on ? ' is-on' : '')} role="switch" aria-checked={on ? 'true' : 'false'} aria-label={label} onClick={() => onChange(!on)}>
+    <button class={'toggle' + (on ? ' is-on' : '')} role="switch" aria-checked={on ? 'true' : 'false'} aria-label={label} disabled={disabled} onClick={() => onChange(!on)}>
       <span class="knob" />
     </button>
   );

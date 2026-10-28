@@ -2160,7 +2160,8 @@ button.list-row:active {
 }
 
 /* ---------- decks (custom deck list and editor) ---------- */
-.decks-card {
+.decks-card,
+.bag-card {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -2326,4 +2327,236 @@ button.list-row:active {
   background: var(--surface-raised);
   font: 600 calc(14px * var(--ts)) / 1.7 var(--font-ui);
   letter-spacing: 0.02em;
+}
+
+/* ---------- stórfhocail (placeholder look, behind one token until the design arrives) ----------
+   A new card family: not gorse (that means "usable now"), and a shape cue, the bevelled corner, so
+   it never relies on colour alone. */
+:root {
+  --sf-tile: #dfe5f4;
+  --sf-ink: #22305a;
+  --sf-edge: #5b6ea8;
+}
+[data-theme='dark'] {
+  --sf-tile: #2b3558;
+  --sf-ink: #e4e9ff;
+  --sf-edge: #8fa2e0;
+}
+.ba-card.ba-sf {
+  background: var(--sf-tile);
+  color: var(--sf-ink);
+  box-shadow: inset 0 0 0 2px var(--sf-edge), var(--shadow-card);
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%, 0 14px);
+  font-family: var(--font-card);
+  font-weight: 800;
+  --icon: none;
+}
+.ba-card.ba-sf.ba-table {
+  clip-path: polygon(11px 0, 100% 0, 100% 100%, 0 100%, 0 11px);
+}
+.ba-card.ba-sf.is-selected {
+  box-shadow: inset 0 0 0 3px var(--ink), var(--shadow-card);
+}
+.ba-card.ba-sf.is-lit {
+  /* the bevel clips anything outside the card, so the lit ring goes inside */
+  box-shadow: inset 0 0 0 4px var(--lit), var(--shadow-card);
+}
+/* zoomed out: a bevelled square in the tile's ink */
+:is(.board.is-glyph, .sym-glyph) .ba-sf::after {
+  display: block;
+  -webkit-mask: none;
+  mask: none;
+  width: 22px;
+  height: 22px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px);
+}
+/* the tile in the hand tray: wide, the word over its phrases */
+.sf-tile {
+  flex: none;
+  width: auto;
+  min-width: 132px;
+  max-width: 220px;
+  height: var(--card-hand, 96px);
+  padding: 8px 12px 8px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  text-align: left;
+}
+.sf-tile .sf-word {
+  font: 800 20px/1.1 var(--font-card);
+}
+.sf-tile .sf-ph {
+  display: flex;
+  flex-direction: column;
+  font: 700 11px/1.25 var(--font-ui);
+  letter-spacing: 0.02em;
+}
+.sf-tile .sf-ga {
+  font-weight: 800;
+}
+.sf-tile .sf-en {
+  opacity: 0.8;
+}
+/* two phrases: tighter type, so the tile keeps the hand's height */
+.sf-tile.is-multi .sf-word {
+  font-size: 16px;
+}
+.sf-tile.is-multi .sf-ph {
+  font-size: 9.5px;
+  line-height: 1.15;
+}
+/* in the bag picker and the bag, a tile is as tall as its phrases need */
+.sf-pick .sf-tile,
+.bag-detail .sf-tile {
+  height: auto;
+  min-height: var(--card-hand, 96px);
+}
+.pouch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 6px;
+  padding-left: 12px;
+  border-left: 2px dashed var(--line);
+}
+.pouch-bag {
+  color: var(--ink);
+}
+.av-bag {
+  position: absolute;
+  left: -4px;
+  bottom: -4px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--sf-tile);
+  color: var(--sf-ink);
+  box-shadow: 0 0 0 2px var(--sf-edge);
+}
+.sf-picker {
+  max-height: 86vh;
+  overflow-y: auto;
+}
+.sf-pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sf-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sf-pick.is-off .sf-tile {
+  opacity: 0.45;
+}
+.sf-pick-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.sf-chip {
+  position: relative;
+  flex: none;
+  --s: 44px;
+  width: 44px;
+  height: 44px;
+  font-size: 11px;
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+}
+.sf-chip .ba-word {
+  font-size: 11px;
+  padding: 0 2px;
+}
+.sf-recap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sf-move {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 600 calc(16px * var(--ts)) / 1.35 var(--font-ui);
+  animation: sf-in 520ms var(--ease-out) both;
+}
+@keyframes sf-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-move {
+    animation-name: fade-in;
+  }
+}
+.sf-locked .row-sub {
+  user-select: none;
+}
+.bag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 12px;
+}
+.bag-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 16px;
+}
+.bag-slot .bag-tile {
+  position: relative;
+  --s: 68px;
+  width: 68px;
+  height: 68px;
+  font-size: 13px;
+}
+.bag-slot.is-seen .bag-tile {
+  background: transparent;
+  color: var(--ink-muted);
+  box-shadow: inset 0 0 0 2px var(--line);
+}
+.bag-slot.is-open .bag-tile {
+  box-shadow: inset 0 0 0 3px var(--ink);
+}
+.bag-sil {
+  width: 68px;
+  height: 68px;
+  background: var(--table-grid);
+  opacity: 0.5;
+  clip-path: polygon(12px 0, 100% 0, 100% 100%, 0 100%, 0 12px);
+}
+.bag-n {
+  position: absolute;
+  right: 2px;
+  bottom: 0;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  font: 800 13px/1.4 var(--font-ui);
+  box-shadow: var(--shadow-card);
+}
+.bag-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: calc(15px * var(--ts));
+  line-height: 1.45;
+}
+.sf-gloss .g-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }

@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { BASE_COMPOUNDS as COMPOUNDS, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import { dayLabel, t } from '../../i18n';
-import { madeCount, progress } from '../../storage';
+import { madeCount, progress, sfProgress } from '../../storage';
+import { SF, phraseSeen, phraseText } from '../../engine/storfhocail';
 import { Face } from '../cards';
 import { Header, Screen, Scroll } from '../kit';
 
@@ -89,8 +90,52 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
               })}
             </section>
           ))}
+          {full && !onlyDrafts && <SfSection q={q} focus={focus} />}
         </div>
       </Scroll>
     </Screen>
+  );
+}
+
+/**
+ * Stórfhocail (spec §8): only phrases seen laid on the table (or printed on a tile the player owns), with
+ * how often they were seen and whether the tile is owned. No total, so nothing hints at what is unseen.
+ */
+function SfSection({ q, focus }: { q: string; focus?: string }) {
+  const pr = sfProgress.value;
+  const fq = fold(q.trim());
+  const rows = SF.words
+    .flatMap((w) => w.phrases.map((ph) => ({ w, ph })))
+    .filter(({ ph }) => phraseSeen(pr, ph.id))
+    .filter(({ w, ph }) => !fq || fold(phraseText(ph, w.word)).includes(fq) || fold(ph.meaning).includes(fq))
+    .sort((a, b) => a.w.word.localeCompare(b.w.word, 'ga'));
+  if (!rows.length) return null;
+  return (
+    <section class="g-group sf-gloss">
+      <h2 class="sec-label">{t('sf.title')}</h2>
+      {rows.map(({ w, ph }) => {
+        const seen = pr.seen[ph.id];
+        const own = pr.owned[w.id] ?? 0;
+        return (
+          <div class="g-row" key={ph.id} id={'g-' + ph.id} ref={(el) => {
+              if (focus === ph.id) el?.scrollIntoView({ block: 'center' });
+            }}>
+            <div class="g-main">
+              <span class="ba-card ba-sf sf-chip" aria-hidden="true">
+                <span class="ba-word">{w.word}</span>
+              </span>
+              <span class="lr-text">
+                <span class="lr-ga">{phraseText(ph, w.word)}</span>
+                <span class="lr-en">{ph.meaning.toLowerCase()}</span>
+              </span>
+              <span class="g-stats">
+                {seen && <span>{t('sf.seenN', { n: seen.times })}</span>}
+                <span>{own ? t('sf.ownedN', { n: own }) : t('sf.notOwned')}</span>
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }

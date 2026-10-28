@@ -5,7 +5,7 @@ import type { ComponentChildren, JSX } from 'preact';
 import { useLayoutEffect, useRef } from 'preact/hooks';
 import { reducedMotion } from './motion';
 
-export type ScreenId = 'language' | 'welcome' | 'home' | 'setup' | 'table' | 'recap' | 'glossary' | 'rules' | 'settings' | 'decks' | 'deckEdit';
+export type ScreenId = 'language' | 'welcome' | 'home' | 'setup' | 'table' | 'recap' | 'glossary' | 'rules' | 'settings' | 'decks' | 'deckEdit' | 'bag';
 
 export interface Entry {
   id: ScreenId;

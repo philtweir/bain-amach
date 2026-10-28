@@ -3,7 +3,7 @@ import { botTurn } from './bot';
 import { judgeSf } from './builder';
 import { BASE } from './deck';
 import { DIRS, apply, check, newGame, sfMoves, wrongLine } from './game';
-import { SF, SF_PHRASE, ownTurn, settleStorfhocail } from './storfhocail';
+import { SF, SF_PHRASE, SF_SETTINGS, applySettlement, emptySfProgress, ownTurn, phraseSeen, settleStorfhocail, sfUnlocked, wordSeen, type SfProgress } from './storfhocail';
 import { APP_RULES, type Card, type GameState, type LineMove, type PlayerConfig, type Placed, type SfMove } from './types';
 
 let nid = 5000;
@@ -198,5 +198,46 @@ describe('stórfhocal data', () => {
     for (const ph of Object.values(SF_PHRASE)) expect(meanings.has(ph.meaning), `${ph.id} ${ph.meaning}`).toBe(false);
     const ids = SF.words.flatMap((w) => [w.id, ...w.phrases.map((p) => p.id)]);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+describe('the bag and progress', () => {
+  it('a settlement moves counts: +1 won, −1 lost; a lost word is remembered until won back', () => {
+    let pr: SfProgress = { ...emptySfProgress(), owned: { s01: 1 } };
+    pr = applySettlement(pr, { gained: ['s05'], lost: ['s01'], vanished: [] }, ['s01'], '2026-10-28');
+    expect(pr.owned).toEqual({ s05: 1 });
+    expect(pr.lostByPlayer).toEqual(['s01']);
+    expect(pr.laid).toEqual({ s01: 1 });
+    pr = applySettlement(pr, { gained: ['s01', 's05'], lost: [], vanished: [] }, [], '2026-10-29');
+    expect(pr.owned).toEqual({ s05: 2, s01: 1 });
+    expect(pr.lostByPlayer).toEqual([]);
+    expect(pr.history.map((h) => h.date)).toEqual(['2026-10-28', '2026-10-29']);
+  });
+
+  it('the bag shows from the first tile and stays after the last is lost', () => {
+    let pr = emptySfProgress();
+    expect(pr.bagRevealed).toBe(false);
+    pr = applySettlement(pr, { gained: ['s02'], lost: [], vanished: [] }, [], 'd');
+    expect(pr.bagRevealed).toBe(true);
+    pr = applySettlement(pr, { gained: [], lost: ['s02'], vanished: [] }, ['s02'], 'd');
+    expect(pr.owned).toEqual({});
+    expect(pr.bagRevealed).toBe(true);
+  });
+
+  it('unlocks at the set number of finished solo games, or by the secret', () => {
+    const n = SF_SETTINGS.unlockAfterGames;
+    expect(sfUnlocked({ ...emptySfProgress(), finishedSoloGames: n - 1 })).toBe(false);
+    expect(sfUnlocked({ ...emptySfProgress(), finishedSoloGames: n })).toBe(true);
+    expect(sfUnlocked({ ...emptySfProgress(), unlocked: true })).toBe(true);
+  });
+
+  it('a phrase is seen once laid, or once its tile is owned (printed on it)', () => {
+    const pr = { ...emptySfProgress(), seen: { s05a: { times: 1, last: 'd' } }, owned: { s06: 1 } };
+    expect(phraseSeen(pr, 's05a')).toBe(true);
+    expect(phraseSeen(pr, 's06a')).toBe(true);
+    expect(phraseSeen(pr, 's06b')).toBe(true);
+    expect(phraseSeen(pr, 's01a')).toBe(false);
+    expect(wordSeen(pr, 's05')).toBe(true);
+    expect(wordSeen(pr, 's01')).toBe(false);
   });
 });

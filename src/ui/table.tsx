@@ -2,7 +2,9 @@
 // the end card, the pass-and-play cover and the pause sheet.
 import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { COMPOUND_BY_ID, COMPOUNDS, compoundText, printedAnswer } from '../engine/deck';
+import { COMPOUNDS, printedAnswer } from '../engine/deck';
+import { SF_WORD, lineGloss, lineText } from '../engine/storfhocail';
+import { Pouch, SfPicker } from './storfhocal';
 import { canDraw, lineMoves, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
@@ -60,6 +62,7 @@ function Status({ c }: { c: Controller }) {
               plus={plus[i]}
               big={c.passAndPlay}
               critter={c.critter(i)}
+              bag={!!s.sf?.carry[i] && !s.sf.carry[i].laid}
             />
           </span>
         ))}
@@ -206,6 +209,12 @@ function YourLine({ c }: { c: Controller }) {
               <span class="ba-star" />
             </span>
           );
+        if ('tile' in p)
+          return (
+            <span key={i} class="ba-card ba-sf yl-card">
+              <span class="ba-word">{sel.tile ? SF_WORD[sel.tile]?.word : ''}</span>
+            </span>
+          );
         const b = s.board.find((x) => x.x === p.cross.x && x.y === p.cross.y);
         return (
           <span key={i} class={'ba-card yl-card ' + (b ? typeClass(b) : '')}>
@@ -331,7 +340,7 @@ function Header({ c }: { c: Controller }) {
     );
   } else if (hasMeaning(sel) && canAct) {
     title = t('table.pickVerb');
-    const makes = [...new Set(c.ways.value.map((w) => w.c))].map((id) => compoundText(COMPOUND_BY_ID[id]) + ' (' + COMPOUND_BY_ID[id].g.toLowerCase() + ')');
+    const makes = [...new Set(c.ways.value.map((w) => w.c))].map((id) => lineText(id) + ' (' + lineGloss(id).toLowerCase() + ')');
     sub = c.hintVerb.value
       ? t('table.hintSub')
       : makes.length && makes.length <= 3
@@ -383,7 +392,7 @@ function Choices({ c }: { c: Controller }) {
     <div class="choices">
       {choices.map((cid) => (
         <button class="choice" key={cid} onClick={() => c.chooseCompound(cid)}>
-          <span class="ch-ga">{compoundText(COMPOUND_BY_ID[cid])}</span>
+          <span class="ch-ga">{lineText(cid)}</span>
           <span class="ch-en">{c.lineDescription(cid)}</span>
         </button>
       ))}
@@ -439,6 +448,7 @@ function Tray({ c }: { c: Controller }) {
           {others.map((v) => (
             <TrayCard key={v.id} c={c} card={v} st={stOf(v)} />
           ))}
+          <Pouch c={c} />
         </div>
       </div>
     </div>
@@ -667,6 +677,8 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
   }, [open]);
   if (!open) return null;
   const cfg = c.config;
+  // Restarting after laying one of your own tiles loses it (as quitting does).
+  const riskTiles = (c.gs.value.sf?.laid ?? []).filter((l) => l.p === c.viewer.value).map((l) => SF_WORD[l.word]?.word ?? '');
   const who = cfg.players
     .map((p, i) => (p.kind === 'bot' ? c.name(i) : ''))
     .filter(Boolean)
@@ -686,6 +698,7 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
         {confirm ? (
           <>
             <p class="confirm-q">{t('pause.restartQ')}</p>
+            {riskTiles.length > 0 && <p class="sheet-sub">{t('sf.restartLoses', { list: riskTiles.join(', ') })}</p>}
             <button class="ba-btn ba-btn-primary wide" onClick={onRestart}>
               {t('pause.restartYes')}
             </button>
@@ -775,6 +788,7 @@ export function TableView(p: TableProps) {
       )}
       {phase === 'over' && s.over && <EndCard c={c} onRecap={p.onRecap} />}
       <PauseSheet c={c} onRules={p.onRules} onSettings={p.onSettings} onRestart={p.onRestart} onQuit={p.onQuit} />
+      <SfPicker c={c} />
       {p.children}
       <div class="sr-only" aria-live="assertive">
         {announce}

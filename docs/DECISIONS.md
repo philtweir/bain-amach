@@ -181,13 +181,39 @@ deck makes 42.8 / 49.2 / 48.3 lines; the stats test compares against that. The t
 9928, which deals the same opening hand as before.
 
 **Glosses that said which sense** (Phil: "PUT ON is not clear which interpretations do and do not
-map"). Renamed: PUT ON (CLOTHES), TAKE OFF (CLOTHES), THROW UP (VOMIT), GET (USE) OUT OF (was GET
-FROM, which reads as *faigh ó*), MAKE (SOMEONE DO), COME ACROSS (FIND), KEEP UP (MAINTAIN), CONCERN
+map"). Renamed: PUT ON (CLOTHES), TAKE OFF (CLOTHES), THROW UP (VOMIT), EXTRACT FROM (was GET FROM, which reads as *faigh ó*; briefly GET (USE) OUT OF), MAKE (SOMEONE DO), COME ACROSS (FIND), KEEP UP (MAINTAIN), CONCERN
 (RELATE TO), STAND BY (SUPPORT), PUT OUT (EJECT), CALL (NAME), FALL OUT (QUARREL), and among the new
 ones ASSUME (SUPPOSE), TREAT (SOMEONE), HAND IN (not SUBMIT). Progress is kept by compound id, and a
 saved game is brought up to the new wording on Continue (`migrateGlosses`). Still close pairs across
 compounds, for Phil: DISTURB / BOTHER / INTERFERE WITH, FIGURE OUT / FIND OUT, CLEAR OFF / ESCAPE,
 LOOK AT / WATCH.
+
+## v1.1: deck editor and stórfhocail (built 2026-10-28)
+
+Built from `handoff/FEATURES-v1.1.md` and its specs (`handoff/spec/deck-editor.md`, `storfhocal.md`,
+RULES §11–12). Where the build departs from them, or settles something they left open:
+
+| Item | Spec | Built |
+|---|---|---|
+| Meaning-card cap | 60 | `max(60, the bundled deck's count)`: the app deck has 63 cards since the draft verbs, so a cap of 60 couldn't even rebuild the default deck |
+| Reference parity | match the reference | Matches its cards, validation and hand sizes on the handoff deck (`src/engine/deckTools.reference.json`, recorded from the reference). The spec's 36-card and hands-of-11 figures are for the handoff deck; the app deck's own tests use its numbers |
+| Fuzz | 200 decks × 20 games | `npm run test:stats` (`deckTools.fuzz.stats.test.ts`): 9,460 games, all finished. A quick 20 × 3 version runs with the unit tests |
+| Stórfhocal meanings that clash with the draft cards | — | *cuidiú* HELP became GIVE HELP TO (cuidigh le is HELP); *cead* ALLOW became GIVE PERMISSION TO (lig do is ALLOW); *bain as* became EXTRACT FROM, as GET (USE) OUT OF overlapped the *úsáid* tile. Saved games migrate |
+| Fresh-line draw | not covered | A stórfhocal line never draws, even from a hand verb with nothing on the table: it already sheds no meaning card |
+| "Quitting" | quit or restart after laying one | Restart, and Discard on Home. Save and quit only saves, so a laid tile stays in play until the game ends |
+| Unlock | toggle hidden until 20 games | Shown locked with its count ("Unlocks after 20 finished solo games: 7 of 20"), per Phil. The secret: tap that locked row 7 times within 4 seconds |
+| Reset progress | names the bag, asks twice | Clears glossary progress and the bag (owned, seen, lost, history); keeps the unlock and its count. Asks twice only when the bag holds tiles |
+| Recap animation | tiles fly into the bag or to the bot | Each transfer line rises in with its tile chip, one after another; under reduced motion it fades |
+| Stórfhocal tile look | design needed | Placeholder: slate-blue paper with a bevelled corner (the shape cue), behind `--sf-tile` / `--sf-ink` / `--sf-edge`. Not gorse |
+| Strings | Irish first | English only for now (Irish falls back to English like the rest). Validator messages come from `deckTools.ts` in English |
+| Presets | worth shipping | Not built: they need Phil's contents. A locked custom deck is all a preset needs (`locked` on CustomDeck) |
+
+The [Decision] defaults are built as written: the toggle needs a Hard bot; stórfhocail never count as
+hand cards; a tie returns the player's own tiles; the bag keeps counts; a Hard bot carrying one shows a
+bag badge. Every tuning number is in `data/storfhocail.json` → `settings`.
+
+Still with Phil: the Ulster check of `data/storfhocail.json`, the Irish name for the bag ("Bag" for
+now), the tile and bag design, Irish strings for the new screens, and preset decks.
 
 ## Deck depth (Phil, open)
 

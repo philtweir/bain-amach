@@ -2,7 +2,7 @@
 // lights or lays comes from here. Also hidden-mode attempts and hints.
 import { COMPOUNDS_BY_MEANING, COMPOUNDS_BY_VERB, COMPOUND_BY_ID, compoundText, type Compound } from './deck';
 import { DIRS, bestLine, holdsTile, lineMoves, meaningsOf, sfMoves, view, type Ctx } from './game';
-import { SF_WORD, phraseInDeck } from './storfhocail';
+import { SF_PHRASE, SF_WORD, phraseInDeck, phraseParticles } from './storfhocail';
 import type { Card, Dir, GameState, LineMove, Rejection, SfMove, Src, VerbSrc } from './types';
 
 /** What the player has picked so far. Any field may be empty; order of picking is free. */
@@ -15,6 +15,8 @@ export interface Selection {
   cross?: { x: number; y: number };
   /** A meaning card already on the table, picked as the line's meaning (rule variant tableMeanings). */
   onto?: { x: number; y: number };
+  /** A stórfhocal tile from the pouch (word id): the line is one of its phrases, with no meaning card. */
+  tile?: string;
 }
 
 export const emptySelection = (): Selection => ({ river: [], wild: [] });
@@ -30,6 +32,8 @@ export interface Way {
   cross?: { x: number; y: number };
   /** For a line onto a table meaning card: that card's cell (m is its card id). */
   onto?: { x: number; y: number };
+  /** A stórfhocal line: the tile and phrase (then `c` is the phrase id, `g` its meaning, `m` is -1). */
+  sf?: { word: string; phrase: string };
 }
 
 export interface Placement {
@@ -93,8 +97,70 @@ function crossPlacements(g: Ctx, bx: number, by: number, i: number, L: number): 
   return out;
 }
 
+/** Where a stórfhocal line of L cells can run through the particle at (bx, by), its token at index i. */
+function sfCrossPlacements(g: Ctx, bx: number, by: number, i: number, L: number): Placement[] {
+  const out: Placement[] = [];
+  for (const d of DIRS) {
+    const vx = bx - d[0] * (i + 1),
+      vy = by - d[1] * (i + 1);
+    if (g.runFree(vx, vy, d, 0, L, i + 1)) out.push({ x: vx, y: vy, d });
+  }
+  return out;
+}
+
+/** Stórfhocal ways: the selected tile's phrases, or (nothing else picked) every tile in the pouch. */
+function sfWays(s: GameState, p: number, sel: Selection): Way[] {
+  if (!s.sf || sel.meaning !== undefined || sel.onto) return [];
+  const g = view(s);
+  const hand = s.hands[p];
+  const allWild = hand.filter((c) => c.k === 'W').map((c) => c.id);
+  const wildIds = [...sel.wild.filter((w) => allWild.includes(w)), ...allWild.filter((w) => !sel.wild.includes(w))];
+  const words = sel.tile ? [sel.tile] : [...new Set(s.sf.pouch[p] ?? [])];
+  const handVerbs = hand.filter((c) => c.k === 'V');
+  const out: Way[] = [];
+  const srcOk = (src: Src[]) => {
+    for (const r of sel.river) if (src.filter((x) => 'river' in x && x.river === r).length < sel.river.filter((q) => q === r).length) return false;
+    for (const w of sel.wild) if (!src.some((x) => 'wild' in x && x.wild === w)) return false;
+    return true;
+  };
+  for (const word of words) {
+    if (!holdsTile(s, p, word)) continue;
+    for (const ph of SF_WORD[word].phrases) {
+      if (!phraseInDeck(ph)) continue;
+      const L = ph.pattern.length;
+      const parts = phraseParticles(ph);
+      const sf = { word, phrase: ph.id };
+      const base = { m: -1, g: ph.meaning, c: ph.id, sf };
+      if (!sel.cross) {
+        for (const v of s.board) {
+          if (v.k !== 'V' || v.t !== ph.verb) continue;
+          if (sel.verb && !('table' in sel.verb && sel.verb.table.x === v.x && sel.verb.table.y === v.y)) continue;
+          if (!DIRS.some((d) => g.runFree(v.x, v.y, d, 1, L))) continue;
+          for (const src of sourceCombos(s, parts, wildIds, -1)) if (srcOk(src)) out.push({ ...base, verb: { table: { x: v.x, y: v.y } }, src });
+        }
+        const hvs = sel.verb && 'hand' in sel.verb ? handVerbs.filter((h) => h.id === (sel.verb as { hand: number }).hand) : sel.verb ? [] : handVerbs;
+        const hv = hvs.find((h) => h.t === ph.verb);
+        if (hv) for (const src of sourceCombos(s, parts, wildIds, -1)) if (srcOk(src)) out.push({ ...base, verb: { hand: hv.id }, src });
+      }
+      const hvs = sel.verb && 'hand' in sel.verb ? handVerbs.filter((h) => h.id === (sel.verb as { hand: number }).hand) : sel.verb ? [] : handVerbs;
+      const hv = hvs.find((h) => h.t === ph.verb);
+      if (!hv) continue;
+      for (const b of s.board) {
+        if (b.k !== 'P' || b.cross || (sel.cross && (sel.cross.x !== b.x || sel.cross.y !== b.y))) continue;
+        ph.pattern.forEach((tok, i) => {
+          if (tok !== b.t || !sfCrossPlacements(g, b.x, b.y, i, L).length) return;
+          const pi = ph.pattern.slice(0, i).filter((t) => t !== '~').length;
+          for (const src of sourceCombos(s, parts, wildIds, pi)) if (srcOk(src)) out.push({ ...base, verb: { hand: hv.id }, src, cross: { x: b.x, y: b.y } });
+        });
+      }
+    }
+  }
+  return out;
+}
+
 /** Every way to complete a line for player p consistent with the selection. */
 export function ways(s: GameState, p: number, sel: Selection): Way[] {
+  if (sel.tile) return sfWays(s, p, sel);
   const g = view(s);
   const hand = s.hands[p];
   // Wildcards the player tapped come first, so the one they chose is the one used.
@@ -169,6 +235,8 @@ export function ways(s: GameState, p: number, sel: Selection): Way[] {
         }
     }
   }
+  // With nothing chosen yet, tiles in the pouch are lines too (they light up).
+  if (sel.meaning === undefined && !sel.onto) out.push(...sfWays(s, p, sel));
   return out;
 }
 
@@ -186,8 +254,29 @@ function ontoPlacements(g: Ctx, tx: number, ty: number, L: number): Placement[] 
 /** Placements for a way, nearest the focus point first. */
 export function placements(s: GameState, w: Way, focus?: { x: number; y: number }): Placement[] {
   const g = view(s);
-  const c = COMPOUND_BY_ID[w.c];
-  const L = c.ps.length;
+  let out: Placement[];
+  let L: number;
+  if (w.sf) {
+    // A stórfhocal line: the phrase's cells after the verb, nothing after them.
+    const ph = SF_PHRASE[w.sf.phrase];
+    const n = ph.pattern.length;
+    L = n - 1;
+    if (w.cross) {
+      const pi = w.src.findIndex((x) => 'existing' in x);
+      const i = ph.pattern.findIndex((t, k) => t !== '~' && ph.pattern.slice(0, k).filter((u) => u !== '~').length === pi);
+      out = sfCrossPlacements(g, w.cross.x, w.cross.y, i, n);
+    } else if ('table' in w.verb) {
+      const { x, y } = w.verb.table;
+      out = DIRS.filter((d) => g.runFree(x, y, d, 1, n)).map((d) => ({ x, y, d }));
+    } else out = g.spots(n - 1).map(({ x, y, d }) => ({ x, y, d }));
+  } else {
+    L = COMPOUND_BY_ID[w.c].ps.length;
+    out = basePlacements(g, w, L);
+  }
+  return scorePlacements(g, out, L, focus);
+}
+
+function basePlacements(g: Ctx, w: Way, L: number): Placement[] {
   let out: Placement[];
   if (w.onto) out = ontoPlacements(g, w.onto.x, w.onto.y, L);
   else if (w.cross) {
@@ -197,6 +286,10 @@ export function placements(s: GameState, w: Way, focus?: { x: number; y: number 
     const { x, y } = w.verb.table;
     out = tableVerbDirs(g, x, y, L).map((d) => ({ x, y, d }));
   } else out = g.spots(L).map(({ x, y, d }) => ({ x, y, d }));
+  return out;
+}
+
+function scorePlacements(g: Ctx, out: Placement[], L: number, focus?: { x: number; y: number }): Placement[] {
   const [x0, y0, x1, y1] = g.bounds();
   const f = focus ?? { x: (x0 + x1) / 2, y: (y0 + y1) / 2 };
   const score = (pl: Placement) => {
@@ -208,7 +301,8 @@ export function placements(s: GameState, w: Way, focus?: { x: number; y: number 
   return out.map((pl) => [score(pl), pl] as const).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
 }
 
-export function wayToMove(w: Way, pl: Placement): LineMove {
+export function wayToMove(w: Way, pl: Placement): LineMove | SfMove {
+  if (w.sf) return { type: 'sf', word: w.sf.word, phrase: w.sf.phrase, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src };
   const mv: LineMove = { type: 'line', m: w.m, g: w.g, c: w.c, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src };
   if (w.onto) mv.onto = w.onto;
   return mv;
@@ -233,14 +327,18 @@ export interface Lit {
   tableCells: Set<string>;
   river: Set<number>;
   wild: Set<number>;
+  /** Pouch tiles (word ids). */
+  tiles: Set<string>;
 }
 
 /** Everything that would extend the current selection toward some completion. */
 export function lit(s: GameState, p: number, sel: Selection, ws = ways(s, p, sel)): Lit {
-  const out: Lit = { meanings: new Set(), handVerbs: new Set(), tableCells: new Set(), river: new Set(), wild: new Set() };
+  const out: Lit = { meanings: new Set(), handVerbs: new Set(), tableCells: new Set(), river: new Set(), wild: new Set(), tiles: new Set() };
   const hand = s.hands[p];
   for (const w of ws) {
-    if (w.onto) {
+    if (w.sf) {
+      if (!sel.tile) out.tiles.add(w.sf.word);
+    } else if (w.onto) {
       if (!sel.onto) out.tableCells.add(w.onto.x + ',' + w.onto.y);
     } else if (sel.meaning === undefined) out.meanings.add(w.m);
     if (!sel.verb) {
@@ -329,7 +427,7 @@ export function judge(s: GameState, p: number, a: Attempt, focus?: { x: number; 
   const pls = placements(s, w, focus);
   const pl = a.place && pls.some((q) => q.x === a.place!.x && q.y === a.place!.y && q.d[0] === a.place!.d[0] && q.d[1] === a.place!.d[1]) ? a.place : pls[0];
   if (!pl) return { ok: false, reason: { why: 'NotLegal', detail: 'No room for that line' } };
-  return { ok: true, move: wayToMove(w, pl) };
+  return { ok: true, move: wayToMove(w, pl) as LineMove };
 }
 
 /** A hidden-mode stórfhocal attempt: the tile, a verb, and the tile and particles in the order picked. */

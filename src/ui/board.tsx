@@ -4,7 +4,7 @@
 // pinch never waits on a render.
 import type { JSX } from 'preact';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { COMPOUND_BY_ID, compoundText } from '../engine/deck';
+import { lineText, lineVerb, lineWords } from '../engine/storfhocail';
 import { view } from '../engine/game';
 import type { Placed } from '../engine/types';
 import { selEmpty, type Controller } from '../game/controller';
@@ -506,9 +506,9 @@ export function Board({ c }: { c: Controller }) {
     ).filter(Boolean) as JSX.Element[];
     if (chosen) {
       if (spot.way) {
-        const cmp = COMPOUND_BY_ID[spot.way.c];
-        const words = [cmp.v, ...cmp.ps];
-        const n = words.length + 1;
+        // A stórfhocal line has no meaning card at its end.
+        const words = [lineVerb(spot.way.c), ...lineWords(spot.way.c)];
+        const n = words.length + (spot.way.sf ? 0 : 1);
         for (let i = 0; i < n; i++) {
           const x = chosen.x + chosen.d[0] * i,
             y = chosen.y + chosen.d[1] * i;
@@ -543,7 +543,7 @@ export function Board({ c }: { c: Controller }) {
       <ul class="sr-only" aria-label={t('a11y.board', { n: s.board.length })}>
         {s.lines.map((l, i) => (
           <li key={i}>
-            {compoundText(COMPOUND_BY_ID[l.c])}, {l.g.toLowerCase()}, {c.name(l.p)}
+            {lineText(l.c)}, {l.g.toLowerCase()}, {c.name(l.p)}
           </li>
         ))}
         {s.board
@@ -556,7 +556,7 @@ export function Board({ c }: { c: Controller }) {
               </button>
             </li>
           ))}
-        {lastLine && <li>{t('table.lays', { name: c.name(lastLine.p), compound: compoundText(COMPOUND_BY_ID[lastLine.c]), meaning: lastLine.g.toLowerCase() })}</li>}
+        {lastLine && <li>{t('table.lays', { name: c.name(lastLine.p), compound: lineText(lastLine.c), meaning: lastLine.g.toLowerCase() })}</li>}
       </ul>
     </div>
   );
