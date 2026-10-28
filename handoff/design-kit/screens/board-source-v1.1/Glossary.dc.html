@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Glossary</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 16px 0 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div style="flex: 1; font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">Glossary</div>
+    <div style="font-size: 14px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{made}} of 36 made</div>
+  </div>
+  <div style="padding: 10px 16px 6px; display: flex; flex-direction: column; gap: 10px">
+    <label for="gloss-search" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Search compounds</label>
+    <input id="gloss-search" placeholder="Search Irish or English" value="{{query}}" style="height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface-raised); color: var(--ink); font: 400 15px var(--font-ui)">
+    <sc-if value="{{sf}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">{{resultLine}}</div></sc-if>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+      <div style="padding: 12px 14px; border-radius: 14px; background: var(--surface); font-size: 14px; line-height: 20px">You haven't made a compound yet. All 36 are listed so you can study them; each one fills in the first time you lay it.</div>
+    </sc-if>
+  </div>
+  <div style="flex: 1; min-height: 0; overflow: hidden; padding: 4px 16px 0; display: flex; flex-direction: column; gap: 14px">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div class="ba-card ba-table ba-verb" style="--s: 40px; --fs: 12px; --r: 7px"><span class="{{g.wcls}}">{{g.verb}}</span></div>
+          <span style="font-size: 13px; color: var(--ink-muted)">{{g.count}}</span>
+        </div>
+        <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 12px; border-radius: 12px; background: {{r.bg}}; opacity: {{r.op}}">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <sc-if value="{{r.sf}}" hint-placeholder-val="{{false}}"><div class="ba-card ba-sf" style="--s: 40px; --rim: 2px; --fs: 11px; --r: 8px; flex: none" aria-label="Stórfhocal"><span class="{{r.wcls}}">{{r.word}}</span></div></sc-if>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-family: var(--font-card); font-weight: 800; font-size: 16px; line-height: 20px">{{r.ga}}</span><span style="font-size: 13px; line-height: 17px; color: var(--ink-muted)">{{r.en}}</span></span>
+              <span style="text-align: right; font-size: 12px; line-height: 16px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{r.stat1}}<br>{{r.stat2}}</span>
+            </div>
+            <sc-if value="{{r.open}}" hint-placeholder-val="{{false}}">
+              <div style="padding: 10px 12px; border-radius: 10px; border: 1.5px dashed var(--line); font-size: 13px; line-height: 18px; color: var(--ink-muted)">Example sentence · space for one sentence and its translation, filled in a later update</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["progress","empty","storfhocal"],"default":"progress"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const empty = (this.props.variant ?? 'progress') === 'empty';
+  const sf = (this.props.variant ?? 'progress') === 'storfhocal';
+  const wsf = (w) => (Array.from(w).length >= 7 ? 'ba-word ba-xl' : Array.from(w).length >= 5 ? 'ba-word ba-l' : 'ba-word');
+  // a Stórfhocal phrase sits in its verb's group like any compound, marked by its tile; only phrases seen appear
+  const sfRow = (word, ga, en, stat1, stat2) => ({ sf: true, word, wcls: wsf(word), ga, en, stat1, stat2, bg: 'var(--surface-raised)', op: 1, open: false });
+  const row = (ga, en, n, last, open) => {
+    const made = !empty && n > 0;
+    return { ga, en, stat1: made ? 'made ' + n + '×' : 'not yet made', stat2: made ? last : '', bg: made ? 'var(--surface-raised)' : 'var(--surface)', op: made ? 1 : 0.72, open: !!open && !empty };
+  };
+  const wl = (w) => (Array.from(w).length >= 7 ? 'ba-word ba-xl' : Array.from(w).length >= 5 ? 'ba-word ba-l' : 'ba-word');
+  const groups = [
+    { verb: 'bain', rows: [row('bain amach', 'achieve', 5, 'today', true), row('bain as', 'get from', 0, '')] },
+    { verb: 'cuir', rows: [row('cuir síos ar', 'describe', 3, 'today'), row('cuir suas le', 'put up with', 4, 'yesterday'), row('cuir isteach ar', 'interfere with', 0, '')] },
+    { verb: 'éirigh', rows: [row('éirigh as', 'give up', 2, '3 days ago')] },
+  ].map((g) => Object.assign(g, { wcls: wl(g.verb), count: g.rows.length + (g.rows.length === 1 ? ' compound' : ' compounds') }));
+  const tabhair = { verb: 'tabhair', rows: [
+    Object.assign(row('tabhair suas', 'give up', 2, 'last week'), { sf: false }),
+    sfRow('aire', 'tabhair aire do', 'take care of · Stórfhocal', 'in your bag', 'seen 3×'),
+    sfRow('deara', 'tabhair faoi deara', 'notice · Stórfhocal', 'seen once', 'not yours yet'),
+  ] };
+  tabhair.wcls = wl('tabhair'); tabhair.count = '1 compound · 2 Stórfhocail seen';
+  groups.forEach((g) => g.rows.forEach((r) => { r.sf = !!r.sf; r.word = r.word || ''; r.wcls = r.wcls || ''; }));
+  return { empty, made: empty ? 0 : 14, groups: sf ? [tabhair] : groups, sf, query: sf ? 'tabhair' : '', resultLine: '3 entries for tabhair. Stórfhocail you haven\u2019t met yet stay hidden.' };
+}
+}
+</script>
+</body>
+</html>

@@ -30,6 +30,7 @@ Bain Amach is a fast card game for Ulster Irish compound verbs, for teenagers le
 - `lit` rings targets that complete the selected line (shown-answers mode only). `focus` rings keyboard focus. Both sit outside the card, after a 2px gap in the ground colour, so they reach 3:1 against any card face.
 - A wrong line in play gets the soft toast ("Not quite"), in ink. `alert` / `alert-soft` are only for real errors such as a failed save, always with an icon and words.
 - Players are `player-1` to `player-4` (rust, lough blue, moss, rose), always paired with a pattern (solid, stripes, dots, chevrons) and an initial.
+- The Stórfhocal tile has its own finish, Opal: a pearl face washed with `sf-pearl-1` to `sf-pearl-5` inside an iridescent rim of `sf-foil-1` to `sf-foil-5`, with `sf-notch` pointed notches. It is the one thing on the table that moves (a slow drift, a turning rim, a glint), which is how it stands out from paper meaning cards without a new hue. Pearl and foil are used nowhere else.
 - Never use green-white-orange, shamrocks, harps, knotwork or pseudo-uncial lettering.
 
 ## Type

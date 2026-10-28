@@ -24,13 +24,16 @@ for (const theme of ['light', 'dark'] as const)
       await page.waitForTimeout(450);
     }
     // v1.1 screens: decks, the deck editor and the bag.
-    await page.locator('.decks-card').click();
+    await page.getByRole('button', { name: 'Decks' }).click();
     await page.waitForTimeout(450);
     await check(page, 'decks');
-    await page.getByRole('button', { name: /Default/ }).click();
-    await page.getByRole('button', { name: 'Copy, 2-player counts' }).click();
+    await page.getByRole('button', { name: 'New deck from Standard' }).click();
     await page.waitForTimeout(450);
     await check(page, 'deck-edit');
+    await page.getByRole('radio', { name: 'Compounds' }).click();
+    await check(page, 'deck-edit-compounds');
+    await page.getByRole('radio', { name: 'Meanings' }).click();
+    await check(page, 'deck-edit-meanings');
     await page.getByRole('button', { name: 'Back', exact: true }).click();
     await page.waitForTimeout(450);
     await page.getByRole('button', { name: 'Back', exact: true }).click();

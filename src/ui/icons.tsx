@@ -46,3 +46,11 @@ export const IconTaken = svg(
 );
 export const IconPlus = svg(<path d="M12 5v14M5 12h14" />, 2.6);
 export const IconBag = svg(<path d="M5.5 8.5h13l-1.2 11.5H6.7zM9 8.5V7a3 3 0 0 1 6 0v1.5" />);
+/** Decks: two cards, one behind the other. */
+export const IconDecks = svg(
+  <>
+    <rect x="8" y="3.5" width="11" height="14" rx="2.5" />
+    <path d="M5.5 7.5v10A3 3 0 0 0 8.5 20.5h7.5" />
+  </>,
+  2.2,
+);

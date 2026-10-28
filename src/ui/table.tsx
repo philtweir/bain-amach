@@ -3,8 +3,10 @@
 import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { COMPOUNDS, printedAnswer } from '../engine/deck';
-import { SF_WORD, lineGloss, lineText } from '../engine/storfhocail';
-import { Pouch, SfPicker } from './storfhocal';
+import { SF_WORD, lineGloss, lineText, phraseText, settleStorfhocail } from '../engine/storfhocail';
+import { HandTile, SfBagSheet, SfMini, StakeChip, stakeBot } from './storfhocal';
+import { sfProgress } from '../storage';
+import { SfRows } from './screens/recap';
 import { canDraw, lineMoves, meaningsOf } from '../engine/game';
 import type { Card } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
@@ -62,10 +64,10 @@ function Status({ c }: { c: Controller }) {
               plus={plus[i]}
               big={c.passAndPlay}
               critter={c.critter(i)}
-              bag={!!s.sf?.carry[i] && !s.sf.carry[i].laid}
             />
           </span>
         ))}
+        <StakeChip c={c} />
       </div>
       {status}
       <button class="ba-icon-btn" aria-label={t('table.pause')} onClick={() => c.pause(true)}>
@@ -260,6 +262,19 @@ function Header({ c }: { c: Controller }) {
       {drawOk ? t('table.drawPass') : t('table.pass')}
     </button>
   );
+  // A stórfhocal game with tiles in your bag: open it. Taking one costs no turn.
+  const bagHas = !!s.sf && c.isHuman(viewer) && Object.values(sfProgress.value.owned).some((n) => n > 0) && !s.over;
+  const sfBtn = bagHas ? (
+    <button class="ba-btn ba-btn-secondary btn-sf" onClick={() => (c.sfPicker.value = true)} key="sf">
+      {t('sf.button')}
+    </button>
+  ) : null;
+  const held = s.sf?.pouch[viewer]?.[0];
+  const putBack = held ? (
+    <button class="ba-btn ba-btn-quiet" onClick={() => c.putBack(held)} key="putback">
+      {t('sf.putBack')}
+    </button>
+  ) : null;
 
   if (fs) {
     title = t('table.finalStalls', { n: fs.n, total: fs.total });
@@ -290,6 +305,7 @@ function Header({ c }: { c: Controller }) {
       );
     } else {
       if (stuck && !any) sub = t('table.stuckOn');
+      if (!any && sfBtn) actions.push(sfBtn);
       if (c.race) actions.push(stuckBtn);
       else if (!any) actions.push(passBtn);
       if (any || c.race)
@@ -338,6 +354,13 @@ function Header({ c }: { c: Controller }) {
         {t('table.layAlone')} <span class="ba-cost">· {t('table.draw2')}</span>
       </button>,
     );
+  } else if (sel.tile && canAct) {
+    // Your tile picked: the verbs and river tops that complete one of its phrases are lit.
+    title = t('table.pickVerb');
+    const w = SF_WORD[sel.tile];
+    sub = t('sf.pickVerbSub', { list: (w?.phrases ?? []).map((ph) => phraseText(ph) + ' · ' + ph.meaning.toLowerCase()).join('; ') });
+    if (putBack) actions.push(putBack);
+    actions.push(cancel);
   } else if (hasMeaning(sel) && canAct) {
     title = t('table.pickVerb');
     const makes = [...new Set(c.ways.value.map((w) => w.c))].map((id) => lineText(id) + ' (' + lineGloss(id).toLowerCase() + ')');
@@ -364,6 +387,7 @@ function Header({ c }: { c: Controller }) {
     actions.push(cancel);
   } else {
     if (stuck) sub = t('table.stuckOn');
+    if (sfBtn) actions.push(sfBtn);
     if (c.race) {
       actions.push(stuckBtn);
     } else actions.push(passBtn);
@@ -438,6 +462,7 @@ function Tray({ c }: { c: Controller }) {
       <div class="lane lane-m">
         <FaceUp c={c} />
         <div class="lane-scroll">
+          <HandTile c={c} />
           {meanings.map((m) => (
             <TrayCard key={m.id} c={c} card={m} st={stOf(m)} />
           ))}
@@ -448,7 +473,6 @@ function Tray({ c }: { c: Controller }) {
           {others.map((v) => (
             <TrayCard key={v.id} c={c} card={v} st={stOf(v)} />
           ))}
-          <Pouch c={c} />
         </div>
       </div>
     </div>
@@ -486,6 +510,18 @@ function Toasts({ c }: { c: Controller }) {
     <div class="toasts" aria-live="polite">
       {c.race && <NewMeaningToast c={c} />}
       {list.map((x) => {
+        if (x.kind === 'made' && x.word)
+          return (
+            <div class="ba-toast toast-in sf-toast" key={x.id}>
+              <SfMini word={x.word} size={52} />
+              <div class="sf-toast-text">
+                <div class="ba-ga">{x.ga}</div>
+                <div class="ba-en">{x.en}</div>
+                {x.keep && <div class="sf-toast-keep">{x.keep}</div>}
+              </div>
+              {c.critter(x.player ?? 0) && <Critter species={c.critter(x.player ?? 0)!.species} mood="pleased" size={34} />}
+            </div>
+          );
         if (x.kind === 'made')
           return (
             <div class="ba-toast toast-in" key={x.id}>
@@ -588,6 +624,18 @@ function NewMeaning({ c }: { c: Controller }) {
 function MadeMoment({ c }: { c: Controller }) {
   const m = c.made.value;
   if (!m) return null;
+  if (m.word)
+    return (
+      <div class="made-wrap" onPointerDown={() => c.dismissMade()}>
+        <div class="ba-made ba-made-sf made-pop" role="status">
+          <span class="ba-kicker">{t('sf.kicker')}</span>
+          <SfMini word={m.word} size={64} />
+          <span class="ba-ga">{m.compound}</span>
+          <span class="ba-en">{m.meaning}</span>
+          <span class="ba-keep">{t('sf.yoursAtStake')}</span>
+        </div>
+      </div>
+    );
   return (
     <div class="made-wrap" onPointerDown={() => c.dismissMade()}>
       <div class="ba-made made-pop" role="status">
@@ -648,6 +696,7 @@ function EndCard({ c, onRecap }: { c: Controller; onRecap: () => void }) {
         <h2 class="end-title">{title}</h2>
         <p class="end-sub">{sub}</p>
         <Standings c={c} />
+        {s.sf && !c.passAndPlay && <SfRows s={s} st={settleStorfhocail(s)} name={(i: number) => c.name(i)} ownedBefore={Object.keys(sfProgress.value.owned).filter((w) => sfProgress.value.owned[w] > 0)} />}
         <button class="ba-btn ba-btn-primary wide" onClick={onRecap}>
           {t('end.seeRecap')}
         </button>
@@ -678,7 +727,11 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
   if (!open) return null;
   const cfg = c.config;
   // Restarting after laying one of your own tiles loses it (as quitting does).
-  const riskTiles = (c.gs.value.sf?.laid ?? []).filter((l) => l.p === c.viewer.value).map((l) => SF_WORD[l.word]?.word ?? '');
+  const gs = c.gs.value;
+  const risk = (gs.sf?.laid ?? []).filter((l) => l.p === c.viewer.value).map((l) => l.word);
+  const riskTiles = risk.map((w) => SF_WORD[w]?.word ?? '');
+  const sb = stakeBot(gs);
+  const winner = sb >= 0 ? c.name(sb) : null;
   const who = cfg.players
     .map((p, i) => (p.kind === 'bot' ? c.name(i) : ''))
     .filter(Boolean)
@@ -687,7 +740,15 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
     c.passAndPlay ? t('home.passPlay', { who: cfg.players.map((_, i) => c.name(i)).join(', ') }) : t('home.vsBots', { mode: cfg.mode === 'race' ? t('home.race') : t('home.turns'), who }),
     cfg.answers === 'shown' ? t('pause.answersShown') : t('pause.answersHidden'),
     cfg.hints === 'off' ? t('pause.hintsOff') : cfg.hints === 'request' ? t('pause.hintsRequest') : t('pause.hintsAuto'),
+    ...(cfg.sf ? [t('sf.pauseOn')] : []),
   ].join(' · ');
+  const warn =
+    risk.length > 0 ? (
+      <div class="sf-pause-warn">
+        <SfMini word={risk[0]} size={52} />
+        <span>{t(risk.length > 1 ? 'sf.pauseWarnN' : 'sf.pauseWarn', { list: riskTiles.join(', '), name: winner ?? t('sf.theBot') })}</span>
+      </div>
+    ) : null;
   return (
     <div class="sheet-wrap" onPointerDown={(e) => e.target === e.currentTarget && c.pause(false)}>
       <div class="ba-scrim scrim-in" aria-hidden="true" />
@@ -698,7 +759,7 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
         {confirm ? (
           <>
             <p class="confirm-q">{t('pause.restartQ')}</p>
-            {riskTiles.length > 0 && <p class="sheet-sub">{t('sf.restartLoses', { list: riskTiles.join(', ') })}</p>}
+            {warn}
             <button class="ba-btn ba-btn-primary wide" onClick={onRestart}>
               {t('pause.restartYes')}
             </button>
@@ -708,6 +769,7 @@ function PauseSheet({ c, onRules, onSettings, onRestart, onQuit }: { c: Controll
           </>
         ) : (
           <>
+            {warn}
             <button class="ba-btn ba-btn-primary wide" onClick={() => c.pause(false)} autoFocus>
               {t('pause.resume')}
             </button>
@@ -788,7 +850,7 @@ export function TableView(p: TableProps) {
       )}
       {phase === 'over' && s.over && <EndCard c={c} onRecap={p.onRecap} />}
       <PauseSheet c={c} onRules={p.onRules} onSettings={p.onSettings} onRestart={p.onRestart} onQuit={p.onQuit} />
-      <SfPicker c={c} />
+      <SfBagSheet c={c} />
       {p.children}
       <div class="sr-only" aria-live="assertive">
         {announce}

@@ -5,13 +5,15 @@ import { BASE as DECK, BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, BASE_COMPOUNDS as 
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
 import { platform } from '../../platform';
-import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame, customDecks, sfProgress } from '../../storage';
+import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame, sfProgress } from '../../storage';
+import { SF, SF_WORD, ownedCount } from '../../engine/storfhocail';
+import { SfMini } from '../storfhocal';
 import { useState } from 'preact/hooks';
 import { Avatar, Face, MeaningCard, initialOf } from '../cards';
-import { IconRules, IconSettings, IconShare } from '../icons';
+import { IconChevron, IconDecks, IconRules, IconSettings, IconShare } from '../icons';
 import { Screen, Scroll } from '../kit';
 import { nav } from '../nav';
-import { gameAbandoned } from '../../app/storfhocail';
+import { gameAbandoned, tilesAtStake } from '../../app/storfhocail';
 
 // A real meaning card from the deck with GIVE UP on it, for the sample at the top.
 const sampleMeaning: Card = { id: -10, k: 'M', t: DECK.meaningCards.find((m) => m.meanings.includes('GIVE UP'))?.id ?? 'm01' };
@@ -110,6 +112,9 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
             <button class="ba-icon-btn" aria-label={t('home.rules')} onClick={() => nav.push('rules')}>
               <IconRules size={26} />
             </button>
+            <button class="ba-icon-btn" aria-label={t('home.decks')} onClick={() => nav.push('decks')}>
+              <IconDecks size={26} />
+            </button>
             <button class="ba-icon-btn" aria-label={t('home.settings')} onClick={() => nav.push('settings')}>
               <IconSettings size={26} />
             </button>
@@ -138,6 +143,7 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
               {discarding ? (
                 <div class="discard-confirm">
                   <p class="confirm-q">{t('home.discardQ')}</p>
+                  {tilesAtStake(saved!.state).length > 0 && <p class="caption">{t('sf.discardWarn', { list: tilesAtStake(saved!.state).map((w) => SF_WORD[w]?.word ?? w).join(', ') })}</p>}
                   <div class="row2">
                     <button class="ba-btn ba-btn-secondary" onClick={() => setDiscarding(false)}>
                       {t('home.keep')}
@@ -189,14 +195,18 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
           </button>
           {sfProgress.value.bagRevealed && (
             <button class="panel bag-card" onClick={() => nav.push('bag')}>
-              <span class="panel-title">{t('bag.title')}</span>
-              <span class="caption muted tabnum">{t('bag.homeSub', { n: Object.values(sfProgress.value.owned).filter((n) => n > 0).length })}</span>
+              <span class="bag-fan" aria-hidden="true">
+                <SfMini size={44} glyph />
+                <SfMini size={44} glyph />
+                <SfMini size={44} glyph />
+              </span>
+              <span class="lr-text">
+                <span class="panel-title">{t('bag.title')}</span>
+                <span class="caption muted tabnum">{t('bag.homeSub', { n: ownedCount(sfProgress.value), total: SF.words.length })}</span>
+              </span>
+              <IconChevron size={22} />
             </button>
           )}
-          <button class="panel decks-card" onClick={() => nav.push('decks')}>
-            <span class="panel-title">{t('home.decks')}</span>
-            <span class="caption muted">{customDecks.value.length ? t('home.decksSubN', { n: customDecks.value.length }) : t('home.decksSub')}</span>
-          </button>
           {s.lastResult && !saved && <p class="caption muted center">{t('home.lastGame', { text: s.lastResult })}</p>}
         </div>
       </Scroll>

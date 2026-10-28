@@ -4,15 +4,18 @@ import { APP_RULES, type GameConfig, type Level, type PlayerConfig } from '../en
 import { Controller } from '../game/controller';
 import { t } from '../i18n';
 import { platform } from '../platform';
-import { settings, type SetupPrefs, sfProgress } from '../storage';
+import { savedGame, settings, type SetupPrefs, sfProgress } from '../storage';
 import { useDeck } from '../engine/deck';
 import { deckForSetup } from './decks';
-import { dealFor, sfUnlocked } from '../engine/storfhocail';
+import { sfUnlocked } from '../engine/storfhocail';
+import { freshDeal, gameAbandoned } from './storfhocail';
 
 export const game = signal<Controller | null>(null);
 
 export function startGame(init: { config: GameConfig } | { state: import('../engine/types').GameState; elapsed?: number }) {
   game.value?.dispose();
+  // A new game over a saved one ends that one: quitting with a tile of yours laid loses it.
+  if ('config' in init && savedGame.peek() && !savedGame.peek()!.state.over) gameAbandoned(savedGame.peek()!.state);
   // The game deals from its own deck (a custom one is embedded in its config); make it active first.
   useDeck('config' in init ? init.config.deck : init.state.config.deck);
   const c = new Controller(init);
@@ -75,8 +78,8 @@ export function configFrom(p: SetupPrefs, seed = freshSeed()): GameConfig {
     });
   }
   const deck = deckForSetup(p.deck);
-  // Stórfhocail: solo, unlocked, and only with a Hard bot (only Hard bots carry one).
-  const sf = p.sf && p.who === 'solo' && p.bots.includes('hard') && sfUnlocked(sfProgress.value) ? dealFor(sfProgress.value) : undefined;
+  // Stórfhocail: solo games, once unlocked. Only Hard bots lay tiles, but it stays on without one.
+  const sf = p.sf && p.who === 'solo' && sfUnlocked(sfProgress.value) ? freshDeal() : undefined;
   return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints, rules: APP_RULES, ...(deck ? { deck } : {}), ...(sf ? { sf } : {}) };
 }
 

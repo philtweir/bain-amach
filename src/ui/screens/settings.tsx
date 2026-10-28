@@ -4,6 +4,8 @@ import { t } from '../../i18n';
 import { platform } from '../../platform';
 import { resetProgress, settings, sfProgress, updateSettings } from '../../storage';
 import { backupText, restoreText, saveFile } from '../../app/backup';
+import { ownedCount } from '../../engine/storfhocail';
+import { nav } from '../nav';
 import { Group, Header, Row, Screen, Scroll, Section, Seg, Toggle } from '../kit';
 
 
@@ -66,6 +68,7 @@ export function SettingsScreen({ onTutorial }: { onTutorial: () => void }) {
               <Row label={t('settings.replayTutorial')} onClick={onTutorial} chevron />
               <Row label={t('settings.backup')} sub={t('settings.backupNote')} onClick={() => saveFile('bain-amach-backup.json', backupText())} chevron />
               <Row label={t('settings.restore')} sub={restored ?? t('settings.restoreNote')} onClick={() => file.current?.click()} chevron />
+              {ownedCount(sfProgress.value) === 0 && <Row label={t('settings.restoreBag')} sub={t('settings.restoreBagNote')} onClick={() => nav.push('bag')} chevron />}
               <input
                 ref={file}
                 type="file"

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deck editor</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: {{w}}px; height: {{h}}px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: {{topInset}}px; flex: none"></div>
+
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 6px 0 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back to Decks"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <label for="deck-name" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Deck name</label>
+    <input id="deck-name" value="Ceachtanna 1" style="flex: 1; min-width: 0; height: 40px; box-sizing: border-box; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font-family: var(--font-card); font-weight: 800; font-size: 24px; letter-spacing: -0.01em">
+    <button class="ba-icon-btn" type="button" aria-label="Deck options: rename, duplicate, delete"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+  </div>
+
+  <div style="margin: 6px {{pad}}px 0; padding: 12px 14px; border-radius: 18px; background: var(--surface-raised); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 8px">
+    <div style="display: flex; align-items: baseline; gap: 8px">
+      <span style="font-family: var(--font-card); font-weight: 800; font-size: 20px; line-height: 24px; white-space: nowrap">{{total}} cards</span>
+      <span style="font-size: 13px; color: var(--ink-muted)">{{totalSub}}</span>
+    </div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap" role="list" aria-label="Player counts this deck can serve">
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="3">
+        <span role="listitem" class="{{c.cls}}">{{c.label}}</span>
+      </sc-for>
+    </div>
+    <sc-if value="{{reason}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; line-height: 18px">{{reason}}</div></sc-if>
+    <sc-if value="{{warn}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; line-height: 18px; color: var(--ink-muted)">{{warn}}</div></sc-if>
+  </div>
+
+  <sc-if value="{{phone}}" hint-placeholder-val="{{true}}">
+    <div class="ba-seg" role="tablist" aria-label="Deck sections" style="margin: 12px 16px 4px"><button type="button" role="tab" aria-pressed="{{isTiles}}">Tiles</button><button type="button" role="tab" aria-pressed="{{isCompounds}}">Compounds</button><button type="button" role="tab" aria-pressed="{{isMeanings}}">Meanings</button></div>
+  </sc-if>
+
+  <div style="flex: 1; min-height: 0; overflow: hidden; display: flex; gap: 0 28px; padding: 8px {{pad}}px 0">
+
+    <sc-if value="{{showTiles}}" hint-placeholder-val="{{true}}">
+      <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+        <sc-if value="{{tab}}" hint-placeholder-val="{{false}}"><div style="font-family: var(--font-card); font-weight: 800; font-size: 20px; line-height: 24px; margin-bottom: 4px">Tiles</div></sc-if>
+        <sc-for list="{{tileGroups}}" as="g" hint-placeholder-count="2">
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 6px"><span style="flex: 1; font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">{{g.name}}</span><span style="font-size: 13px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{g.sum}}</span></div>
+          <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 4px 4px 4px 4px; border-radius: 14px; background: var(--surface)">
+              <div class="{{r.cls}}" style="--s: 44px; --fs: 13px; --r: 8px"><sc-if value="{{r.word}}" hint-placeholder-val="{{true}}"><span class="{{r.wcls}}">{{r.word}}</span></sc-if><sc-if value="{{r.star}}" hint-placeholder-val="{{false}}"><span class="ba-star"></span></sc-if></div>
+              <span style="flex: 1; min-width: 0; font-size: 13px; line-height: 17px; color: var(--ink-muted)">{{r.note}}</span>
+              <div class="ba-stepper" role="group" aria-label="{{r.name}}"><button class="ba-dec" type="button" aria-label="One fewer {{r.name}}" disabled="{{r.min}}"></button><output>{{r.n}}</output><button class="ba-inc" type="button" aria-label="One more {{r.name}}"></button></div>
+            </div>
+          </sc-for>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showCompounds}}" hint-placeholder-val="{{false}}">
+      <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+        <sc-if value="{{tab}}" hint-placeholder-val="{{false}}"><div style="font-family: var(--font-card); font-weight: 800; font-size: 20px; line-height: 24px; margin-bottom: 4px">Compounds</div></sc-if>
+        <div style="display: flex; align-items: center; gap: 8px"><span style="flex: 1; font-size: 14px; line-height: 19px">{{ticked}} of 36 on meaning cards</span><button class="ba-btn ba-btn-quiet" type="button" style="min-height: 36px; padding: 0 4px; font-size: 14px">Tick all usable</button></div>
+        <sc-for list="{{cgroups}}" as="g" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px"><div class="ba-card ba-table ba-verb" style="--s: 28px; --fs: 0px; --r: 6px; --glyph: 0px" aria-hidden="true"></div><span style="font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">{{g.verb}}</span></div>
+          <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="2">
+            <label style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 12px; border-radius: 12px; background: {{r.bg}}; opacity: {{r.op}}">
+              <input type="checkbox" checked="{{r.on}}" disabled="{{r.off}}" style="width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--ink)">
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-family: var(--font-card); font-weight: 800; font-size: 16px; line-height: 20px">{{r.ga}}</span><span style="font-size: 13px; line-height: 17px; color: var(--ink-muted)">{{r.en}}</span></span>
+              <sc-if value="{{r.why}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 16px; font-weight: 700; padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--line)">{{r.why}}</span></sc-if>
+            </label>
+          </sc-for>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showMeanings}}" hint-placeholder-val="{{false}}">
+      <div style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 10px">
+        <sc-if value="{{tab}}" hint-placeholder-val="{{false}}"><div style="font-family: var(--font-card); font-weight: 800; font-size: 20px; line-height: 24px">Meaning cards</div></sc-if>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--surface)">
+          <span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 700; font-size: 16px; line-height: 20px">Meaning cards</span><span style="font-size: 13px; line-height: 17px; color: var(--ink-muted)">Three meanings each</span></span>
+          <div class="ba-stepper" role="group" aria-label="Meaning cards"><button class="ba-dec" type="button" aria-label="One fewer meaning card"></button><output>{{meanN}}</output><button class="ba-inc" type="button" aria-label="One more meaning card"></button></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 4px; font-size: 14px; line-height: 19px">
+          <span>{{spread}}</span>
+          <span style="color: var(--ink-muted)">Enough for the deal at every player count: 7 for 2 players, 10 for 3, 13 for 4.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px"><span style="flex: 1; font-weight: 700; font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted)">The cards, as dealt from seed 4127</span><button class="ba-btn ba-btn-quiet" type="button" style="min-height: 36px; padding: 0 4px; font-size: 14px">Shuffle again</button></div>
+        <div style="display: flex; gap: 10px; overflow: hidden; padding: 4px 2px 10px">
+          <sc-for list="{{cards}}" as="m" hint-placeholder-count="3">
+            <div class="ba-card ba-meaning" aria-label="Meaning card">
+              <sc-for list="{{m.rows}}" as="r" hint-placeholder-count="3"><div class="ba-m"><span class="ba-en">{{r.en}}</span><span class="ba-ga">{{r.ga}}</span></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 13px; line-height: 18px; color: var(--ink-muted); padding: 0 4px">No card shows the same meaning twice. GIVE UP counts once, though two compounds answer it.</div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div class="ba-tray" style="flex: none; padding: 12px {{pad}}px {{bottomInset}}px; display: flex; align-items: center; gap: 12px">
+    <span style="flex: 1; font-size: 13px; line-height: 18px; color: var(--ink-muted)">Changes save as you go. Games already started keep their own copy.</span>
+    <button class="ba-btn ba-btn-primary" type="button" style="min-height: 48px; padding: 0 18px; font-size: 15px">Test with bots</button>
+  </div>
+
+  <sc-if value="{{sheet}}" hint-placeholder-val="{{false}}">
+    <div class="ba-scrim" style="position: absolute; inset: 0; z-index: 5"></div>
+    <div class="ba-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 10px 16px 34px; display: flex; flex-direction: column; gap: 12px">
+      <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line)"></div>
+      <div style="font-family: var(--font-card); font-weight: 800; font-size: 26px; line-height: 30px; margin-top: 4px">Test with bots</div>
+      <div class="ba-seg" role="group" aria-label="Players"><button type="button" aria-pressed="true">2 players</button><button type="button" aria-pressed="false" disabled="true">3 players</button><button type="button" aria-pressed="false" disabled="true">4 players</button></div>
+      <div style="font-size: 14px; line-height: 19px; color: var(--ink-muted)">100 games between Normal bots, on this phone. It shows whether the deck plays, not whether it is balanced.</div>
+      <sc-if value="{{running}}" hint-placeholder-val="{{false}}">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 18px 4px 8px">
+          <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums"><span>Playing</span><span>38 of 100</span></div>
+          <div style="height: 10px; border-radius: 5px; background: var(--table-grid); overflow: hidden"><div style="width: 38%; height: 100%; border-radius: 5px; background: var(--ink)"></div></div>
+          <div style="font-size: 13px; color: var(--ink-muted)">About 5 seconds. You can keep editing; the result updates when it's done.</div>
+        </div>
+        <button class="ba-btn ba-btn-secondary" type="button">Stop</button>
+      </sc-if>
+      <sc-if value="{{result}}" hint-placeholder-val="{{false}}">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--surface); box-shadow: {{s.ring}}">
+              <span style="font-family: var(--font-card); font-weight: 800; font-size: 26px; line-height: 30px; font-variant-numeric: tabular-nums">{{s.value}}</span>
+              <span style="font-size: 13px; line-height: 17px; font-weight: 700">{{s.label}}</span>
+              <span style="font-size: 12px; line-height: 16px; color: var(--ink-muted)">{{s.vs}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; box-shadow: inset 0 0 0 1.5px var(--line); font-size: 14px; line-height: 19px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 17h.01"/></svg><span>{{verdict}}</span></div>
+        <button class="ba-btn ba-btn-primary" type="button">Done</button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tab":{"editor":"enum","options":["tiles","compounds","meanings"],"default":"tiles"},"sheet":{"editor":"enum","options":["none","running","result","bad"],"default":"none"},"device":{"editor":"enum","options":["phone","tablet"],"default":"phone"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const tab = (this.props.device ?? 'phone') === 'tablet';
+  const t = this.props.tab ?? 'tiles';
+  const sheet = this.props.sheet ?? 'none';
+  const wl = (w) => (Array.from(w).length >= 7 ? 'ba-word ba-xl' : Array.from(w).length >= 5 ? 'ba-word ba-l' : 'ba-word');
+  // illustrative counts: Standard first, then this deck
+  const VERBS = [['cuir', 6, 6], ['bain', 4, 4], ['tabhair', 4, 4], ['éirigh', 2, 4], ['éist', 2, 2], ['fan', 2, 2], ['fág', 2, 0]];
+  const ADV = [['amach', 6, 6], ['isteach', 4, 4], ['suas', 6, 6], ['síos', 4, 4]];
+  const PREP = [['ar', 6, 6], ['le', 5, 5], ['do', 3, 3], ['as', 4, 4], ['de', 1, 1], ['faoi', 2, 2], ['ó', 1, 1]];
+  const row = (cls, [w, std, n]) => ({ cls: 'ba-card ba-table ' + cls, word: w, wcls: wl(w), star: false, name: w, n, min: n === 0, minOp: n === 0 ? 0.35 : 1, note: n === std ? '' : 'Standard ' + std });
+  const sum = (a) => a.reduce((s, x) => s + x[2], 0);
+  const tileGroups = [
+    { name: 'Verbs', sum: sum(VERBS) + ' · hand deck', rows: VERBS.map((v) => row('ba-verb', v)) },
+    { name: 'Wildcards', sum: '4 · hand deck', rows: [{ cls: 'ba-card ba-table ba-wild', word: '', wcls: '', star: true, name: 'wildcards', n: 4, min: false, minOp: 1, note: 'Stand in for any particle' }] },
+    { name: 'Adverbs', sum: sum(ADV) + ' · river', rows: ADV.map((v) => row('ba-adverb', v)) },
+    { name: 'Prepositions', sum: sum(PREP) + ' · river', rows: PREP.map((v) => row('ba-preposition', v)) },
+  ];
+  const C = (ga, en, o) => Object.assign({ ga, en, on: true, off: false, why: '', bg: 'var(--surface-raised)', op: 1 }, o || {});
+  const cgroups = [
+    { verb: 'bain', rows: [C('bain amach', 'achieve'), C('bain as', 'get from'), C('bain de', 'take off', { on: false, bg: 'var(--surface)' })] },
+    { verb: 'cuir', rows: [C('cuir síos ar', 'describe'), C('cuir suas le', 'put up with'), C('cuir isteach ar', 'interfere with')] },
+    { verb: 'éirigh', rows: [C('éirigh as', 'give up')] },
+    { verb: 'éist', rows: [C('éist le', 'listen to')] },
+    { verb: 'fág', rows: [C('fág amach', 'leave out', { on: false, off: true, why: 'Needs fág', bg: 'var(--surface)', op: 0.6 })] },
+    { verb: 'fan', rows: [C('fan amach ó', 'stay away from')] },
+  ];
+  const M = (a) => ({ rows: a.map(([en, ga]) => ({ en, ga })) });
+  const cards = [
+    M([['Describe', 'cuir síos ar'], ['Give up', 'éirigh as'], ['Listen to', 'éist le']]),
+    M([['Achieve', 'bain amach'], ['Put up with', 'cuir suas le'], ['Stay away from', 'fan amach ó']]),
+    M([['Get from', 'bain as'], ['Interfere with', 'cuir isteach ar'], ['Give up', 'tabhair suas']]),
+  ];
+  const chips = [['2 players', true], ['3 players', false], ['4 players', false]].map(([label, ok]) => ({ label, cls: 'ba-fit ' + (ok ? 'is-ok' : 'is-no') }));
+  const bad = sheet === 'bad';
+  const stats = bad
+    ? [['9.8', 'lines per game', 'Standard: 24.5', true], ['4%', 'someone goes out', 'Standard: 37%', true], ['21', 'stalls per game', 'most of any test so far', true], ['11', 'compounds never made', 'of 30 on cards', true]]
+    : [['23.1', 'lines per game', 'Standard: 24.5', false], ['33%', 'someone goes out', 'Standard: 37%', false], ['7.6', 'stalls per game', 'when nobody can play', false], ['1', 'compound never made', 'cuir isteach ar', false]];
+  return {
+    w: tab ? 1180 : 390, h: tab ? 820 : 844, topInset: tab ? 24 : 47, bottomInset: tab ? 24 : 34, pad: tab ? 32 : 16,
+    tab, phone: !tab,
+    isTiles: t === 'tiles', isCompounds: t === 'compounds', isMeanings: t === 'meanings',
+    showTiles: tab || t === 'tiles', showCompounds: tab || t === 'compounds', showMeanings: tab || t === 'meanings',
+    total: 92, totalSub: '26 hand deck · 42 river · 24 meaning cards',
+    chips,
+    reason: '3 players needs 5 more verbs or wildcards; 4 players needs 6. Setup only offers 2 players with this deck.',
+    warn: t === 'tiles' && !tab ? '' : 'fág is at 0, so fág amach is off the cards.',
+    tileGroups, ticked: 30, cgroups,
+    meanN: 24, spread: '30 compounds on 24 cards: 12 appear 3 times, 18 appear twice.', cards,
+    sheet: sheet !== 'none', running: sheet === 'running', result: sheet === 'result' || bad,
+    stats: stats.map(([value, label, vs, flag]) => ({ value, label, vs, ring: flag ? 'inset 0 0 0 2px var(--ink)' : 'none' })),
+    verdict: bad ? 'This deck stalls a lot: most lines need a preposition the river rarely shows. Try more ar and le, or fewer compounds that need do.' : 'Plays close to Standard. One compound was never made in 100 games; that is normal for a rare particle.',
+  };
+}
+}
+</script>
+</body>
+</html>

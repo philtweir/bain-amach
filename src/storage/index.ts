@@ -4,7 +4,7 @@ import { signal, effect } from '@preact/signals';
 import { platform } from '../platform';
 import type { Answers, GameState, Hints, Level, Mode } from '../engine/types';
 import type { CustomDeck } from '../engine/deckTools';
-import { emptySfProgress, type SfProgress } from '../engine/storfhocail';
+import { emptySfProgress, migrateSfProgress, type SfProgress } from '../engine/storfhocail';
 
 function load<T>(key: string, v: number, fallback: T): T {
   const raw = platform.storage.get(key);
@@ -134,7 +134,7 @@ export function recordLine(compoundId: string, byHuman: boolean, now = Date.now(
 /** Clear glossary progress and the stórfhocal bag. The unlock (and its count) stays. */
 export function resetProgress() {
   progress.value = { byCompound: {}, lastMadeId: null };
-  sfProgress.value = { ...emptySfProgress(), finishedSoloGames: sfProgress.value.finishedSoloGames, unlocked: sfProgress.value.unlocked };
+  sfProgress.value = { ...emptySfProgress(), finishedGames: sfProgress.value.finishedGames, announced: sfProgress.value.announced, unlocked: sfProgress.value.unlocked };
 }
 
 // ---------- saved game ----------
@@ -166,7 +166,7 @@ effect(() => {
 // ---------- stórfhocail ----------
 
 const SF_KEY = 'ba.sf';
-export const sfProgress = signal<SfProgress>({ ...emptySfProgress(), ...load<Partial<SfProgress>>(SF_KEY, 1, {}) });
+export const sfProgress = signal<SfProgress>(migrateSfProgress(load<Partial<SfProgress>>(SF_KEY, 1, {})));
 effect(() => {
   if (!save(SF_KEY, 1, sfProgress.value)) saveError.value = true;
 });

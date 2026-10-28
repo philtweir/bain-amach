@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decks</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 16px 0 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back to Home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div style="flex: 1; font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">Decks</div>
+  </div>
+  <div style="padding: 6px 16px 14px; font-size: 14px; line-height: 20px; color: var(--ink-muted)">Choose how many of each tile go in, which compounds are on the meaning cards, and how many meaning cards there are. Standard is the printed deck.</div>
+
+  <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; padding: 0 16px">
+    <sc-for list="{{decks}}" as="d" hint-placeholder-count="2">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 14px 12px 16px; border-radius: 18px; background: {{d.bg}}; box-shadow: {{d.shadow}}">
+        <div style="display: flex; align-items: flex-start; gap: 12px">
+          <span style="position: relative; width: 40px; height: 46px; flex: none" aria-hidden="true"><span style="position: absolute; left: 4px; top: 0; width: 34px; height: 40px; border-radius: 7px; background: var(--card-back); opacity: 0.55"></span><span style="position: absolute; left: 0; top: 4px; width: 34px; height: 40px; border-radius: 7px; background: var(--card-back); box-shadow: var(--shadow-card)"></span></span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-family: var(--font-card); font-weight: 800; font-size: 19px; line-height: 23px">{{d.name}}</span><sc-if value="{{d.tag}}" hint-placeholder-val="{{false}}"><span style="font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--line); color: var(--ink-muted)">{{d.tag}}</span></sc-if></div>
+            <span style="font-size: 14px; line-height: 19px; color: var(--ink-muted)">{{d.meta}}</span>
+            <sc-if value="{{d.note}}" hint-placeholder-val="{{false}}"><span style="font-size: 13px; line-height: 18px">{{d.note}}</span></sc-if>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <sc-for list="{{d.actions}}" as="a" hint-placeholder-count="1"><button class="{{a.cls}}" type="button" style="min-height: 40px; padding: 0 14px; font-size: 14px">{{a.label}}</button></sc-for>
+        </div>
+      </div>
+    </sc-for>
+    <button class="{{newCls}}" type="button" style="margin-top: 4px">New deck from Standard</button>
+    <sc-if value="{{first}}" hint-placeholder-val="{{false}}"><div style="font-size: 13px; line-height: 18px; color: var(--ink-muted); text-align: center; padding: 0 20px">A new deck starts as a copy of Standard. Nothing you change touches Standard itself.</div></sc-if>
+  </div>
+  <div style="height: 34px; flex: none"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["list","first"],"default":"list"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const first = (this.props.variant ?? 'list') === 'first';
+  const sec = (label) => ({ cls: 'ba-btn ba-btn-secondary', label });
+  const quiet = (label) => ({ cls: 'ba-btn ba-btn-quiet', label });
+  const raised = { bg: 'var(--surface-raised)', shadow: 'var(--shadow-card)' };
+  const flat = { bg: 'var(--surface)', shadow: 'none' };
+  const standard = Object.assign({ name: 'Standard', tag: 'Built in', meta: '104 cards · 118 with the verb pack · 2 to 4 players', note: '', actions: [sec('Duplicate')] }, flat);
+  const decks = first ? [standard] : [
+    standard,
+    Object.assign({ name: 'Ceachtanna 1', tag: '', meta: '92 cards · 2 players · 30 compounds', note: 'In use by a saved game. That game keeps the deck as it was when it started.', actions: [quiet('Duplicate'), sec('Edit')] }, raised),
+    Object.assign({ name: 'Na briathra móra', tag: '', meta: '112 cards · 2 to 4 players · 36 compounds', note: '', actions: [quiet('Duplicate'), sec('Edit')] }, raised),
+  ];
+  return { decks, first, newCls: 'ba-btn ' + (first ? 'ba-btn-primary' : 'ba-btn-secondary') };
+}
+}
+</script>
+</body>
+</html>

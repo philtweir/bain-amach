@@ -1,6 +1,8 @@
 // Recap: result, standings, every compound made in play order, up to three missed lines.
 import { BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, compoundText } from '../../engine/deck';
-import { SF_WORD, lineText, type Settlement } from '../../engine/storfhocail';
+import { SF_SETTINGS, SF_WORD, lineText, type Settlement } from '../../engine/storfhocail';
+import type { Finished } from '../../app/storfhocail';
+import { SfMini } from '../storfhocal';
 import type { GameState } from '../../engine/types';
 import { t } from '../../i18n';
 import { botName, moodOf, speciesOf } from '../../game/critters';
@@ -9,7 +11,7 @@ import { IconChevron, IconClose, IconHint } from '../icons';
 import { Screen, Scroll } from '../kit';
 import { UpdateBanner } from './home';
 
-export function RecapScreen({ state, settlement, onAgain, onReplay, onClose, onCompound }: { state: GameState; settlement?: Settlement | null; onAgain: () => void; onReplay: () => void; onClose: () => void; onCompound: (id: string) => void }) {
+export function RecapScreen({ state, finished, onAgain, onReplay, onClose, onCompound }: { state: GameState; finished?: Finished; onAgain: () => void; onReplay: () => void; onClose: () => void; onCompound: (id: string) => void }) {
   const s = state;
   const o = s.over!;
   const players = s.config.players;
@@ -49,7 +51,16 @@ export function RecapScreen({ state, settlement, onAgain, onReplay, onClose, onC
           );
         })}
       </div>
-      {settlement && <SfTransfer s={s} st={settlement} name={name} />}
+      {finished?.unlocked && (
+        <div class="panel sf-unlock" role="status">
+          <SfMini size={56} glyph />
+          <span class="sf-move-text">
+            <span class="sf-move-line">{t('sf.unlockTitle')}</span>
+            <span class="sf-move-sub">{t('sf.unlockSub', { n: SF_SETTINGS.unlockAfterGames })}</span>
+          </span>
+        </div>
+      )}
+      {finished?.settlement && <SfRows s={s} st={finished.settlement} name={name} ownedBefore={finished.ownedBefore} />}
       <div class="recap-actions wide-only">
         <button class="ba-btn ba-btn-primary" onClick={onAgain}>
           {t('recap.again')}
@@ -141,30 +152,35 @@ export function RecapScreen({ state, settlement, onAgain, onReplay, onClose, onC
   );
 }
 
-/** Where the stórfhocail on the table went: into your bag, to the winning bot, back to you, or gone. */
-function SfTransfer({ s, st, name }: { s: GameState; st: Settlement; name: (i: number) => string }) {
+/** Where each stórfhocal on the table went: into your bag, staying there, to the winning bot, or gone.
+ *  ownedBefore: the bag before this game settled, so a tile you already had says so. */
+export function SfRows({ s, st, name, ownedBefore }: { s: GameState; st: Settlement; name: (i: number) => string; ownedBefore?: string[] }) {
+  const laid = s.sf?.laid ?? [];
+  if (!laid.length) return null;
   const human = s.config.players.findIndex((p) => p.kind === 'human');
-  const mine = (s.sf?.laid ?? []).filter((l) => l.p === human).map((l) => l.word);
-  const back = mine.filter((w) => !st.lost.includes(w));
   const winner = s.over && !s.over.tie ? s.over.winners[0] : -1;
+  const had = new Set(ownedBefore ?? []);
   const word = (w: string) => SF_WORD[w]?.word ?? w;
-  const rows = [
-    ...st.gained.map((w) => ({ k: 'gain', w, text: t('sf.youWon', { word: word(w) }) })),
-    ...back.map((w) => ({ k: 'back', w, text: t('sf.backToBag', { word: word(w) }) })),
-    ...st.lost.map((w) => ({ k: 'lost', w, text: t('sf.botKeeps', { name: winner >= 0 ? name(winner) : '', word: word(w) }) })),
-    ...st.vanished.map((w) => ({ k: 'gone', w, text: t('sf.vanished', { word: word(w) }) })),
-  ];
-  if (!rows.length) return null;
+  const rows = laid.map((l) => {
+    const w = word(l.word);
+    if (l.p === human) {
+      if (st.lost.includes(l.word)) return { w: l.word, line: t('sf.took', { name: winner >= 0 ? name(winner) : t('sf.theBot'), word: w }), sub: t('sf.tookSub', { name: winner >= 0 ? name(winner) : t('sf.theBot') }) };
+      return { w: l.word, line: t('sf.stays', { word: w }), sub: s.over?.tie ? t('sf.staysTie') : t('sf.staysWon') };
+    }
+    if (st.gained.includes(l.word)) return { w: l.word, line: had.has(l.word) ? t('sf.already', { word: w }) : t('sf.joins', { word: w }), sub: t('sf.joinsSub', { name: name(l.p) }) };
+    return { w: l.word, line: t('sf.laidBy', { word: w, name: name(l.p) }), sub: winner === l.p ? t('sf.goesWith', { name: name(l.p) }) : t('sf.gone') };
+  });
   return (
-    <section class="panel sf-recap" aria-label={t('sf.recapTitle')}>
-      <h2 class="sec-label">{t('sf.recapTitle')}</h2>
+    <section class="sf-rows-block" aria-label={t('sf.title')}>
+      <h2 class="sec-label">{t('sf.title')}</h2>
       {rows.map((r, i) => (
-        <p class={'sf-move is-' + r.k} key={r.k + r.w + i} style={{ animationDelay: `${i * 160}ms` }}>
-          <span class="ba-card ba-sf sf-chip" aria-hidden="true">
-            <span class="ba-word">{word(r.w)}</span>
+        <div class="sf-move" key={r.w + i} style={{ animationDelay: `${i * 160}ms` }}>
+          <SfMini word={r.w} size={56} />
+          <span class="sf-move-text">
+            <span class="sf-move-line">{r.line}</span>
+            <span class="sf-move-sub">{r.sub}</span>
           </span>
-          <span>{r.text}</span>
-        </p>
+        </div>
       ))}
     </section>
   );

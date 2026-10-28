@@ -111,7 +111,7 @@ export interface GameConfig {
   tutorial?: boolean;
   /** Rule variants for playtesting. All off by default (RULES.md as written). */
   rules?: RuleVariant;
-  /** Stórfhocail on (solo games against bots): the player's bag at the deal, for the bots' carry roll. */
+  /** Stórfhocail on (solo games against bots): the player's bag at the deal, for the bots' odds. */
   sf?: SfDeal;
   /** A custom deck, built by the editor, embedded whole so editing or deleting it never changes a game
    *  in progress. The bundled deck.json otherwise. */

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Your Stórfhocail</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="ba-felt" style="position: relative; width: 390px; height: 844px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); display: flex; flex-direction: column">
+  <div style="height: 47px; flex: none"></div>
+  <div style="display: flex; align-items: center; gap: 4px; padding: 4px 16px 0 6px">
+    <button class="ba-icon-btn" type="button" aria-label="Back to Home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div style="flex: 1; font-family: var(--font-card); font-weight: 800; font-size: 24px; line-height: 28px">Your Stórfhocail</div>
+    <div style="font-size: 14px; color: var(--ink-muted); font-variant-numeric: tabular-nums">{{count}} of 28</div>
+  </div>
+  <div style="padding: 6px 16px 12px; font-size: 14px; line-height: 20px; color: var(--ink-muted)">Each word fills one slot. Win them in Stórfhocal games; lay one of yours and lose to a bot, and it goes with the bot.</div>
+
+  <sc-if value="{{milestone}}" hint-placeholder-val="{{false}}">
+    <div style="margin: 0 16px 12px; padding: 14px 16px; border-radius: 18px; background: var(--surface-raised); box-shadow: var(--shadow-card); display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="font-family: var(--font-card); font-weight: 800; font-size: 20px; line-height: 24px">10 collected</span><span style="font-size: 13px; color: var(--ink-muted)">restore point ready</span></div>
+      <div style="font-size: 14px; line-height: 20px; color: var(--ink-muted)">Save this code somewhere safe. If your phone loses its data, it brings your bag back to these 10. Restore works only into an empty bag.</div>
+      <div style="display: flex; gap: 10px"><button class="ba-btn ba-btn-secondary" type="button" style="flex: 1; min-height: 44px">Not now</button><button class="ba-btn ba-btn-primary" type="button" style="flex: 1.4; min-height: 44px">Save restore point</button></div>
+    </div>
+  </sc-if>
+
+  <div role="list" aria-label="Stórfhocal slots" style="flex: 1; min-height: 0; overflow: hidden; padding: 4px 16px 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-content: start; justify-items: center">
+    <sc-for list="{{slots}}" as="t" hint-placeholder-count="12">
+      <sc-if value="{{t.has}}" hint-placeholder-val="{{false}}">
+        <div role="listitem" class="{{t.cls}}" style="--s: 74px; --fs: 17px; --r: 12px; --rim: 3px" aria-label="{{t.word}}"><span class="{{t.wcls}}">{{t.word}}</span><sc-if value="{{t.tw}}" hint-placeholder-val="{{false}}"><i class="ba-tw"></i></sc-if></div>
+      </sc-if>
+      <sc-if value="{{t.empty}}" hint-placeholder-val="{{true}}">
+        <div role="listitem" aria-label="Empty slot" style="width: 74px; height: 74px; box-sizing: border-box; border-radius: 12px; border: 2px dashed var(--table-grid); background: rgba(255,255,255,0.12)"></div>
+      </sc-if>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{detail}}" hint-placeholder-val="{{false}}">
+    <div class="ba-scrim" style="position: absolute; inset: 0; z-index: 5"></div>
+    <div class="ba-sheet" style="position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 10px 16px 34px; display: flex; flex-direction: column; gap: 12px; align-items: stretch">
+      <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line)"></div>
+      <div style="align-self: center; margin-top: 8px; transform: scale(1.3); transform-origin: top center; height: 151px">
+        <div class="ba-card ba-sf ba-sf-wide" role="img" aria-label="Stórfhocal: aire, noun. tabhair aire do, take care of.">
+          <div class="ba-sf-head"><span class="ba-word">aire</span><span class="ba-sf-pos">noun</span></div>
+          <div class="ba-sf-ph"><span class="ba-ga">tabhair aire do</span><span class="ba-en">Take care of</span></div>
+          <i class="ba-tw"></i><i class="ba-tw"></i>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 4px 4px 0">
+        <div style="display: flex; justify-content: space-between; font-size: 15px; line-height: 20px"><span style="color: var(--ink-muted)">Won from</span><span style="font-weight: 700">Giorria, 3 days ago</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 15px; line-height: 20px"><span style="color: var(--ink-muted)">Seen in</span><span style="font-weight: 700">3 games</span></div>
+        <div style="display: flex; justify-content: space-between; font-size: 15px; line-height: 20px"><span style="color: var(--ink-muted)">You have laid it</span><span style="font-weight: 700">once, and kept it</span></div>
+      </div>
+      <a class="ba-btn ba-btn-secondary" href="Glossary.dc.html" style="text-decoration: none">Open in glossary</a>
+    </div>
+  </sc-if>
+  <div style="height: 34px; flex: none"></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["grid","milestone","detail"],"default":"grid"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+  const v = this.props.variant ?? 'grid';
+  const words = ['aire', 'deara', 'cuairt', 'aghaidh', 'comhairle', 'cead', 'freagra', 'suntas', 'cuidiú', 'triail', 'úsáid', 'sult', 'taitneamh', 'geit', 'tuisle', 'aithne', 'ceist', 'eagla', 'iontas', 'fearg', 'moill', 'cosc', 'deireadh', 'stop', 'dlús', 'glan', 'bréan', 'tuirseach'];
+  const owned = v === 'milestone' ? ['aire', 'deara', 'cuairt', 'triail', 'sult', 'aithne', 'ceist', 'eagla', 'moill', 'glan'] : ['aire', 'deara', 'triail', 'sult', 'ceist', 'eagla', 'glan'];
+  const wl = (w) => (Array.from(w).length >= 7 ? 'ba-word ba-xl' : Array.from(w).length >= 5 ? 'ba-word ba-l' : 'ba-word');
+  const slots = words.map((w, i) => {
+    const has = owned.includes(w);
+    return { has, empty: !has, word: has ? w : '', wcls: wl(w), cls: 'ba-card ba-sf', tw: has && (i % 3 === 0) };
+  });
+  return { slots, count: owned.length, milestone: v === 'milestone', detail: v === 'detail' };
+}
+}
+</script>
+</body>
+</html>

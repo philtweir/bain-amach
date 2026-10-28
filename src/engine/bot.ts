@@ -1,7 +1,7 @@
 // Bots: the reference engine's planner, plus swaps and difficulty.
 import { COMPOUNDS } from './deck';
 import { apply, bestLine, isFresh, isStraddle, lineMoves, lineScore, loneMoves, meaningsOf, pass, sfMoves } from './game';
-import { ownTurn } from './storfhocail';
+import { botSfChance, pickBotWord, playableWords } from './storfhocail';
 import { next } from './rng';
 import type { GameState, Level, LineMove, Move, SfMove } from './types';
 
@@ -29,12 +29,23 @@ export interface BotChoice {
 export function botMove(s: GameState, p: number): BotChoice {
   const level = s.config.players[p]?.level ?? 'hard';
   let rngState = s.rng;
-  // A Hard bot carrying a stórfhocal lays it at its first chance from its target turn on, ahead of
-  // anything else (spec/storfhocal.md §5). Only Hard bots are dealt one.
-  const carry = s.sf?.carry[p];
-  if (carry && !carry.laid && ownTurn(s, p) >= carry.target) {
-    const sf = sfMoves(s, p, carry.word, 1).sort((a, b) => sfScore(b) - sfScore(a))[0];
-    if (sf) return { move: sf, rng: rngState };
+  // A Hard bot in a stórfhocal game: with chance p (set by the stakes, feature plan), a stórfhocal line
+  // instead of its usual play, when it has one. The word leans towards ones the player doesn't own.
+  if (s.sf && s.config.sf && level === 'hard') {
+    const chance = botSfChance(s);
+    if (chance > 0) {
+      const [r, st] = next(rngState);
+      rngState = st;
+      if (r < chance) {
+        const options = playableWords().map((w) => ({ w, mv: sfMoves(s, p, w, 1).sort((a, b) => sfScore(b) - sfScore(a))[0] })).filter((o) => o.mv);
+        if (options.length) {
+          const [r2, st2] = next(rngState);
+          rngState = st2;
+          const word = pickBotWord(options.map((o) => o.w), s.config.sf, r2);
+          return { move: options.find((o) => o.w === word)!.mv, rng: rngState };
+        }
+      }
+    }
   }
   let lines = lineMoves(s, p);
   // Lines through a particle, or onto a meaning card already down, are the harder ones to spot.

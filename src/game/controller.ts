@@ -21,13 +21,13 @@ import {
   type Way,
 } from '../engine/builder';
 import { COMPOUND_BY_ID, COMPOUNDS_BY_VERB, compoundText } from '../engine/deck';
-import { SF_CARD_ID, lineGloss, lineParticles, lineText } from '../engine/storfhocail';
+import { SF_CARD_ID, SF_PHRASE, lineGloss, lineParticles, lineText } from '../engine/storfhocail';
 import { noteSeen } from '../app/storfhocail';
 import { apply, canDraw, FINAL_STALLS, holdsTile, meaningsOf, newGame, pass, pouchPut, pouchTake, raceStall, setStuck, useHint, view, wrongLine } from '../engine/game';
 import type { GameConfig, GameEvent, GameState, LineMove, Move, Rejection, VerbSrc } from '../engine/types';
 import { t } from '../i18n';
 import { platform } from '../platform';
-import { madeCount, recordLine, settings, updateSettings, writeGame } from '../storage';
+import { madeCount, recordLine, settings, sfProgress, updateSettings, writeGame } from '../storage';
 import { dur, haptic } from '../ui/motion';
 import { COMPOUNDS } from '../engine/deck';
 
@@ -43,9 +43,14 @@ export interface Toast {
   sub?: string;
   player?: number;
   icon?: 'retry' | 'taken' | 'no' | 'turns';
+  /** A stórfhocal line: the tile's word id, and what is at stake for the player. */
+  word?: string;
+  keep?: string;
 }
 
 export interface Made {
+  /** A stórfhocal line: the tile's word id. */
+  word?: string;
   compound: string;
   meaning: string;
   isNew: boolean;
@@ -117,7 +122,6 @@ export class Controller {
   /** The bag picker is open (stórfhocail games). */
   sfPicker = signal(false);
   /** The "the winner keeps it" warning has been seen this game. */
-  sfWarned = false;
   /** A table meaning card being looked at: shows all three of its meanings. */
   peek = signal<{ x: number; y: number } | null>(null);
   /** Ask the board to bring these cells into view. */
@@ -484,14 +488,17 @@ export class Controller {
           haptic('light');
           this.later(flight, () => {
             haptic('strong');
-            this.made.value = { compound: text, meaning: ev.g, isNew, count: madeCount(), at: Date.now() };
+            this.made.value = { compound: text, meaning: ev.g, isNew, count: madeCount(), at: Date.now(), ...(ev.sf ? { word: SF_PHRASE[ev.c]?.word } : {}) };
             this.later(dur(640) + 900, () => this.settleMade());
           });
           return flight + dur(640);
         }
         if (bot) this.botPlaying.value = ev.p;
         this.later(flight, () => {
-          this.toast({ kind: 'made', ga: text, en: ev.g.toLowerCase() + ' · ' + this.name(ev.p), player: ev.p });
+          const word = ev.sf ? SF_PHRASE[ev.c]?.word : undefined;
+          // A bot's tile the player doesn't own: theirs if they win.
+          const keep = word && !(sfProgress.peek().owned[word] > 0) && !this.passAndPlay ? t('sf.keepIt') : undefined;
+          this.toast({ kind: 'made', ga: text, en: ev.g.toLowerCase() + ' · ' + this.name(ev.p), player: ev.p, word, keep });
           if (this.botPlaying.value === ev.p) this.botPlaying.value = null;
           this.popNewMeanings();
         });
@@ -583,7 +590,7 @@ export class Controller {
     const m = this.made.value;
     if (!m) return;
     this.made.value = null;
-    this.toast({ kind: 'made', ga: m.compound, en: m.meaning.toLowerCase() + ' · ' + this.name(this.viewer.value), player: this.viewer.value });
+    this.toast({ kind: 'made', ga: m.compound, en: m.meaning.toLowerCase() + ' · ' + this.name(this.viewer.value), player: this.viewer.value, word: m.word });
   }
 
   dismissMade() {
@@ -1133,7 +1140,7 @@ export class Controller {
     if (mv.type === 'line') add(mv.m);
     else {
       // The tile's card id on the table is fixed by the engine; it flies from the pouch.
-      const r = rect(`.pouch [data-tile="${mv.word}"]`);
+      const r = rect(`.tray [data-tile="${mv.word}"]`);
       if (r) m.set(SF_CARD_ID + s.lines.length, r);
     }
     if ('hand' in mv.verb) add(mv.verb.hand);

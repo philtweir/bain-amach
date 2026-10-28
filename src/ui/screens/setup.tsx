@@ -5,9 +5,11 @@ import { botName, speciesOf } from "../../game/critters";
 import { BASE } from "../../engine/deck";
 import { validateDeck } from "../../engine/deckTools";
 import { cardTotal, deckById, deckFit } from "../../app/decks";
-import { customDecks, sfProgress } from "../../storage";
-import { SF_SETTINGS, sfUnlocked } from "../../engine/storfhocail";
-import { unlockNow } from "../../app/storfhocail";
+import { customDecks, savedGame, sfProgress } from "../../storage";
+import { SF_SETTINGS, SF_WORD, ownedCount, sfUnlocked } from "../../engine/storfhocail";
+import { tilesAtStake, unlockNow } from "../../app/storfhocail";
+import { SfMini } from "../storfhocal";
+import { nav } from "../nav";
 import type { Level } from "../../engine/types";
 import { t } from "../../i18n";
 import {
@@ -16,8 +18,8 @@ import {
   type SetupPrefs,
 } from "../../storage";
 import { Disc, initialOf } from "../cards";
-import { IconClose, IconPlus } from "../icons";
-import { Header, Note, Screen, Scroll, Section, Seg, Toggle } from "../kit";
+import { IconChevron, IconClose, IconPlus } from "../icons";
+import { Header, Note, Screen, Scroll, Section, Seg } from "../kit";
 
 export function SetupScreen({
   initial,
@@ -26,8 +28,9 @@ export function SetupScreen({
   initial: SetupPrefs;
   onPlay: (p: SetupPrefs) => void;
 }) {
-  // Stórfhocail start off for every new game.
-  const [p, setP] = useState<SetupPrefs>({ ...initial, sf: false });
+  // The stórfhocal setting is remembered from the last game (off on a new install).
+  const [p, setP] = useState<SetupPrefs>(initial);
+  const [picking, setPicking] = useState(false);
   const secret = useRef<number[]>([]);
   const set = (patch: Partial<SetupPrefs>) => setP((x) => ({ ...x, ...patch }));
   const pass = p.who === "pass";
@@ -51,6 +54,9 @@ export function SetupScreen({
     color: 0,
   }));
   const botNames = botCfgs.map((_, i) => botName(botCfgs, i));
+  const bagN = ownedCount(sfProgress.value);
+  // A new game over a saved one ends it: your tiles on its table count as lost.
+  const atStake = savedGame.value ? tilesAtStake(savedGame.value.state) : [];
 
   const levels = (lv: Level, onChange: (l: Level) => void, label: string) => (
     <Seg
@@ -177,8 +183,20 @@ export function SetupScreen({
     </>
   );
 
+  const deckName = custom ? custom.name : t("decks.standard");
+  const deckSize = cardTotal(custom, n);
   const right = (
     <>
+      <Section label={t("setup.deck")}>
+        <button class="list-row deck-row-btn" onClick={() => setPicking(true)} aria-label={t("setup.deckRow", { name: deckName, n: deckSize })}>
+          <span class="deck-chip deck-stack" aria-hidden="true" />
+          <span class="lr-text">
+            <span class="lr-ga">{deckName}</span>
+            <span class="lr-en">{t("setup.deckSize", { n: deckSize })}</span>
+          </span>
+          <IconChevron size={22} />
+        </button>
+      </Section>
       <Section label={pass ? t("setup.players") : t("setup.opponents")}>
         {humans.map((h, i) => (
           <div class="player-row" key={"h" + i}>
@@ -285,35 +303,30 @@ export function SetupScreen({
           </button>
         </div>
       </Section>
-      <Section label={t("setup.deck")}>
-        <select
-          class="deck-select"
-          aria-label={t("setup.deck")}
-          value={custom ? custom.id : ""}
-          onChange={(e) => set({ deck: (e.target as HTMLSelectElement).value || undefined })}
-        >
-          <option value="">{t("decks.default")}</option>
-          {customDecks.value.map((d) => (
-            <option value={d.id} key={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-      </Section>
       {!pass && (
-        <Section label={t("sf.title")}>
+        <section class="sec sf-sec">
+          <h2 class="sec-label sf-label">
+            <SfMini size={26} glyph />
+            {t("sf.one")}
+          </h2>
           {sfUnlocked(sfProgress.value) ? (
-            <div class="group">
-              <div class="row">
-                <span class="row-text">
-                  <span class="row-label">{t("sf.toggle")}</span>
-                  <span class="row-sub">{p.bots.includes("hard") ? t("sf.toggleSub") : t("sf.needsHard")}</span>
-                </span>
-                <Toggle on={!!p.sf && p.bots.includes("hard")} disabled={!p.bots.includes("hard")} onChange={(on) => set({ sf: on })} label={t("sf.toggle")} />
-              </div>
-            </div>
+            <>
+              <Seg
+                label={t("sf.toggle")}
+                value={p.sf ? "on" : "off"}
+                onChange={(v) => set({ sf: v === "on" })}
+                options={[
+                  { v: "off", label: t("sf.off") },
+                  { v: "on", label: t("sf.on") },
+                ]}
+              />
+              <Note>
+                {bagN ? t("sf.setupSub", { n: bagN }) : t("sf.setupSubEmpty")}
+                {p.sf && !p.bots.includes("hard") ? " " + t("sf.needsHard") : ""}
+              </Note>
+            </>
           ) : (
-            // Locked until enough finished solo games. The secret: seven quick taps on this row.
+            // Locked until enough finished games. The secret: seven quick taps on this row.
             <div
               class="group sf-locked"
               onClick={() => {
@@ -327,15 +340,16 @@ export function SetupScreen({
             >
               <div class="row">
                 <span class="row-text">
-                  <span class="row-label">{t("sf.toggle")}</span>
-                  <span class="row-sub">{t("sf.locked", { n: Math.min(sfProgress.value.finishedSoloGames, SF_SETTINGS.unlockAfterGames), total: SF_SETTINGS.unlockAfterGames })}</span>
+                  <span class="row-label">{t("sf.lockedTitle")}</span>
+                  <span class="row-sub">{t("sf.locked", { n: Math.min(sfProgress.value.finishedGames, SF_SETTINGS.unlockAfterGames), total: SF_SETTINGS.unlockAfterGames })}</span>
                 </span>
                 <span class="lock-chip">{t("decks.locked")}</span>
               </div>
             </div>
           )}
-        </Section>
+        </section>
       )}
+      {atStake.length > 0 && <p class="note sf-overwrite" role="note">{t("sf.newOverSaved", { list: atStake.map((w) => SF_WORD[w]?.word ?? w).join(", ") })}</p>}
       <div class="deck-note">
         <span class="deck-chip" aria-hidden="true" />
         <span>
@@ -357,6 +371,7 @@ export function SetupScreen({
 
   return (
     <Screen class="setup">
+      {picking && <DeckPicker value={custom?.id} n={n} onPick={(id) => { set({ deck: id }); setPicking(false); }} onClose={() => setPicking(false)} />}
       <Scroll>
         <div class="pad">
           <Header title={t("setup.title")} />
@@ -379,4 +394,59 @@ function botColor(humanColors: number[], i: number) {
     if (k < i) col++;
   }
   return col;
+}
+
+/** Choose the deck: decks that can't serve this table are disabled with the reason. */
+function DeckPicker({ value, n, onPick, onClose }: { value?: string; n: 2 | 3 | 4; onPick: (id: string | undefined) => void; onClose: () => void }) {
+  const std = { id: undefined as string | undefined, name: t("decks.standard"), sub: t("decks.standardSub", { a: cardTotal(undefined, 2), b: cardTotal(undefined, 3) }), ok: true };
+  const rows = [
+    std,
+    ...customDecks.value.map((d) => {
+      const fit = deckFit(d);
+      const counts = ([2, 3, 4] as const).filter((k) => fit[k] !== null);
+      const ok = fit[n] !== null;
+      const sub = ok
+        ? t("decks.sizeFor", { n: cardTotal(d, n), players: counts.length ? playersText(counts) : "" })
+        : counts.length
+          ? t("decks.servesOnly", { players: playersText(counts) })
+          : t("decks.servesNone");
+      return { id: d.id as string | undefined, name: d.name, sub, ok };
+    }),
+  ];
+  return (
+    <div class="sheet-wrap" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div class="ba-scrim scrim-in" aria-hidden="true" />
+      <div class="ba-sheet sheet sheet-in deck-picker" role="dialog" aria-modal="true" aria-label={t("setup.deck")}>
+        <div class="grabber" aria-hidden="true" />
+        <h2 class="sheet-title">{t("setup.deck")}</h2>
+        <div class="dp-rows" role="radiogroup" aria-label={t("setup.deck")}>
+          {rows.map((r) => (
+            <button key={r.id ?? "std"} class={"dp-row" + (r.id === value ? " is-on" : "")} role="radio" aria-checked={r.id === value ? "true" : "false"} disabled={!r.ok} onClick={() => onPick(r.id)}>
+              <span class="lr-text">
+                <span class="lr-ga">{r.name}</span>
+                <span class="lr-en">{r.sub}</span>
+              </span>
+              <span class="dp-radio" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+        <button
+          class="ba-btn ba-btn-quiet dp-edit"
+          onClick={() => {
+            onClose();
+            nav.push("decks");
+          }}
+        >
+          {t("setup.editDecks")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** "2 players", "2 to 4 players", "2 and 4 players". */
+export function playersText(counts: number[]): string {
+  if (counts.length === 1) return t("decks.nOnly", { n: counts[0] });
+  const run = counts.every((k, i) => i === 0 || k === counts[i - 1] + 1);
+  return run ? t("decks.range", { a: counts[0], b: counts[counts.length - 1] }) : t("decks.list", { list: counts.join(", ") });
 }

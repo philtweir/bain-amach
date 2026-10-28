@@ -3,9 +3,8 @@ import { effect } from '@preact/signals';
 import { APP_RULES, type GameConfig, type GameState } from '../engine/types';
 import { migrateGlosses } from '../engine/deck';
 import type { Controller } from '../game/controller';
-import { savedGame, settings, sfProgress, updateSettings } from '../storage';
-import { dealFor, type Settlement } from '../engine/storfhocail';
-import { gameAbandoned, gameFinished } from './storfhocail';
+import { savedGame, settings, updateSettings } from '../storage';
+import { freshDeal, gameFinished, type Finished } from './storfhocail';
 import { Navigator, nav, stack, type Entry } from '../ui/nav';
 import { TableView } from '../ui/table';
 import { GlossaryScreen } from '../ui/screens/glossary';
@@ -75,13 +74,14 @@ function renderEntry(e: Entry) {
       return (
         <TableView
           c={c}
-          onRecap={() => nav.replace('recap', { state: c.gs.value, settlement: gameFinished(c.gs.value) })}
+          onRecap={() => nav.replace('recap', { state: c.gs.value, finished: gameFinished(c.gs.value) })}
           onRules={() => nav.push('rules')}
           onSettings={() => nav.push('settings')}
           onRestart={() => {
             c.pause(false);
-            gameAbandoned(c.gs.value);
-            const cfg = { ...c.config, seed: (Math.random() * 2 ** 31) >>> 0, ...(c.config.sf ? { sf: dealFor(sfProgress.value) } : {}) };
+            // Restarting counts as quitting (startGame settles the saved game): a tile of yours laid is lost.
+            c.save();
+            const cfg = { ...c.config, seed: (Math.random() * 2 ** 31) >>> 0, ...(c.config.sf ? { sf: freshDeal() } : {}) };
             const nc = startGame({ config: cfg });
             nav.reset([{ id: 'home' }, { id: 'table', params: { c: nc } }], 'fade');
           }}
@@ -99,9 +99,9 @@ function renderEntry(e: Entry) {
       return (
         <RecapScreen
           state={st}
-          settlement={e.params?.settlement as Settlement | null | undefined}
-          onAgain={() => play({ config: { ...st.config, seed: (Math.random() * 2 ** 31) >>> 0, tutorial: false, firstPlayer: undefined, rules: APP_RULES, ...(st.config.sf ? { sf: dealFor(sfProgress.value) } : {}) } }, 'fade')}
-          onReplay={() => play({ config: { ...st.config, ...(st.config.sf ? { sf: dealFor(sfProgress.value) } : {}) } }, 'fade')}
+          finished={e.params?.finished as Finished | undefined}
+          onAgain={() => play({ config: { ...st.config, seed: (Math.random() * 2 ** 31) >>> 0, tutorial: false, firstPlayer: undefined, rules: APP_RULES, ...(st.config.sf ? { sf: freshDeal() } : {}) } }, 'fade')}
+          onReplay={() => play({ config: { ...st.config, ...(st.config.sf ? { sf: freshDeal() } : {}) } }, 'fade')}
           onClose={() => nav.backTo('home')}
           onCompound={(id) => nav.push('glossary', { focus: id })}
         />

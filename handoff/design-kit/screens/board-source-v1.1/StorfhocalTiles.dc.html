@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stórfhocal tile options</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/bainamach/tokens.css">
+<link rel="stylesheet" href="ds/bainamach/components/bundle.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+/* Stórfhocal tile (proposal). A foil rim, a face, two pointed notches where its line joins, a glint and two twinkles. */
+.sf { --s: 64px; --r: 9px; --rim: 2.5px; --fs: 16px; position: relative; flex: none; width: var(--s); height: var(--s); border-radius: var(--r); box-sizing: border-box; isolation: isolate; overflow: hidden;
+  background: var(--sf-rim); box-shadow: 0 1px 1px rgba(10,20,18,0.28), 0 3px 8px rgba(10,20,18,0.2);
+  font-family: var(--font-card); font-weight: 800; font-variation-settings: "opsz" 24; line-height: 1; color: var(--sf-ink); }
+.ba-board > .sf { position: absolute; }
+.sf-face { position: absolute; inset: var(--rim); border-radius: calc(var(--r) - var(--rim)); background: var(--sf-face); display: grid; place-items: center; overflow: hidden;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.25); }
+.sf-word { position: relative; z-index: 2; font-size: var(--fs); letter-spacing: -0.01em; white-space: nowrap; padding: 0 3px; }
+.sf-word.sf-l { font-size: calc(var(--fs) * 0.88); letter-spacing: -0.02em; }
+.sf-word.sf-xl { font-size: calc(var(--fs) * 0.74); letter-spacing: -0.03em; }
+.sf-n { position: absolute; z-index: 1; top: 50%; width: calc(var(--s) * 0.16); height: calc(var(--s) * 0.16); background: var(--sf-notch); transform: translate(-50%, -50%) rotate(45deg); }
+.sf-n.sf-a { left: 0; } .sf-n.sf-b { left: 100%; }
+.sf-glint { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(115deg, transparent 38%, var(--sf-glint) 50%, transparent 62%) 130% 0 / 260% 100% no-repeat; animation: sf-glint 6s ease-in-out infinite; }
+@keyframes sf-glint { 0% { background-position: 130% 0; } 30%, 100% { background-position: -30% 0; } }
+.sf-tw { position: absolute; z-index: 4; width: 8px; height: 8px; background: #fff; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: sf-tw 2.6s ease-in-out infinite; filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)); }
+@keyframes sf-tw { 0%, 100% { opacity: 0.15; transform: scale(0.45) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(20deg); } }
+/* hand: wide, so the phrases read */
+.sf.sf-wide { width: 200px; height: 116px; --r: 13px; --rim: 3px; }
+.sf-wide .sf-face { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 7px 12px 8px; gap: 4px; }
+.sf-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sf-head .sf-big { font-size: 20px; line-height: 22px; letter-spacing: -0.015em; }
+.sf-pos { font: 700 10px/14px var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 999px; background: var(--sf-label-bg); color: var(--sf-label); }
+.sf-ph { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 0; padding-top: 3px; border-top: 1px solid var(--sf-rule); }
+.sf-ph .sf-ga { font: 800 14px/17px var(--font-card); color: var(--sf-ga); letter-spacing: -0.01em; }
+.sf-ph .sf-en { font: 700 10.5px/12px var(--font-ui); letter-spacing: 0.05em; text-transform: uppercase; color: var(--sf-en); }
+/* zoomed out: the word gives way to a four-point star */
+.sf.sf-z { --s: 26px; --r: 5px; --rim: 1.5px; }
+.sf-star { position: relative; z-index: 2; width: 13px; height: 13px; background: var(--sf-ink); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+/* Opal in motion: the pastel wash drifts slowly (an opal's play of colour) and the foil rim turns. Both slow enough to sit in the corner of the eye. */
+@property --sf-a { syntax: "<angle>"; inherits: false; initial-value: 200deg; }
+.sf-live .sf { background: conic-gradient(from var(--sf-a) at 50% 50%, #ff9bd2, #ffd27a, #a8f0b0, #74d3ff, #b49cff, #ff9bd2); animation: sf-spin 8s linear infinite; }
+.sf-live .sf-face { background: linear-gradient(135deg, #fbd9e6 0%, #fff0cf 14%, #d4f3e2 28%, #d3e6fb 42%, #eadcfb 56%, #fbd9e6 70%, #fff0cf 84%, #d4f3e2 100%) 0% 0% / 320% 320%; animation: sf-drift 10s ease-in-out infinite alternate; }
+.sf-live .sf-tw { animation-duration: 4s; }
+@keyframes sf-spin { to { --sf-a: 560deg; } }
+@keyframes sf-drift { to { background-position: 100% 100%; } }
+@media (prefers-reduced-motion: reduce) { .sf-glint { animation: none; background-position: 40% 0; } .sf-tw { animation: none; opacity: 0.85; } .sf-live .sf, .sf-live .sf-face { animation: none; } .sf-live .sf { --rim: 3px; } }
+</style>
+</helmet>
+<div class="ba-felt" data-theme="light" style="position: relative; width: 1400px; height: 1240px; overflow: hidden; background: var(--table); color: var(--ink); font-family: var(--font-ui); box-sizing: border-box; padding: 44px 48px; display: flex; flex-direction: column; gap: 24px">
+  <div style="position: relative; display: flex; align-items: flex-end; gap: 32px">
+    <div style="flex: none">
+      <div style="font-weight: 700; font-size: 13px; line-height: 16px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted)">Proposal · collectable tile</div>
+      <div style="font-family: var(--font-card); font-weight: 800; font-size: 44px; line-height: 48px; letter-spacing: -0.02em">Stórfhocal</div>
+    </div>
+    <div style="flex: 1; max-width: 780px; font-size: 16px; line-height: 23px; color: var(--ink-muted); padding-bottom: 4px">Opal is the choice, now with gentle motion; Jet and Kingfisher stay for comparison. Three faces for the same tile. All share the iridescent foil rim, the twinkles and the glint, and pointed notches where the line joins, so only the face differs. None uses a card, player or state colour.</div>
+  </div>
+
+  <div style="position: relative; flex: 1; min-height: 0; display: flex; gap: 24px">
+    <sc-for list="{{options}}" as="o" hint-placeholder-count="3">
+      <div class="{{o.cls}}" style="{{o.vars}}; flex: 1; min-width: 0; padding: 20px 22px 22px; border-radius: 24px; background: var(--surface); box-shadow: inset 0 -4px 0 var(--line); display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: baseline; gap: 10px"><span style="font-family: var(--font-card); font-weight: 800; font-size: 28px; line-height: 32px; letter-spacing: -0.02em">{{o.name}}</span><span style="font-size: 14px; color: var(--ink-muted)">{{o.sub}}</span></div>
+        <div style="font-size: 14px; line-height: 20px; min-height: 40px">{{o.blurb}}</div>
+
+        <div style="font-weight: 700; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin-top: 4px">In the hand · on the table</div>
+        <div style="display: flex; align-items: flex-end; gap: 12px">
+          <div class="sf sf-wide" role="img" aria-label="Stórfhocal tile: comhairle, noun. tabhair comhairle do, advise. cuir comhairle ar, advise.">
+            <div class="sf-face">
+              <div class="sf-head"><span class="sf-big">comhairle</span><span class="sf-pos">noun</span></div>
+              <div class="sf-ph"><span class="sf-ga">tabhair comhairle do</span><span class="sf-en">Advise</span></div>
+              <div class="sf-ph"><span class="sf-ga">cuir comhairle ar</span><span class="sf-en">Advise, counsel</span></div>
+            </div>
+            <span class="sf-glint" style="animation-delay: {{o.d1}}"></span>
+            <span class="sf-tw" style="right: 9px; bottom: 9px; animation-delay: -1.3s"></span>
+            <span class="sf-tw" style="left: 58%; top: 9px; width: 6px; height: 6px; animation-delay: -0.4s"></span>
+          </div>
+          <div class="sf" role="img" aria-label="Stórfhocal tile: aire">
+            <div class="sf-face"><span class="sf-n sf-a"></span><span class="sf-n sf-b"></span><span class="sf-word">aire</span></div>
+            <span class="sf-glint" style="animation-delay: {{o.d2}}"></span>
+            <span class="sf-tw" style="right: 6px; top: 5px; animation-delay: -1.9s"></span>
+          </div>
+          <div class="sf" role="img" aria-label="Stórfhocal tile: tuirseach">
+            <div class="sf-face"><span class="sf-n sf-a"></span><span class="sf-n sf-b"></span><span class="sf-word sf-xl">tuirseach</span></div>
+            <span class="sf-glint" style="animation-delay: -4.5s"></span>
+            <span class="sf-tw" style="left: 6px; bottom: 7px; width: 6px; height: 6px; animation-delay: -0.8s"></span>
+          </div>
+        </div>
+
+        <div style="font-weight: 700; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin-top: 6px">Day table</div>
+        <div class="ba-felt" style="position: relative; height: 228px; border-radius: 16px; background: var(--table); overflow: hidden">
+          <div class="ba-board" style="position: absolute; left: 50%; top: 12px; width: 268px; height: 204px; margin-left: -134px">
+            <sc-for list="{{cluster}}" as="c" hint-placeholder-count="10">
+              <sc-if value="{{c.sf}}" hint-placeholder-val="{{false}}">
+                <div class="sf" role="img" aria-label="Stórfhocal tile: {{c.word}}" style="left: {{c.left}}px; top: {{c.top}}px"><div class="sf-face"><span class="sf-n sf-a"></span><span class="sf-n sf-b"></span><span class="sf-word">{{c.word}}</span></div><span class="sf-glint" style="animation-delay: {{o.d3}}"></span><span class="sf-tw" style="right: 6px; top: 5px; animation-delay: -1.1s"></span></div>
+              </sc-if>
+              <sc-if value="{{c.plain}}" hint-placeholder-val="{{true}}">
+                <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px"><span class="{{c.wcls}}">{{c.word}}</span></div>
+              </sc-if>
+              <sc-if value="{{c.mean}}" hint-placeholder-val="{{false}}">
+                <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px"><span class="ba-en">{{c.en}}</span></div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="font-weight: 700; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin-top: 6px">Night table</div>
+        <div class="ba-felt" data-theme="dark" style="position: relative; height: 228px; border-radius: 16px; background: var(--table); overflow: hidden">
+          <div class="ba-board" style="position: absolute; left: 50%; top: 12px; width: 268px; height: 204px; margin-left: -134px">
+            <sc-for list="{{cluster}}" as="c" hint-placeholder-count="10">
+              <sc-if value="{{c.sf}}" hint-placeholder-val="{{false}}">
+                <div class="sf" role="img" aria-label="Stórfhocal tile: {{c.word}}" style="left: {{c.left}}px; top: {{c.top}}px"><div class="sf-face"><span class="sf-n sf-a"></span><span class="sf-n sf-b"></span><span class="sf-word">{{c.word}}</span></div><span class="sf-glint" style="animation-delay: {{o.d1}}"></span><span class="sf-tw" style="right: 6px; top: 5px; animation-delay: -0.2s"></span></div>
+              </sc-if>
+              <sc-if value="{{c.plain}}" hint-placeholder-val="{{true}}">
+                <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px"><span class="{{c.wcls}}">{{c.word}}</span></div>
+              </sc-if>
+              <sc-if value="{{c.mean}}" hint-placeholder-val="{{false}}">
+                <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px"><span class="ba-en">{{c.en}}</span></div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="font-weight: 700; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-muted); margin-top: 6px">Zoomed out · can you spot it?</div>
+        <div class="ba-felt" style="position: relative; height: 196px; border-radius: 16px; background: var(--table); overflow: hidden">
+          <div class="ba-board ba-zoomed" style="position: absolute; left: 50%; top: 14px; width: 250px; height: 166px; margin-left: -125px">
+            <sc-for list="{{dense}}" as="c" hint-placeholder-count="20">
+              <sc-if value="{{c.sf}}" hint-placeholder-val="{{false}}">
+                <div class="sf sf-z" role="img" aria-label="Stórfhocal tile" style="left: {{c.left}}px; top: {{c.top}}px"><div class="sf-face"><span class="sf-star"></span></div><span class="sf-glint" style="animation-delay: {{o.d2}}"></span></div>
+              </sc-if>
+              <sc-if value="{{c.card}}" hint-placeholder-val="{{true}}">
+                <div class="{{c.cls}}" style="left: {{c.left}}px; top: {{c.top}}px"></div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1400,"height":1240}}'>
+class Component extends DCLogic {
+renderVals() {
+  const HOLO = 'conic-gradient(from 200deg at 50% 50%, #ff9bd2, #ffd27a, #a8f0b0, #74d3ff, #b49cff, #ff9bd2)';
+  const v = (o) => Object.entries(o).map(([k, val]) => '--sf-' + k + ': ' + val).join('; ');
+  const options = [
+    { name: 'Jet', cls: '', sub: 'ink-black, holographic rim', d1: '-1.6s', d2: '-0.9s', d3: '-1.2s',
+      blurb: 'The heaviest and most precious-looking. Strongest at a distance on the day table; on the night table it leans on the rim alone.',
+      vars: v({ rim: HOLO, face: 'linear-gradient(150deg, #2c3343 0%, #161a25 72%)', ink: '#f7f8f4', ga: '#f7f8f4', en: 'rgba(247,248,244,0.68)', rule: 'rgba(255,255,255,0.14)', notch: '#9aa3bd', 'label-bg': 'rgba(255,255,255,0.14)', label: '#e8eaf2', glint: 'rgba(255,255,255,0.32)' }) },
+    { name: 'Opal', cls: 'sf-live', sub: 'chosen · in motion', d1: '-1.4s', d2: '-1.0s', d3: '-1.3s',
+      blurb: 'The pastel wash drifts like an opal’s play of colour and the foil rim slowly turns, so it is the only thing on the table that moves. Under reduced motion it holds still with a heavier rim.',
+      vars: v({ rim: HOLO, face: 'linear-gradient(135deg, #fbd9e6 0%, #fff0cf 27%, #d4f3e2 54%, #d3e6fb 78%, #eadcfb 100%)', ink: '#17201e', ga: '#17201e', en: '#4b5955', rule: 'rgba(23,32,30,0.14)', notch: '#8fb5e8', 'label-bg': 'rgba(255,255,255,0.7)', label: '#4b5955', glint: 'rgba(255,255,255,0.6)' }) },
+    { name: 'Kingfisher', cls: '', sub: 'turquoise, holographic rim', d1: '-1.5s', d2: '-1.1s', d3: '-1.4s',
+      blurb: 'A colour of its own: saturated turquoise, far brighter than the grey-green felt and clear of the lit blue. Bold without the weight of black.',
+      vars: v({ rim: HOLO, face: 'linear-gradient(155deg, #22b8b1 0%, #0f8a93 58%, #0b6c79 100%)', ink: '#ffffff', ga: '#ffffff', en: '#e3fbf8', rule: 'rgba(255,255,255,0.24)', notch: '#085663', 'label-bg': 'rgba(255,255,255,0.18)', label: '#ffffff', glint: 'rgba(255,255,255,0.5)' }) },
+  ];
+  // a small table: two ordinary lines and the Stórfhocal line, 64px cards on a 68px pitch
+  const P = 68;
+  const card = (t, x, y, w, en) => ({ x, y, t, w: w || '', en: en || '' });
+  const cl = [
+    card('verb', 0, 0, 'cuir'), card('adverb', 1, 0, 'síos'), card('preposition', 2, 0, 'ar'), card('mean', 3, 0, '', 'Describe'),
+    card('verb', 0, 1, 'tabhair'), card('sf', 1, 1, 'aire'), card('preposition', 2, 1, 'do'),
+    card('verb', 0, 2, 'bain'), card('adverb', 1, 2, 'amach'), card('mean', 2, 2, '', 'Achieve'),
+  ];
+  const wcls = (w) => 'ba-word' + (w.length >= 7 ? ' ba-xl' : w.length >= 5 ? ' ba-l' : '');
+  const toCell = (c, p, size) => ({
+    sf: c.t === 'sf', card: c.t !== 'sf', plain: c.t !== 'sf' && c.t !== 'mean', mean: c.t === 'mean', word: c.w, en: c.en, wcls: wcls(c.w),
+    cls: 'ba-card ba-table ' + (c.t === 'mean' ? 'ba-meaning' : 'ba-' + c.t),
+    left: c.x * p, top: c.y * p,
+  });
+  const cluster = cl.map((c) => toCell(c, P));
+  // a denser board at 28px a cell, one Stórfhocal among ordinary lines
+  const d = [];
+  const line = (cells) => cells.forEach(([t, x, y]) => d.push(card(t, x, y)));
+  line([['verb', 0, 0], ['adverb', 1, 0], ['preposition', 2, 0], ['mean', 3, 0]]);
+  line([['verb', 6, 0], ['preposition', 6, 1], ['mean', 6, 2]]);
+  line([['verb', 1, 2], ['sf', 2, 2], ['preposition', 3, 2]]);
+  line([['verb', 0, 3], ['adverb', 0, 4], ['mean', 0, 5]]);
+  line([['verb', 4, 4], ['adverb', 5, 4], ['mean', 6, 4]]);
+  line([['verb', 8, 2], ['preposition', 8, 3], ['mean', 8, 4]]);
+  line([['verb', 2, 5], ['adverb', 3, 5], ['preposition', 4, 5], ['mean', 5, 5]]);
+  line([['verb', 7, 0], ['wild', 8, 0]]);
+  const dense = d.map((c) => toCell(c, 28));
+  return { options, cluster, dense };
+}
+}
+</script>
+</body>
+</html>

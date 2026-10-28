@@ -3,7 +3,7 @@
 // bots play the same games as the reference given the same seed (see engine.parity.test.ts).
 import { COMPOUNDS, COMPOUNDS_BY_MEANING, COMPOUND_BY_ID, DECK, MEANING_CARD, useDeck, useDeckOf, type Compound } from './deck';
 import { rng, shuffle } from './rng';
-import { SF_CARD_ID, SF_PHRASE, SF_SETTINGS, SF_WORD, phraseInDeck, phraseParticles, rollCarries } from './storfhocail';
+import { SF_CARD_ID, SF_PHRASE, SF_WORD, phraseInDeck, phraseParticles, wordInDeck } from './storfhocail';
 import type {
   Card,
   Dir,
@@ -162,7 +162,8 @@ export function newGame(config: GameConfig): GameState {
   const s: GameState = {
     v: 1,
     config,
-    rng: (config.seed ^ 0x9e3779b9) >>> 0,
+    // A stórfhocal game's bots choose afresh on a replay (only the deal repeats).
+    rng: (config.seed ^ 0x9e3779b9 ^ (config.sf?.roll ?? 0)) >>> 0,
     board: [],
     lines: [],
     piles: [],
@@ -203,7 +204,7 @@ export function newGame(config: GameConfig): GameState {
     s.hands.push(h);
   }
   s.turn = config.firstPlayer ?? Math.floor(r() * n);
-  if (config.sf?.on) s.sf = { pouch: {}, carry: rollCarries(config, config.sf), laid: [] };
+  if (config.sf?.on) s.sf = { pouch: {}, laid: [], stake: false };
   ctxCache.set(s, g);
   return s;
 }
@@ -303,10 +304,13 @@ function ontoMoves(s: GameState, p: number, g: Ctx, hv: Card[], wildIds: number[
 
 // ---------- stórfhocail ----------
 
-/** Whether p holds this tile now: in their pouch, or (a bot) carried and not yet laid. */
+/** Whether p holds this tile now: the player's in their pouch; a Hard bot draws from the whole list
+ *  (any word this deck can complete, not already on the table). */
 export function holdsTile(s: GameState, p: number, word: string): boolean {
-  const c = s.sf?.carry[p];
-  return !!s.sf && ((s.sf.pouch[p] ?? []).includes(word) || (!!c && c.word === word && !c.laid));
+  if (!s.sf) return false;
+  const pl = s.config.players[p];
+  if (pl?.kind === 'bot') return pl.level === 'hard' && !!SF_WORD[word] && wordInDeck(SF_WORD[word]) && !s.sf.laid.some((l) => l.word === word);
+  return (s.sf.pouch[p] ?? []).includes(word);
 }
 
 /**
@@ -357,16 +361,11 @@ export function sfMoves(s: GameState, p: number, word: string, handSpots = 4): S
   return out;
 }
 
-/** Tiles p has brought into this game: those in the pouch and those laid. The cap is playerMaxPerGame. */
-export function tilesBrought(s: GameState, p: number): number {
-  return (s.sf?.pouch[p]?.length ?? 0) + (s.sf?.laid.filter((l) => l.p === p).length ?? 0);
-}
-
-/** Bring a tile from the bag into p's pouch. Doesn't use a turn. The caller checks the bag holds it. */
+/** Take a tile from the bag into p's hand: one at a time. Doesn't use a turn. The caller checks the bag holds it. */
 export function pouchPut(s0: GameState, p: number, word: string): Result {
   if (!s0.sf || s0.over) return { ok: false, reason: { why: 'NotLegal', detail: 'stórfhocail are off in this game' } };
   if (!SF_WORD[word]) return { ok: false, reason: { why: 'NotLegal', detail: 'no such tile' } };
-  if (tilesBrought(s0, p) >= SF_SETTINGS.playerMaxPerGame) return { ok: false, reason: { why: 'NotLegal', detail: 'no more tiles this game' } };
+  if (s0.sf.pouch[p]?.length) return { ok: false, reason: { why: 'NotLegal', detail: 'one tile at a time' } };
   const s = clone(s0);
   s.sf!.pouch[p] = [...(s.sf!.pouch[p] ?? []), word];
   return { ok: true, state: s };
@@ -702,8 +701,9 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     const sf = s.sf!;
     const pouch = sf.pouch[p] ?? [];
     if (pouch.includes(mv.word)) sf.pouch[p] = pouch.filter((w, i) => w !== mv.word || i !== pouch.indexOf(mv.word));
-    else sf.carry[p] = { ...sf.carry[p], laid: true };
     sf.laid.push({ word: mv.word, phrase: ph.id, p });
+    // The player's tile opens a stake; a bot's answers it.
+    sf.stake = s.config.players[p]?.kind === 'human';
     const wild = mv.src.some((x) => 'wild' in x),
       straddle = isStraddle(mv);
     s.lines.push({ p, c: ph.id, g: ph.meaning, cells, wild, straddle, turnNo: s.turnNo, sf: true });

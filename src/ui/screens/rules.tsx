@@ -1,5 +1,7 @@
 // Rules: one scrolling page, the plays as numbered sections with diagrams made from real cards.
 import type { ComponentChildren } from 'preact';
+import { sfUnlocked } from '../../engine/storfhocail';
+import { sfProgress } from '../../storage';
 import type { Card, Placed } from '../../engine/types';
 import { t } from '../../i18n';
 import { Face, MeaningCard } from '../cards';
@@ -137,6 +139,14 @@ export function RulesScreen({ onTutorial }: { onTutorial: () => void }) {
           <SymbolKey />
           <Rule title={t('rules.modes')}>{t('rules.modesBody')}</Rule>
           <Rule title={t('rules.hidden')}>{t('rules.hiddenBody')}</Rule>
+          {sfUnlocked(sfProgress.value) && (
+            <>
+              <Rule title={t('rules.sf')} diagram={<Diagram w={3} h={1} cards={[at('V', 'tabhair', 0, 0), at('S', 's01', 1, 0, { axis: 'h', phrase: 's01a' }), at('P', 'do', 2, 0, { axis: 'h' })]} />}>
+                {t('rules.sfBody')}
+              </Rule>
+              <Rule title={t('rules.sfStakes')}>{t('rules.sfStakesBody')}</Rule>
+            </>
+          )}
         </div>
       </Scroll>
     </Screen>

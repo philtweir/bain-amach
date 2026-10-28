@@ -208,12 +208,54 @@ RULES §11–12). Where the build departs from them, or settles something they l
 | Strings | Irish first | English only for now (Irish falls back to English like the rest). Validator messages come from `deckTools.ts` in English |
 | Presets | worth shipping | Not built: they need Phil's contents. A locked custom deck is all a preset needs (`locked` on CustomDeck) |
 
-The [Decision] defaults are built as written: the toggle needs a Hard bot; stórfhocail never count as
-hand cards; a tie returns the player's own tiles; the bag keeps counts; a Hard bot carrying one shows a
-bag badge. Every tuning number is in `data/storfhocail.json` → `settings`.
+The [Decision] defaults were built as written at first; the design delta below replaced several of them.
+Every tuning number is in `data/storfhocail.json` → `settings`.
 
 Still with Phil: the Ulster check of `data/storfhocail.json`, the Irish name for the bag ("Bag" for
 now), the tile and bag design, Irish strings for the new screens, and preset decks.
+
+## v1.1 design delta (Phil, 2026-10-28)
+
+`handoff/design-kit/README-v1.1.md`: the redesigned deck editor and stórfhocail, with a feature plan
+(`docs/feature-plan-v1.1.md`) whose decisions table was settled with Phil on 28 October. Where it
+disagrees with `spec/storfhocal.md` it wins, so these replace what the first v1.1 build did:
+
+| Item | Was (first build) | Now |
+|---|---|---|
+| Bot tiles | Each Hard bot rolled a carry at the deal (25%, 100% until the first is seen) and laid it from a target turn | Each Hard-bot play: with a legal stórfhocal line, lay one with chance p = 0.12 (×3 until the player has seen one). The stakes set the odds: with a usable tile in the bag and none of yours waiting for an answer, p ÷ 6; lay one and it's back to p until a bot lays one; an empty bag plays at p. Bots never lay more than one tile beyond the player's count. Words lean 3 to 1 towards ones the player doesn't own |
+| Tiles per game | Up to 2 in a pouch | One in hand at a time, first in the meanings lane; another once it is laid or put back |
+| Replay | Repeated the deal and the bots' carries | Repeats only the deal: a fresh roll mixes into the bots' random stream (stórfhocal games only, so v1 games and the parity test are unchanged) |
+| Toggle | Off every game; needed a Hard bot | Remembers the last setting (off on a new install); stays available without a Hard bot, with the note "Tiles appear only with a Hard bot" |
+| Unlock count | Finished solo games | Finished games in any mode (not the tutorial). Stored progress carries over. The 20th recap announces it once |
+| Owning | Counts per word | Each word fills one slot; a second copy adds nothing |
+| Backup | The settings backup held the bag | The bag has restore points only: at 10, 20, 30… tiles the bag offers a code (saved as a file and copied), and a code restores only into an empty bag. The settings backup keeps the unlock count, not the bag. Settings → "Restore your Stórfhocail" reaches it on a new phone |
+| New game over a saved one | Overwrote it | Counts as quitting it (a tile of yours laid is lost); Setup warns first, as do Restart and Discard |
+| Bag badge on a carrying bot | Shown | Gone: there is no carry now. The stake chip in the status strip shows the tiles laid and who laid each |
+| Deck editor | Save button, errors blocked saving | Changes save as you go; a deck that can't serve a count is still kept, and Setup only offers the counts it can serve |
+| Test the deck | 50 Hard-bot games | 100 Normal-bot games, with Standard at the same table run alongside (once per session) for the comparison, plus compounds never made and a verdict |
+
+Built from the boards: the Opal tile (`.ba-sf` from the design system, wide in the hand, square on the
+table, the star when zoomed out), the bag sheet with its warning and "Don't warn me again", the stake
+chip, the line-made moment and the bot's toast, the pause warning, the result card's and the recap's
+Stórfhocail block, the bag screen (blank slots, tile detail, restore point), glossary phrases inline in
+their verb's group, the Decks icon on Home, the deck cards, the editor (summary with fit chips, Tiles /
+Compounds / Meanings tabs, three columns on a tablet, Steppers with "Standard N"), the test sheet, and
+Setup's deck row with its picker. Broc's art is the corrected set.
+
+Departures and calls made in the build:
+
+| Item | Plan or board | Built |
+|---|---|---|
+| Word list | "Build against the shortlist" (35) | Kept the existing 26-word draft: both lists await the Ulster check, and the final list replaces either. Slot counts follow the data |
+| Unlock in Setup | Hidden until 20 games | Shown locked with its count, plus the 7-tap secret, as Phil asked before the delta |
+| New deck / Duplicate Standard | A copy of Standard | Standard's counts with the 3–4 player verb pack, so the copy serves 2 to 4 players (164 cards; Standard is 148 at 2 players) |
+| Compound checklist | Tick compounds | Ticks are per meaning underneath, as the deck tools work: the two GIVE UP compounds tick together |
+| Test numbers | Standard: 24.5 lines, 37% | Measured live on this deck. The board's figures were illustrative |
+| `components.css` | — | The delta's copy began with a stray fragment of a Google Fonts import (line 2), which would have swallowed the first rule. Removed when copying |
+| Pace | "about 2%" with an unrisked bag | Per chance, yes. Per game (`npm run test:stats`, `storfhocail.stats.test.ts`, 300 games vs one Hard bot): a bot lays a tile in 100% of games before the first is seen, 95% with an empty bag, and 38% while the player holds tiles and never risks one. The plan asks to tune p with the simulator: Phil's call |
+
+Still with Phil: the Ulster check of the word list, Irish strings (Decks, Test with bots, the bag,
+restore points, the stake warning), tuning p, and preset decks.
 
 ## Deck depth (Phil, open)
 

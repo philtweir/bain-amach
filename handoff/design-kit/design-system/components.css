@@ -181,7 +181,7 @@ body { margin: 0; font-family: var(--font-ui); background: var(--table); color: 
 .ba-made .ba-ga { font: 800 34px/36px var(--font-card); letter-spacing: -0.02em; color: var(--meaning-answer); }
 .ba-made .ba-en { font: 700 13px/16px var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; }
 .ba-made .ba-new { position: absolute; top: -12px; right: -10px; padding: 4px 10px; border-radius: 999px; background: var(--verb); color: var(--on-verb); font: 800 13px/16px var(--font-card); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.2); transform: rotate(6deg); }
-.ba-made .ba-progress { font: 400 13px/17px var(--font-ui); color: var(--ink-muted); }
+.ba-made .ba-progress { font: 400 13px/17px var(--font-ui); color: color-mix(in srgb, var(--meaning-ink) 70%, transparent); }
 @media (prefers-reduced-motion: reduce) { .ba-made::before { display: none; } }
 
 
@@ -216,3 +216,97 @@ body { margin: 0; font-family: var(--font-ui); background: var(--table); color: 
 .ba-icon-btn { width: 44px; height: 44px; border-radius: 12px; border: 0; background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; }
 .ba-icon-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .ba-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: var(--radius-round); background: var(--surface-raised); color: var(--ink); box-shadow: var(--shadow-card); font: 700 14px/18px var(--font-ui); }
+
+/* ---------- Stórfhocal: the collectable word tile (Opal) ----------
+   A pearl face washed with five pastel tones inside an iridescent foil rim, with pointed notches where its line joins.
+   It is the only thing on the table that moves: the wash drifts (10s), the rim turns (8s) and a glint crosses (every 6s).
+   Use with .ba-card and a size class like any tile: <div class="ba-card ba-table ba-sf"><span class="ba-word">aire</span></div>.
+   In the hand it is wide like a meaning card: .ba-sf.ba-sf-wide (see components/Storfhocal). Under reduced motion it holds still with a heavier rim. */
+@property --sf-a { syntax: "<angle>"; inherits: false; initial-value: 200deg; }
+.ba-sf {
+  --rim: 2.5px; --edge: transparent; color: var(--on-sf);
+  --sf-wash: linear-gradient(135deg, var(--sf-pearl-1) 0%, var(--sf-pearl-2) 14%, var(--sf-pearl-3) 28%, var(--sf-pearl-4) 42%, var(--sf-pearl-5) 56%, var(--sf-pearl-1) 70%, var(--sf-pearl-2) 84%, var(--sf-pearl-3) 100%);
+  border: var(--rim) solid transparent;
+  background: var(--sf-wash) padding-box, conic-gradient(from var(--sf-a) at 50% 50%, var(--sf-foil-1), var(--sf-foil-2), var(--sf-foil-3), var(--sf-foil-4), var(--sf-foil-5), var(--sf-foil-1)) border-box;
+  background-size: 320% 320%, 100% 100%; background-position: 0% 0%, 0 0; background-repeat: no-repeat;
+  animation: ba-sf-drift 10s ease-in-out infinite alternate, ba-sf-spin 8s linear infinite;
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 1.5 14.3 9.7 22.5 12 14.3 14.3 12 22.5 9.7 14.3 1.5 12 9.7 9.7z' fill='black'/></svg>");
+}
+.ba-sf.ba-river { --rim: 2.5px; } .ba-sf.ba-table { --rim: 2px; }
+/* the glint and the two pointed notches ride on ::before, over the face and under the word */
+.ba-sf::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: inherit;
+  background:
+    linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.6) 50%, transparent 62%) 130% 0 / 260% 100% no-repeat,
+    conic-gradient(from 225deg at 100% 50%, var(--sf-notch) 0 90deg, transparent 0) 0 50% / 8% 16% no-repeat,
+    conic-gradient(from 45deg at 0 50%, var(--sf-notch) 0 90deg, transparent 0) 100% 50% / 8% 16% no-repeat;
+  animation: ba-sf-glint 6s ease-in-out infinite; }
+.ba-sf.ba-v::before {
+  background:
+    linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.6) 50%, transparent 62%) 130% 0 / 260% 100% no-repeat,
+    conic-gradient(from 315deg at 50% 100%, var(--sf-notch) 0 90deg, transparent 0) 50% 0 / 16% 8% no-repeat,
+    conic-gradient(from 135deg at 50% 0, var(--sf-notch) 0 90deg, transparent 0) 50% 100% / 16% 8% no-repeat;
+  animation-name: ba-sf-glint-v; }
+.ba-sf .ba-word { color: var(--on-sf); }
+/* optional twinkles: one or two <i class="ba-tw"> inside the tile */
+.ba-sf .ba-tw { position: absolute; z-index: 3; top: 5px; right: 6px; width: 7px; height: 7px; background: #fff;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); filter: drop-shadow(0 0 2px rgba(255,255,255,0.9));
+  animation: ba-sf-tw 4s ease-in-out infinite; }
+.ba-sf .ba-tw + .ba-tw { top: auto; right: auto; left: 7px; bottom: 8px; width: 5px; height: 5px; animation-delay: -2s; }
+@keyframes ba-sf-drift { to { background-position: 100% 100%, 0 0; } }
+@keyframes ba-sf-spin { to { --sf-a: 560deg; } }
+@keyframes ba-sf-glint { 0% { background-position: 130% 0, 0 50%, 100% 50%; } 30%, 100% { background-position: -30% 0, 0 50%, 100% 50%; } }
+@keyframes ba-sf-glint-v { 0% { background-position: 130% 0, 50% 0, 50% 100%; } 30%, 100% { background-position: -30% 0, 50% 0, 50% 100%; } }
+@keyframes ba-sf-tw { 0%, 100% { opacity: 0.15; transform: scale(0.45); } 50% { opacity: 1; transform: scale(1) rotate(20deg); } }
+.ba-sf.is-lit { animation: ba-pulse var(--dur-pulse) ease-in-out infinite, ba-sf-drift 10s ease-in-out infinite alternate, ba-sf-spin 8s linear infinite; }
+/* in the hand: wide, so its phrases read; Irish phrase over its English meaning */
+.ba-sf.ba-sf-wide { width: var(--card-meaning-w); height: var(--card-meaning-h); --rim: 3px; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; padding: 5px 10px 6px; }
+.ba-sf-wide::before { background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.6) 50%, transparent 62%) 130% 0 / 260% 100% no-repeat; }
+.ba-sf .ba-sf-head { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ba-sf .ba-sf-head .ba-word { padding: 0; font-size: 20px; line-height: 22px; letter-spacing: -0.015em; }
+.ba-sf .ba-sf-pos { font: 700 10px/14px var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: var(--radius-round); background: rgba(255,255,255,0.72); color: color-mix(in srgb, var(--on-sf) 72%, transparent); }
+.ba-sf .ba-sf-ph { position: relative; z-index: 2; display: flex; flex-direction: column; padding-top: 3px; border-top: 1px solid rgba(23,32,30,0.14); }
+.ba-sf .ba-sf-ph .ba-ga { font: 800 14px/17px var(--font-card); letter-spacing: -0.01em; }
+.ba-sf .ba-sf-ph .ba-en { font: 700 10.5px/12px var(--font-ui); letter-spacing: 0.05em; text-transform: uppercase; color: color-mix(in srgb, var(--on-sf) 72%, transparent); }
+.ba-sf .ba-sf-ph .ba-ga.is-hidden { color: transparent; background: repeating-linear-gradient(90deg, rgba(23,32,30,0.35) 0 5px, transparent 5px 9px) left center / 60% 2px no-repeat; }
+/* a tile the current deck can't complete: greyed, still readable, with its reason beside it */
+.ba-sf.is-unusable { animation: none; filter: grayscale(1) contrast(0.6) brightness(1.15); }
+.ba-sf.is-unusable::before { animation: none; }
+/* zoomed out: the four-point star glyph, the rim thinner */
+.ba-zoomed > .ba-sf { --rim: 1.5px; }
+/* the stake chip in the status strip: the tiles on the table this game, and who laid them */
+.ba-stake { display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 8px 0 4px; border-radius: var(--radius-round); background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--line); font: 700 14px/18px var(--font-ui); color: var(--ink); }
+.ba-stake .ba-card { --s: 26px; --r: 6px; --rim: 1.5px; --fs: 0px; }
+.ba-stake .ba-card::after { display: block; top: 50%; left: 50%; width: 10px; height: 10px; transform: translate(-50%, -50%); }
+.ba-stake .ba-by { width: 8px; height: 8px; border-radius: 50%; background: var(--pat), var(--p); margin: 0 3px 0 -2px; align-self: flex-end; margin-bottom: 6px; }
+/* line made, Stórfhocal version: foil rays, the tile itself, a kicker, and what is at stake */
+.ba-made.ba-made-sf::before { background: repeating-conic-gradient(var(--sf-foil-1) 0deg 4deg, transparent 4deg 18deg, var(--sf-foil-4) 18deg 22deg, transparent 22deg 36deg, var(--sf-foil-2) 36deg 40deg, transparent 40deg 54deg); opacity: 0.55; }
+.ba-made .ba-kicker { font: 700 12px/16px var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--meaning-ink) 70%, transparent); }
+.ba-made .ba-keep { margin-top: 2px; padding: 4px 10px; border-radius: var(--radius-round); background: rgba(23,32,30,0.08); font: 700 13px/17px var(--font-ui); color: var(--meaning-ink); }
+.ba-made-sf .ba-ga { color: var(--on-sf); }
+@media (prefers-reduced-motion: reduce) {
+  .ba-sf, .ba-sf.is-lit { animation: none; --rim: 3px; } .ba-sf.ba-table { --rim: 2.5px; }
+  .ba-sf::before { animation: none; background-position: 40% 0, 0 50%, 100% 50%; }
+  .ba-sf.ba-v::before { background-position: 40% 0, 50% 0, 50% 100%; }
+  .ba-sf .ba-tw { animation: none; opacity: 0.85; }
+}
+
+/* ---------- Stepper: a count with − and + (deck editor) ----------
+   <div class="ba-stepper" role="group" aria-label="cuir"><button class="ba-dec" type="button" aria-label="One fewer cuir"></button><output>6</output><button class="ba-inc" type="button" aria-label="One more cuir"></button></div> */
+.ba-stepper { display: inline-flex; align-items: center; border-radius: 12px; background: var(--surface-raised); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); }
+.ba-stepper button { width: var(--touch-min); height: var(--touch-min); border: 0; border-radius: 12px; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; }
+.ba-stepper button::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+.ba-stepper .ba-dec { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'><path d='M6 12h12'/></svg>"); }
+.ba-stepper .ba-inc { --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'><path d='M12 6v12M6 12h12'/></svg>"); }
+.ba-stepper button:disabled { opacity: 0.35; cursor: default; }
+.ba-stepper button:active:not(:disabled) { background: var(--surface); }
+.ba-stepper button:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.ba-stepper output { min-width: 28px; text-align: center; font: 700 17px/1 var(--font-ui); font-variant-numeric: tabular-nums; }
+
+/* ---------- Fit chips: which player counts a deck can serve ----------
+   A tick on a filled chip when it fits, a cross on a dashed chip when it doesn't; the reason goes in a line beside or below. */
+.ba-fit { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 8px; border-radius: var(--radius-round); font: 700 13px/1 var(--font-ui); color: var(--ink); white-space: nowrap; }
+.ba-fit::before { content: ""; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--icon) center / contain no-repeat; mask: var(--icon) center / contain no-repeat; }
+.ba-fit.is-ok { background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line);
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12.5l4.5 4.5L19 7'/></svg>"); }
+.ba-fit.is-no { background: transparent; outline: 1.5px dashed var(--ink); outline-offset: -1.5px;
+  --icon: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'><path d='M6 6l12 12M18 6L6 18'/></svg>"); }

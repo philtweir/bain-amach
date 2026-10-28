@@ -6,7 +6,6 @@ import type { Card as CardT, Placed } from '../engine/types';
 import type { CritterFace } from '../game/critters';
 import { t, type Key } from '../i18n';
 import { Critter } from './critters';
-import { IconBag } from './icons';
 import { SF_PHRASE, SF_WORD } from '../engine/storfhocail';
 import { SIDE_ARROW, byMeaning, splitHalves, type Side, type Use } from './meaningUses';
 
@@ -79,7 +78,7 @@ export function Face(p: FaceProps) {
   const c = p.card;
   const placed = c as Placed;
   const size = p.size === 'hand' ? '' : p.size === 'river' ? ' ba-river' : ' ba-table';
-  const vert = placed.axis === 'v' && (c.k === 'P' || c.k === 'W') ? ' ba-v' : '';
+  const vert = placed.axis === 'v' && (c.k === 'P' || c.k === 'W' || c.k === 'S') ? ' ba-v' : '';
   const cls0 = 'ba-card ' + typeClass(c) + size + vert + stateClass(p) + (p.extraClass ? ' ' + p.extraClass : '');
   let inner: JSX.Element | JSX.Element[];
   let extra = '';
@@ -187,23 +186,18 @@ function SenseCount({ text, g }: { text: string; g: string }) {
   ) : null;
 }
 
-export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean; critter?: CritterFace; bag?: boolean }) {
+export function Avatar(p: { player: number; initial: string; count?: number; turn?: boolean; playing?: boolean; name?: string; stuck?: boolean; plus?: number; big?: boolean; critter?: CritterFace }) {
   return (
     <span
       class={'ba-avatar ba-p' + (p.player + 1) + (p.turn ? ' is-turn' : '') + (p.playing ? ' is-playing' : '') + (p.big ? ' av-big' : '')}
       role="img"
-      aria-label={p.name ? t('a11y.player', { name: p.name, n: p.count ?? 0 }) + (p.stuck ? ', ' + t('table.stuckTag') : '') + (p.bag ? ', ' + t('sf.carrying') : '') : undefined}
+      aria-label={p.name ? t('a11y.player', { name: p.name, n: p.count ?? 0 }) + (p.stuck ? ', ' + t('table.stuckTag') : '') : undefined}
     >
       <span class={'ba-disc' + (p.critter ? ' has-critter' : '')}>{p.critter ? <Critter species={p.critter.species} mood={p.critter.mood} size={44} /> : p.initial}</span>
       {p.name && p.big && <span class="av-name">{p.name}</span>}
       {p.count !== undefined && <span class="ba-cnt">{p.count}</span>}
       {p.stuck && <span class="av-flag">{t('table.stuckTag')}</span>}
       {!!p.plus && <span class="av-plus">+{p.plus}</span>}
-      {p.bag && (
-        <span class="av-bag" aria-hidden="true">
-          <IconBag size={14} />
-        </span>
-      )}
     </span>
   );
 }

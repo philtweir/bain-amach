@@ -3,26 +3,24 @@
  "notes": "DRAFT for Phil's Ulster check: words, phrases, meanings and the particle in each. Pattern tokens follow the verb in reading order; '~' is the stórfhocal tile's cell, every other token is a particle from the river (or a wildcard). No meaning card ends the line. Only verbs and particles from deck.json are used.",
  "settings": {
   "unlockAfterGames": 20,
-  "botCarryChance": 0.25,
-  "botCarryChanceUntilFirstSeen": 1.0,
-  "botPlayWindow": [
-   3,
-   10
-  ],
-  "botCarryWeights": {
-   "lostByPlayer": 0.4,
-   "unownedByPlayer": 0.4,
-   "any": 0.2
+  "botLayChance": 0.12,
+  "firstTileMultiplier": 3,
+  "noStakeDivisor": 6,
+  "botWeights": {
+   "unowned": 3,
+   "owned": 1
   },
-  "playerMaxPerGame": 2,
+  "botLeadCap": 1,
+  "restoreEvery": 10,
   "lossOnQuit": true
  },
  "settingsNotes": {
-  "botCarryChance": "per Hard bot per stórfhocal game: chance it carries one word, rolled at the deal",
-  "botCarryChanceUntilFirstSeen": "used instead until the player has seen a stórfhocal laid, so the feature shows itself in the first game",
-  "botPlayWindow": "the bot rolls a target between these of its own turns (race mode: its own plays) and lays its word at its first chance from then on; a bot that goes out first never lays it",
-  "botCarryWeights": "which word a bot carries: one the player lost to a bot, one the player doesn't own, or any word",
-  "playerMaxPerGame": "how many of their own stórfhocail a player may bring into one game",
+  "botLayChance": "p: when a Hard bot has a legal stórfhocal line, the chance it lays one instead of its usual play",
+  "firstTileMultiplier": "p is multiplied by this until the player has seen their first stórfhocal laid",
+  "noStakeDivisor": "while the player has a usable tile in their bag and none of theirs is waiting for an answer, p is divided by this (nothing ventured, nothing gained)",
+  "botWeights": "which word a bot lays: weighted towards words the player doesn't own",
+  "botLeadCap": "bots never lay more than this many tiles beyond the number the player has laid this game",
+  "restoreEvery": "the bag offers a restore point each time it reaches a multiple of this",
   "lossOnQuit": "quitting or restarting after laying a stórfhocal counts as losing it"
  },
  "words": [

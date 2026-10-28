@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { BASE_COMPOUNDS as COMPOUNDS, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import { dayLabel, t } from '../../i18n';
 import { madeCount, progress, sfProgress } from '../../storage';
-import { SF, phraseSeen, phraseText } from '../../engine/storfhocail';
+import { SF, phraseSeen, phraseText, sfUnlocked, type SfPhrase, type SfWord } from '../../engine/storfhocail';
+import { SfMini } from '../storfhocal';
 import { Face } from '../cards';
 import { Header, Screen, Scroll } from '../kit';
 
@@ -25,17 +26,30 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
   }, []);
   const prog = progress.value.byCompound;
   const made = madeCount();
+  const pr = sfProgress.value;
   const groups = useMemo(() => {
     const fq = fold(q.trim());
-    const by = new Map<string, typeof COMPOUNDS>();
+    const by = new Map<string, { cs: typeof COMPOUNDS; sf: SfEntry[] }>();
+    const group = (v: string) => {
+      if (!by.has(v)) by.set(v, { cs: [], sf: [] });
+      return by.get(v)!;
+    };
     for (const c of COMPOUNDS) {
       if (onlyDrafts && !DRAFT_COMPOUNDS.has(c.id)) continue;
       if (fq && !fold(compoundText(c)).includes(fq) && !fold(c.g).includes(fq)) continue;
-      if (!by.has(c.v)) by.set(c.v, []);
-      by.get(c.v)!.push(c);
+      group(c.v).cs.push(c);
     }
+    // Stórfhocal phrases sit in their verb's group, once seen: they are meant to be found.
+    if (!onlyDrafts)
+      for (const w of SF.words)
+        for (const ph of w.phrases) {
+          if (!phraseSeen(pr, ph.id)) continue;
+          if (fq && !fold(phraseText(ph, w.word)).includes(fq) && !fold(ph.meaning).includes(fq)) continue;
+          group(ph.verb).sf.push({ w, ph });
+        }
     return [...by.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ga'));
-  }, [q, onlyDrafts]);
+  }, [q, onlyDrafts, pr]);
+  const entries = groups.reduce((n, [, g]) => n + g.cs.length + g.sf.length, 0);
   const focusRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (focus) focusRef.current?.scrollIntoView({ block: 'center' });
@@ -53,11 +67,15 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
           )}
           <input class="search" type="search" placeholder={t('glossary.search')} aria-label={t('glossary.search')} value={q} onInput={(e) => setQ((e.target as HTMLInputElement).value)} autocomplete="off" spellcheck={false} />
           {!groups.length && <p class="body muted">{t('glossary.noMatch', { q })}</p>}
-          {(full ? groups : groups.slice(0, FIRST_GROUPS)).map(([verb, cs]) => (
+          {groups.length > 0 && q.trim() && sfUnlocked(pr) && <p class="caption muted">{t('glossary.entriesFor', { n: entries, q: q.trim() })}</p>}
+          {(full ? groups : groups.slice(0, FIRST_GROUPS)).map(([verb, { cs, sf }]) => (
             <section class="g-group" key={verb}>
               <div class="g-head">
                 <Face card={{ id: -1, k: 'V', t: verb }} size="river" extraClass="g-chip" />
-                <span class="caption muted">{cs.length === 1 ? t('glossary.one') : t('glossary.count', { n: cs.length })}</span>
+                <span class="caption muted">
+                  {cs.length === 1 ? t('glossary.one') : t('glossary.count', { n: cs.length })}
+                  {sf.length > 0 && ' · ' + (sf.length === 1 ? t('glossary.sfOne') : t('glossary.sfN', { n: sf.length }))}
+                </span>
               </div>
               {cs.map((c) => {
                 const p = prog[c.id];
@@ -88,54 +106,44 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
                   </div>
                 );
               })}
+              {sf.map((e) => (
+                <SfRow key={e.ph.id} e={e} focus={focus} />
+              ))}
             </section>
           ))}
-          {full && !onlyDrafts && <SfSection q={q} focus={focus} />}
         </div>
       </Scroll>
     </Screen>
   );
 }
 
-/**
- * Stórfhocail (spec §8): only phrases seen laid on the table (or printed on a tile the player owns), with
- * how often they were seen and whether the tile is owned. No total, so nothing hints at what is unseen.
- */
-function SfSection({ q, focus }: { q: string; focus?: string }) {
+interface SfEntry {
+  w: SfWord;
+  ph: SfPhrase;
+}
+
+/** A stórfhocal phrase seen on the table, marked by its tile: how often seen, and whether it's yours. */
+function SfRow({ e: { w, ph }, focus }: { e: SfEntry; focus?: string }) {
   const pr = sfProgress.value;
-  const fq = fold(q.trim());
-  const rows = SF.words
-    .flatMap((w) => w.phrases.map((ph) => ({ w, ph })))
-    .filter(({ ph }) => phraseSeen(pr, ph.id))
-    .filter(({ w, ph }) => !fq || fold(phraseText(ph, w.word)).includes(fq) || fold(ph.meaning).includes(fq))
-    .sort((a, b) => a.w.word.localeCompare(b.w.word, 'ga'));
-  if (!rows.length) return null;
+  const seen = pr.seen[ph.id];
+  const own = (pr.owned[w.id] ?? 0) > 0;
   return (
-    <section class="g-group sf-gloss">
-      <h2 class="sec-label">{t('sf.title')}</h2>
-      {rows.map(({ w, ph }) => {
-        const seen = pr.seen[ph.id];
-        const own = pr.owned[w.id] ?? 0;
-        return (
-          <div class="g-row" key={ph.id} id={'g-' + ph.id} ref={(el) => {
-              if (focus === ph.id) el?.scrollIntoView({ block: 'center' });
-            }}>
-            <div class="g-main">
-              <span class="ba-card ba-sf sf-chip" aria-hidden="true">
-                <span class="ba-word">{w.word}</span>
-              </span>
-              <span class="lr-text">
-                <span class="lr-ga">{phraseText(ph, w.word)}</span>
-                <span class="lr-en">{ph.meaning.toLowerCase()}</span>
-              </span>
-              <span class="g-stats">
-                {seen && <span>{t('sf.seenN', { n: seen.times })}</span>}
-                <span>{own ? t('sf.ownedN', { n: own }) : t('sf.notOwned')}</span>
-              </span>
-            </div>
-          </div>
-        );
-      })}
-    </section>
+    <div class="g-row sf-gloss" id={'g-' + ph.id} ref={(el) => {
+        if (focus === ph.id) el?.scrollIntoView({ block: 'center' });
+      }}>
+      <div class="g-main">
+        <SfMini word={w.id} size={48} />
+        <span class="lr-text">
+          <span class="lr-ga">{phraseText(ph, w.word)}</span>
+          <span class="lr-en">
+            {ph.meaning.toLowerCase()} · {t('sf.one')}
+          </span>
+        </span>
+        <span class="g-stats">
+          <span>{own ? t('sf.inBag') : t('sf.notYours')}</span>
+          {seen && <span>{seen.times === 1 ? t('sf.seenOnce') : t('sf.seenN', { n: seen.times })}</span>}
+        </span>
+      </div>
+    </div>
   );
 }

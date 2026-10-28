@@ -1,0 +1,1150 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "Alone.dc.html": {
+   "h": 844,
+   "title": "Lone verb",
+   "w": 390,
+   "x": 2350,
+   "y": 2660
+  },
+  "Bot.dc.html": {
+   "h": 844,
+   "title": "Bot playing",
+   "w": 390,
+   "x": 2820,
+   "y": 2660
+  },
+  "BotCast.dc.html": {
+   "h": 844,
+   "title": "Bot playing: thinking, then pleased",
+   "w": 390,
+   "x": 1950,
+   "y": 10170
+  },
+  "Build1.dc.html": {
+   "h": 844,
+   "title": "Line builder: meaning picked",
+   "w": 390,
+   "x": 470,
+   "y": 2660
+  },
+  "Build2.dc.html": {
+   "h": 844,
+   "title": "Line builder: two ways to finish",
+   "w": 390,
+   "x": 940,
+   "y": 2660
+  },
+  "Build3.dc.html": {
+   "h": 844,
+   "title": "Line builder: choose a spot (long-press)",
+   "w": 390,
+   "x": 1410,
+   "y": 2660
+  },
+  "Characters.dc.html": {
+   "h": 900,
+   "title": "Characters: one species per difficulty",
+   "w": 1400,
+   "x": -340,
+   "y": 10089
+  },
+  "Dense.dc.html": {
+   "h": 844,
+   "title": "Dense board, zoomed out",
+   "w": 390,
+   "x": 2350,
+   "y": 4200
+  },
+  "Empty.dc.html": {
+   "h": 844,
+   "title": "Empty piles, final stalls",
+   "w": 390,
+   "x": 2820,
+   "y": 4200
+  },
+  "Fewest.dc.html": {
+   "h": 844,
+   "title": "Game end: fewest cards",
+   "w": 390,
+   "x": 3760,
+   "y": 4200
+  },
+  "FewestCast.dc.html": {
+   "h": 844,
+   "title": "Game end: pleased and beaten",
+   "w": 390,
+   "x": 3360,
+   "y": 10170
+  },
+  "GameTable.dc.html": {
+   "h": 844,
+   "title": "Table, opening deal",
+   "w": 390,
+   "x": 0,
+   "y": 2660
+  },
+  "Glossary.dc.html": {
+   "h": 844,
+   "title": "Glossary",
+   "w": 390,
+   "x": 1410,
+   "y": 5740
+  },
+  "GlossaryEmpty.dc.html": {
+   "h": 844,
+   "title": "Glossary, empty",
+   "w": 390,
+   "x": 1880,
+   "y": 5740
+  },
+  "HandOver.dc.html": {
+   "h": 844,
+   "title": "Pass-and-play hand-over",
+   "w": 390,
+   "x": 0,
+   "y": 5740
+  },
+  "Hidden.dc.html": {
+   "h": 844,
+   "title": "Answers hidden: building",
+   "w": 390,
+   "x": 0,
+   "y": 4200
+  },
+  "Home.dc.html": {
+   "h": 844,
+   "title": "Home, saved game",
+   "w": 390,
+   "x": 1410,
+   "y": 1120
+  },
+  "HomeFirst.dc.html": {
+   "h": 844,
+   "title": "Home, first visit",
+   "w": 390,
+   "x": 1880,
+   "y": 1120
+  },
+  "HomeReturning.dc.html": {
+   "h": 844,
+   "title": "Home, install nudge and update",
+   "w": 390,
+   "x": 2350,
+   "y": 1120
+  },
+  "Icon.dc.html": {
+   "h": 900,
+   "title": "App icon and splash",
+   "w": 1400,
+   "x": 1480,
+   "y": 8790
+  },
+  "Language.dc.html": {
+   "h": 844,
+   "title": "Choose language",
+   "w": 390,
+   "x": 0,
+   "y": 1120
+  },
+  "Lockout.dc.html": {
+   "h": 844,
+   "title": "Race: lockout",
+   "w": 390,
+   "x": 1880,
+   "y": 4200
+  },
+  "Made.dc.html": {
+   "h": 844,
+   "title": "Line made: the reward moment",
+   "w": 390,
+   "x": 1880,
+   "y": 2660
+  },
+  "Main.dc.html": {
+   "h": 800,
+   "title": "Screen flow",
+   "w": 1920,
+   "x": 0,
+   "y": 0
+  },
+  "Motion.dc.html": {
+   "h": 900,
+   "title": "Motion notes",
+   "w": 1400,
+   "x": 0,
+   "y": 8790
+  },
+  "NightCast.dc.html": {
+   "h": 844,
+   "title": "Race at night",
+   "w": 390,
+   "x": 2890,
+   "y": 10170
+  },
+  "NightTable.dc.html": {
+   "h": 844,
+   "title": "Night table (dark)",
+   "w": 390,
+   "x": 3290,
+   "y": 5740
+  },
+  "Pause.dc.html": {
+   "h": 844,
+   "title": "Pause menu",
+   "w": 390,
+   "x": 3760,
+   "y": 2660
+  },
+  "Race.dc.html": {
+   "h": 844,
+   "title": "Race",
+   "w": 390,
+   "x": 940,
+   "y": 4200
+  },
+  "RaceCast.dc.html": {
+   "h": 844,
+   "title": "Race: three bots, one stuck",
+   "w": 390,
+   "x": 2420,
+   "y": 10170
+  },
+  "Recap.dc.html": {
+   "h": 844,
+   "title": "Recap, fewest cards",
+   "w": 390,
+   "x": 470,
+   "y": 5740
+  },
+  "RecapCast.dc.html": {
+   "h": 844,
+   "title": "Recap: a shared win",
+   "w": 390,
+   "x": 3830,
+   "y": 10170
+  },
+  "RecapOut.dc.html": {
+   "h": 844,
+   "title": "Recap, went out, hints used",
+   "w": 390,
+   "x": 940,
+   "y": 5740
+  },
+  "RecapTablet.dc.html": {
+   "h": 820,
+   "title": "Recap, tablet landscape",
+   "w": 1180,
+   "x": 2520,
+   "y": 7280
+  },
+  "Rules.dc.html": {
+   "h": 844,
+   "title": "Rules",
+   "w": 390,
+   "x": 2350,
+   "y": 5740
+  },
+  "Settings.dc.html": {
+   "h": 844,
+   "title": "Settings",
+   "w": 390,
+   "x": 2820,
+   "y": 5740
+  },
+  "Setup.dc.html": {
+   "h": 844,
+   "title": "Setup, solo",
+   "w": 390,
+   "x": 2820,
+   "y": 1120
+  },
+  "SetupCast.dc.html": {
+   "h": 844,
+   "title": "Setup: difficulty picks the face",
+   "w": 390,
+   "x": 1480,
+   "y": 10170
+  },
+  "SetupPass.dc.html": {
+   "h": 844,
+   "title": "Setup, pass-and-play",
+   "w": 390,
+   "x": 3290,
+   "y": 1120
+  },
+  "SetupTablet.dc.html": {
+   "h": 820,
+   "title": "Setup, tablet landscape",
+   "w": 1180,
+   "x": 1260,
+   "y": 7280
+  },
+  "Stall.dc.html": {
+   "h": 844,
+   "title": "Stall",
+   "w": 390,
+   "x": 3290,
+   "y": 2660
+  },
+  "TableTablet.dc.html": {
+   "h": 820,
+   "title": "Table, tablet landscape",
+   "w": 1180,
+   "x": 0,
+   "y": 7280
+  },
+  "Taken.dc.html": {
+   "h": 844,
+   "title": "Race: taken",
+   "w": 390,
+   "x": 1410,
+   "y": 4200
+  },
+  "Tutorial.dc.html": {
+   "h": 844,
+   "title": "Tutorial, step 2 of 6",
+   "w": 390,
+   "x": 940,
+   "y": 1120
+  },
+  "Welcome.dc.html": {
+   "h": 844,
+   "title": "Welcome",
+   "w": 390,
+   "x": 470,
+   "y": 1120
+  },
+  "WentOut.dc.html": {
+   "h": 844,
+   "title": "Game end: went out",
+   "w": 390,
+   "x": 3290,
+   "y": 4200
+  },
+  "Wrong.dc.html": {
+   "h": 844,
+   "title": "Answers hidden: wrong line",
+   "w": 390,
+   "x": 470,
+   "y": 4200
+  },
+  "StorfhocalTiles.dc.html": {
+   "x": 0,
+   "y": 11760,
+   "w": 1400,
+   "h": 1240,
+   "title": "Stórfhocal tile: Opal chosen"
+  },
+  "SfSetup.dc.html": {
+   "x": 0,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "Setup: Stórfhocal on"
+  },
+  "SfBot.dc.html": {
+   "x": 470,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "Giorria lays a Stórfhocal"
+  },
+  "SfBag.dc.html": {
+   "x": 940,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "Taking a tile from your bag"
+  },
+  "SfHand.dc.html": {
+   "x": 1410,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "A Stórfhocal in hand"
+  },
+  "SfMade.dc.html": {
+   "x": 1880,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "You lay a Stórfhocal"
+  },
+  "SfNight.dc.html": {
+   "x": 2350,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "Night table"
+  },
+  "SfQuit.dc.html": {
+   "x": 2820,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "Pause with a tile at stake"
+  },
+  "SfEnd.dc.html": {
+   "x": 3290,
+   "y": 13360,
+   "w": 390,
+   "h": 844,
+   "title": "Game end: tiles change hands"
+  },
+  "SfRecap.dc.html": {
+   "x": 0,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Recap: a tile lost"
+  },
+  "SfUnlock.dc.html": {
+   "x": 470,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Recap: unlocked at 20 games"
+  },
+  "SfHome.dc.html": {
+   "x": 940,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Home: your bag"
+  },
+  "Bag.dc.html": {
+   "x": 1410,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Your bag"
+  },
+  "SfBagMilestone.dc.html": {
+   "x": 1880,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Your bag: restore point at 10"
+  },
+  "SfBagDetail.dc.html": {
+   "x": 2350,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Your bag: one tile"
+  },
+  "SfGlossary.dc.html": {
+   "x": 2820,
+   "y": 14584,
+   "w": 390,
+   "h": 844,
+   "title": "Glossary: Stórfhocail seen"
+  },
+  "Decks.dc.html": {
+   "x": 0,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Decks"
+  },
+  "DecksFirst.dc.html": {
+   "x": 470,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Decks, Standard only"
+  },
+  "DeckEditor.dc.html": {
+   "x": 940,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Deck editor: tiles"
+  },
+  "DeckCompounds.dc.html": {
+   "x": 1410,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Deck editor: compounds"
+  },
+  "DeckMeanings.dc.html": {
+   "x": 1880,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Deck editor: meaning cards"
+  },
+  "DeckTestRun.dc.html": {
+   "x": 2350,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Test with bots: running"
+  },
+  "DeckTestResult.dc.html": {
+   "x": 2820,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Test with bots: plays well"
+  },
+  "DeckTestBad.dc.html": {
+   "x": 3290,
+   "y": 15808,
+   "w": 390,
+   "h": 844,
+   "title": "Test with bots: plays badly"
+  },
+  "SetupDeck.dc.html": {
+   "x": 0,
+   "y": 17032,
+   "w": 390,
+   "h": 844,
+   "title": "Setup: deck row"
+  },
+  "SetupDeckPicker.dc.html": {
+   "x": 470,
+   "y": 17032,
+   "w": 390,
+   "h": 844,
+   "title": "Setup: choosing a deck"
+  },
+  "DeckTablet.dc.html": {
+   "x": 940,
+   "y": 17032,
+   "w": 1180,
+   "h": 820,
+   "title": "Deck editor, tablet"
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-10-25T15:45:00Z",
+  "v": 1
+ },
+ "designSystems": [
+  {
+   "artifact": "https://claude.ai/artifact/JuW6kkNhJFYBaXAZ4J1bHp",
+   "copiedAt": "2026-10-28T22:41:00Z",
+   "namespace": "bainamach",
+   "title": "Bain Amach",
+   "version": "1793226237-0db8"
+  }
+ ],
+ "launch": {
+  "view": "canvas"
+ },
+ "notes": {
+  "n-alone": {
+   "text": "Tap a verb in hand: it lifts and its best spot is ringed. The header asks the question and the button carries the cost (draw 2); no dialog. Disabled once both draw piles are empty.",
+   "w": 390,
+   "x": 2350,
+   "y": 3536
+  },
+  "n-b1": {
+   "text": "Tap 1: a meaning card. It lifts and every card that can finish one of its meanings rings in lit blue and pulses: table verbs with a free arm, hand verbs, river tops, the wildcard. Everything else dims. Starting from a verb or a river card works the same way.",
+   "w": 390,
+   "x": 470,
+   "y": 3536
+  },
+  "n-b2": {
+   "text": "Tap 2: a verb. When the line is complete it lays itself at the best spot: no confirm, no placement step. Only when the verb fits two meanings does the tray show both and ask for one more tap on a particle.",
+   "w": 390,
+   "x": 940,
+   "y": 3536
+  },
+  "n-b3": {
+   "text": "Optional: long-press the last card instead of tapping to choose the spot yourself. The best spot shows as a ringed preview; other legal spots are dashed outlines. Tap a spot to move the preview, tap the preview to lay it.",
+   "w": 390,
+   "x": 1410,
+   "y": 3536
+  },
+  "n-bot": {
+   "text": "Bot avatar pulses; its line draws in card by card at 420ms so the eye can follow. The board pans to it unless the player has panned in the last 3 seconds. Your controls stay visible but inactive in turn mode.",
+   "w": 390,
+   "x": 2820,
+   "y": 3536
+  },
+  "n-botcast": {
+   "text": "While its line draws in, the bot shows Thinking; the moment it lands, Pleased, and the toast carries the same face. It drops back to Neutral on the next play.",
+   "w": 390,
+   "x": 1950,
+   "y": 11046
+  },
+  "n-chars": {
+   "text": "Proposal, not yet in the design system. Species and names are placeholders for Phil. Art: 15 SVGs (3 species × 5 faces), 100-unit grid, die-cut paper edge. In the status strip the character sits in the seat disc and its ears or plume break out of the top; the disc's colour and pattern still show as a ring. Turning characters off falls back to initials everywhere.",
+   "w": 1400,
+   "x": 0,
+   "y": 11102
+  },
+  "n-deal": {
+   "text": "Zones top to bottom: status strip, river (in its sunken channel), board, hand tray. The table is felt: a mid-tone baize with a lamp-pool glow at the centre and a fine grain, texture only. The board opens on the area around the latest play, at 64px cards; pan and pinch to see more, double-tap or Fit to frame it all. The face-up meaning pile sits at the start of the meanings lane, next to the cards it swaps with. Tray lanes scroll sideways.",
+   "w": 390,
+   "x": 0,
+   "y": 3536
+  },
+  "n-dense": {
+   "text": "Below 32px a cell, cards show their type glyph only. Pinch to zoom in; words return above 32px. Taps at this size select the nearest valid target. Fit frames the whole board.",
+   "w": 390,
+   "x": 2350,
+   "y": 5076
+  },
+  "n-empty": {
+   "text": "Both draw piles at 0. Lay alone is disabled. Draw and pass becomes Pass. The tray header counts final stalls; when the count reaches the deepest river pile, the game ends on fewest cards.",
+   "w": 390,
+   "x": 2820,
+   "y": 5076
+  },
+  "n-fewest": {
+   "text": "The common ending. Standings show everyone's count, fewest first; ties share the win and say so. Same buttons as going out.",
+   "w": 390,
+   "x": 3760,
+   "y": 5076
+  },
+  "n-fewestcast": {
+   "text": "Result card: the winner's face is Pleased, every bot that lost is Beaten. Humans keep their initials.",
+   "w": 390,
+   "x": 3360,
+   "y": 11046
+  },
+  "n-gloss": {
+   "text": "36 compounds grouped by verb. Each row: compound, meaning, times made, last seen. Rows not yet made sit greyed with their meaning. Room for one example sentence per compound, empty in v1.",
+   "w": 390,
+   "x": 1410,
+   "y": 6616
+  },
+  "n-glossempty": {
+   "text": "Before any compound is made: the list still shows every compound so learners can study; the empty state is a one-line header, not a blank screen.",
+   "w": 390,
+   "x": 1880,
+   "y": 6616
+  },
+  "n-hand": {
+   "text": "Pass-and-play only. The hand tray is replaced by a cover in the next player's colour and pattern; the board stays visible since it is public. The hand appears only when the named player taps. Shown after every turn.",
+   "w": 390,
+   "x": 0,
+   "y": 6616
+  },
+  "n-hidden": {
+   "text": "Answers hidden: meaning cards show dotted rules instead of Irish. Nothing lights. Tapped cards take the ink selection ring and appear in 'Your line'. The ringed spot is just where it will go. Lay it checks the line.",
+   "w": 390,
+   "x": 0,
+   "y": 5076
+  },
+  "n-home": {
+   "text": "With a saved game, Continue is primary and shows mode, opponents and card counts. New game opens Setup prefilled with the last settings. Glossary shows progress (compounds made of 36).",
+   "w": 390,
+   "x": 1410,
+   "y": 1996
+  },
+  "n-homefirst": {
+   "text": "First visit after the tutorial: no saved game, glossary empty. New game is primary.",
+   "w": 390,
+   "x": 1880,
+   "y": 1996
+  },
+  "n-homeret": {
+   "text": "Install nudge appears once, after the first finished game; dismiss hides it for good. iOS shows the Add to Home Screen steps instead of a native prompt. The update banner appears only here and on Recap, never mid-game; Restart reloads with the saved game intact.",
+   "w": 390,
+   "x": 2350,
+   "y": 1996
+  },
+  "n-lang": {
+   "text": "First launch only. Irish is preselected; English is one tap. The choice sets UI language, not the cards: card words are always Irish. Changeable later in Settings.",
+   "w": 390,
+   "x": 0,
+   "y": 1996
+  },
+  "n-lockout": {
+   "text": "Wrong line in race: the same soft toast, plus a 3s lockout on laying lines. The ring drains on the Wait button. Stuck and Lay alone stay available.",
+   "w": 390,
+   "x": 1880,
+   "y": 5076
+  },
+  "n-made": {
+   "text": "Every line you lay: cards fly in (200ms each, 60ms apart) and get a gorse ring that fades; the compound pops large over the board for 640ms with gorse rays, then settles into the toast. First time ever: a New badge and the glossary count. Any tap dismisses it at once. Bots get the toast only.",
+   "w": 390,
+   "x": 1880,
+   "y": 3536
+  },
+  "n-night": {
+   "text": "Dark theme follows the system. Card faces keep their colours; their edges lighten so they separate from the night table.",
+   "w": 390,
+   "x": 3290,
+   "y": 6616
+  },
+  "n-nightcast": {
+   "text": "Night table: the paper edge keeps the heron's plume and the hare's ear tips off the dark felt. Faces keep their daytime colours, like cards.",
+   "w": 390,
+   "x": 2890,
+   "y": 11046
+  },
+  "n-out": {
+   "text": "Going out: the last card lands, strong haptic, the board dims and the result card rises. See recap is primary; Board lets players look at the final table first.",
+   "w": 390,
+   "x": 3290,
+   "y": 5076
+  },
+  "n-pause": {
+   "text": "Bottom sheet over a scrim. Race clocks and bots stop while it is open. Quit saves the game; Restart asks once, in the sheet, because it throws away the game.",
+   "w": 390,
+   "x": 3760,
+   "y": 3536
+  },
+  "n-race": {
+   "text": "Race: no turns, a game clock instead. Stuck is a toggle; avatars show who is stuck. Starting a line (tapping a hand card) cancels your Stuck; inspecting table cards does not. Hidden answers by default for fluent players.",
+   "w": 390,
+   "x": 940,
+   "y": 5076
+  },
+  "n-racecast": {
+   "text": "Race with Broc, Corr and Giorria. Corr is mid-play (Thinking), Giorria has tapped Stuck (Stuck face plus the Stuck tag). The face backs up the tag; it never replaces it.",
+   "w": 390,
+   "x": 2420,
+   "y": 11046
+  },
+  "n-recap": {
+   "text": "Result first, then counts, then every compound made in this game in play order with its meaning and who laid it. Tap a compound to open it in the glossary. Up to three missed lines come last, labelled as such. Replay this game re-runs the seed.",
+   "w": 390,
+   "x": 470,
+   "y": 6616
+  },
+  "n-recapcast": {
+   "text": "Recap: a shared win on fewest cards. Giorria wears Pleased, Corr Beaten. Compound rows keep the small seat dot; no faces in lists.",
+   "w": 390,
+   "x": 3830,
+   "y": 11046
+  },
+  "n-recapout": {
+   "text": "A game won with hints shows the 'Hints used' mark next to the result. Pass-and-play recaps name each player.",
+   "w": 390,
+   "x": 940,
+   "y": 6616
+  },
+  "n-recaptab": {
+   "text": "Result and standings left; the compound list right, scrollable.",
+   "w": 560,
+   "x": 2520,
+   "y": 8132
+  },
+  "n-rules": {
+   "text": "One scrolling page with the five plays as numbered sections, each with a small diagram made from real card components. Replay the tutorial at the top.",
+   "w": 390,
+   "x": 2350,
+   "y": 6616
+  },
+  "n-settings": {
+   "text": "Everything from the handoff's Settings list. Reset glossary progress asks once, inline. Reduced motion: follow the system, or always on.",
+   "w": 390,
+   "x": 2820,
+   "y": 6616
+  },
+  "n-setup": {
+   "text": "One screen, no wizard. Opponent rows add or remove bots (1 to 3), each with its own difficulty. Deck size updates with player count: 104 for 2 players, 118 for 3 or 4. Play is always enabled; defaults are valid.",
+   "w": 390,
+   "x": 2820,
+   "y": 1996
+  },
+  "n-setupcast": {
+   "text": "Changing a bot's difficulty swaps its species at once (a 160ms cross-fade; instant under reduced motion). The second line says what the difficulty means. Three bots fill the table, so + Bot goes and the deck note switches to 118 cards, hands of 10.",
+   "w": 390,
+   "x": 1480,
+   "y": 11046
+  },
+  "n-setuppass": {
+   "text": "Pass-and-play: Race is disabled with its reason under it. Players have editable names and pick colours; colour plus pattern plus initial stay unique. Bots can join (mixed tables).",
+   "w": 390,
+   "x": 3290,
+   "y": 1996
+  },
+  "n-setuptab": {
+   "text": "Same controls as phone setup, in two columns: game options left, players right.",
+   "w": 560,
+   "x": 1260,
+   "y": 8132
+  },
+  "n-stall": {
+   "text": "Turn mode: a full round of passes. Race: every human tapped Stuck and no bot can play. Each pile's top slides under (600ms) and the next top lands; a turn mark sits on each pile for 2s. Everyone draws 1; drawn cards fly to the hand and avatars show +1.",
+   "w": 390,
+   "x": 3290,
+   "y": 3536
+  },
+  "n-tablet": {
+   "text": "Board centre, river down the left, opponents across the top, hand along the bottom in one lane. For pass-and-play the tray changes owner while board and river stay put; type and colours are sized to read at arm's length.",
+   "w": 560,
+   "x": 0,
+   "y": 8132
+  },
+  "n-taken": {
+   "text": "Another player took a card your line needed. The card shows dashed for 600ms with a 'Taken' toast naming who, then fades; your line clears. Your hand cards stay in your hand.",
+   "w": 390,
+   "x": 1410,
+   "y": 5076
+  },
+  "n-tut": {
+   "text": "A scripted game against one bot. Six steps: meaning card, verb, river, placement, bot turn, stall. Scrim dims everything except the spotlit zone, which stays tappable; the next step starts when the player does the thing, or taps Next. Skip ends it; replay from Rules or Settings.",
+   "w": 390,
+   "x": 940,
+   "y": 1996
+  },
+  "n-welcome": {
+   "text": "Shows a real line being laid (static). 'Play the tutorial' is primary; 'Skip to a game' goes to Setup with learner defaults (turns, 1 easy bot, answers shown, hints on request).",
+   "w": 390,
+   "x": 470,
+   "y": 1996
+  },
+  "n-wrong": {
+   "text": "Not quite: cards shake once (320ms), hand cards return to the hand, river cards to the top of their pile. A soft ink toast, never red: a compound that doesn’t exist, or a real compound not on this card. Turn mode: draw 1, turn over, counts as a pass.",
+   "w": 390,
+   "x": 470,
+   "y": 5076
+  },
+  "t1": {
+   "kind": "title1",
+   "maxW": 3680,
+   "text": "First launch, home and setup",
+   "w": 240,
+   "x": 0,
+   "y": 880
+  },
+  "t2": {
+   "kind": "title1",
+   "maxW": 4150,
+   "text": "Game table: turns, answers shown",
+   "w": 240,
+   "x": 0,
+   "y": 2420
+  },
+  "t3": {
+   "kind": "title1",
+   "maxW": 4150,
+   "text": "Game table: answers hidden, race, endgame",
+   "w": 240,
+   "x": 0,
+   "y": 3960
+  },
+  "t4": {
+   "kind": "title1",
+   "maxW": 3680,
+   "text": "Pass-and-play, recap and reference",
+   "w": 240,
+   "x": 0,
+   "y": 5500
+  },
+  "t5": {
+   "kind": "title1",
+   "maxW": 3700,
+   "text": "Tablet landscape",
+   "w": 240,
+   "x": 0,
+   "y": 7040
+  },
+  "t6": {
+   "kind": "title1",
+   "maxW": 2880,
+   "text": "Motion, app icon and splash",
+   "w": 240,
+   "x": 0,
+   "y": 8550
+  },
+  "t7": {
+   "kind": "title1",
+   "maxW": 4200,
+   "text": "Characters (proposal)",
+   "w": 240,
+   "x": 0,
+   "y": 9930
+  },
+  "t8": {
+   "x": 0,
+   "y": 11500,
+   "text": "Stórfhocal tile (proposal)",
+   "kind": "title1",
+   "maxW": 1900
+  },
+  "n-sftiles": {
+   "x": 1480,
+   "y": 11760,
+   "w": 420,
+   "size": "s",
+   "text": "Opal is chosen. Its pastel wash drifts over 10s, the foil rim turns every 8s and a glint crosses every 6s: the only movement on the table, which is what lifts it clear of the paper meaning cards. Under reduced motion it holds still with a 3px rim. Jet (too heavy; reads as an adverb) and Kingfisher stay here for comparison. All share the twinkles and the pointed notches where the line joins."
+  },
+  "t9": {
+   "x": 0,
+   "y": 13120,
+   "text": "Stórfhocal games (proposal)",
+   "kind": "title1",
+   "maxW": 3680
+  },
+  "n-sfsetup": {
+   "x": 0,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "Shown after 20 finished games, never in pass-and-play. Remembers its last setting; off on a new install. Without a Hard bot it stays available, with a note that bots lay tiles only at Hard."
+  },
+  "n-sfbot": {
+   "x": 470,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "A Hard bot lays tabhair · aire · do: no meaning card. Bots get the toast, not the big moment, but this toast carries the tile and, for a tile the player lacks, \"Win this game to keep it\". The stake chip in the status strip gains the tile with a dot in the bot’s colour."
+  },
+  "n-sfbag": {
+   "x": 940,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "The Stórfhocail button in the tray opens your bag. Pick one tile; one in hand at a time, free to put back. The sub-line states the stakes rule: with tiles in your bag and none of yours waiting for an answer, Hard bots almost never lay one; lay one and their odds return to normal until a bot answers. The warning names the bot and the tile. Tiles this deck can’t complete are greyed with the reason."
+  },
+  "n-sfhand": {
+   "x": 1410,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "The tile sits first in the meanings lane, wide, so its phrase reads. Selecting it lights every verb and river card that completes a phrase on it. Put back returns it to the bag at no cost."
+  },
+  "n-sfmade": {
+   "x": 1880,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "Your own tile gets the full line-made moment with foil rays. The keep line says it is at stake. The stake chip now shows both tiles on the table and who laid each."
+  },
+  "n-sfnight": {
+   "x": 2350,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "Night table: the tile keeps its pearl face and foil, like every card face."
+  },
+  "n-sfquit": {
+   "x": 2820,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "With your tile on the table, Restart counts as a loss and says so before you tap it. Save and quit keeps the game; closing the app is not quitting. Discarding a saved game with tiles at stake warns the same way."
+  },
+  "n-sfend": {
+   "x": 3290,
+   "y": 14240,
+   "w": 390,
+   "size": "s",
+   "text": "The result card adds a Stórfhocail block: what joins your bag, what stays, what leaves. On a shared win each side keeps its own; a bot’s tile vanishes."
+  },
+  "n-sfrecap": {
+   "x": 0,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "A loss: the tile you laid goes with the bot, and the recap says so first, in plain words. Tiles a bot laid that it then keeps simply leave the game."
+  },
+  "n-sfunlock": {
+   "x": 470,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "The 20th finished game announces Stórfhocal games once, on the recap. Nothing else changes until the player turns it on."
+  },
+  "n-sfhome": {
+   "x": 940,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "The bag entry appears on Home after the first tile is won and stays even if the bag empties."
+  },
+  "n-bag": {
+   "x": 1410,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "One slot per word in the list, in a fixed order. Empty slots stay blank, so the set’s size shows without spoiling the words. Tap a tile for its detail."
+  },
+  "n-sfbagmilestone": {
+   "x": 1880,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "At 10, 20, 30 tiles the bag offers a restore point: a code to save. There is no restore point on demand, and restore works only into an empty bag."
+  },
+  "n-sfbagdetail": {
+   "x": 2350,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "A tile’s detail: its face at size, where it came from, how often seen, and a link to its glossary entry."
+  },
+  "n-sfglossary": {
+   "x": 2820,
+   "y": 15464,
+   "w": 390,
+   "size": "s",
+   "text": "Stórfhocal phrases sit in their verb’s group, marked with the tile, so searching tabhair finds every tabhair entry. Only phrases you have seen appear; the rest stay hidden."
+  },
+  "t10": {
+   "x": 0,
+   "y": 15568,
+   "text": "Deck editor (proposal)",
+   "kind": "title1",
+   "maxW": 3680
+  },
+  "n-decks": {
+   "x": 0,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "Home → Decks (the card-stack icon). Standard is built in and read-only: Duplicate makes an editable copy. A deck in use by a saved game says so; editing it never changes that game."
+  },
+  "n-decksfirst": {
+   "x": 470,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "Before any custom deck: Standard alone, and a primary New deck. New decks start as a copy of Standard."
+  },
+  "n-deckeditor": {
+   "x": 940,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "The summary card is always on top: total, the three piles, and a FitChip per player count with the reason it fails. Steppers (design system) show Standard’s count wherever this deck differs. A count of 0 greys every compound that needs it."
+  },
+  "n-deckcompounds": {
+   "x": 1410,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "Compounds by verb, ticked if they go on meaning cards. A compound that can’t be built is greyed and says why (Needs fág). Tick all usable restores every buildable one."
+  },
+  "n-deckmeanings": {
+   "x": 1880,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "The total N sets 3N meaning slots, shared as evenly as possible. The strip shows the generated cards; Shuffle again draws a new seed. The same seed always gives the same cards."
+  },
+  "n-decktestrun": {
+   "x": 2350,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "100 Normal-bot games in a web worker, a few seconds. Player counts the deck can’t serve are disabled. Editing carries on underneath."
+  },
+  "n-decktestresult": {
+   "x": 2820,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "Four numbers against Standard’s: lines per game, how often someone goes out, stalls, compounds never made. Sample figures; the real ones come from the simulator."
+  },
+  "n-decktestbad": {
+   "x": 3290,
+   "y": 16688,
+   "w": 390,
+   "size": "s",
+   "text": "A deck that plays badly: the outliers are ringed and the verdict says what to change in plain words. It never blocks saving or playing."
+  },
+  "n-setupdeck": {
+   "x": 0,
+   "y": 17912,
+   "w": 390,
+   "size": "s",
+   "text": "The deck row sits above Opponents, with the deck size for the current player count. Tapping opens the picker."
+  },
+  "n-setupdeckpicker": {
+   "x": 470,
+   "y": 17912,
+   "w": 390,
+   "size": "s",
+   "text": "Decks that can’t serve the table are disabled with the reason. Edit decks goes to Decks."
+  },
+  "n-decktablet": {
+   "x": 940,
+   "y": 17888,
+   "w": 560,
+   "size": "s",
+   "text": "Tablet: the three sections side by side under the summary card, so a change on the left shows its effect on the right at once."
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Language.dc.html",
+  "Welcome.dc.html",
+  "Tutorial.dc.html",
+  "Home.dc.html",
+  "HomeFirst.dc.html",
+  "HomeReturning.dc.html",
+  "Setup.dc.html",
+  "SetupPass.dc.html",
+  "GameTable.dc.html",
+  "Build1.dc.html",
+  "Build2.dc.html",
+  "Build3.dc.html",
+  "Made.dc.html",
+  "Alone.dc.html",
+  "Bot.dc.html",
+  "Stall.dc.html",
+  "Pause.dc.html",
+  "Hidden.dc.html",
+  "Wrong.dc.html",
+  "Race.dc.html",
+  "Taken.dc.html",
+  "Lockout.dc.html",
+  "Dense.dc.html",
+  "Empty.dc.html",
+  "WentOut.dc.html",
+  "Fewest.dc.html",
+  "HandOver.dc.html",
+  "Recap.dc.html",
+  "RecapOut.dc.html",
+  "Glossary.dc.html",
+  "GlossaryEmpty.dc.html",
+  "Rules.dc.html",
+  "Settings.dc.html",
+  "NightTable.dc.html",
+  "TableTablet.dc.html",
+  "SetupTablet.dc.html",
+  "RecapTablet.dc.html",
+  "Motion.dc.html",
+  "Icon.dc.html",
+  "Characters.dc.html",
+  "SetupCast.dc.html",
+  "BotCast.dc.html",
+  "RaceCast.dc.html",
+  "NightCast.dc.html",
+  "FewestCast.dc.html",
+  "RecapCast.dc.html",
+  "StorfhocalTiles.dc.html",
+  "SfSetup.dc.html",
+  "SfBot.dc.html",
+  "SfBag.dc.html",
+  "SfHand.dc.html",
+  "SfMade.dc.html",
+  "SfNight.dc.html",
+  "SfQuit.dc.html",
+  "SfEnd.dc.html",
+  "SfRecap.dc.html",
+  "SfUnlock.dc.html",
+  "SfHome.dc.html",
+  "Bag.dc.html",
+  "SfBagMilestone.dc.html",
+  "SfBagDetail.dc.html",
+  "SfGlossary.dc.html",
+  "Decks.dc.html",
+  "DecksFirst.dc.html",
+  "DeckEditor.dc.html",
+  "DeckCompounds.dc.html",
+  "DeckMeanings.dc.html",
+  "DeckTestRun.dc.html",
+  "DeckTestResult.dc.html",
+  "DeckTestBad.dc.html",
+  "SetupDeck.dc.html",
+  "SetupDeckPicker.dc.html",
+  "DeckTablet.dc.html"
+ ],
+ "pages": [],
+ "title": "Bain Amach screens"
+}
