@@ -1,7 +1,7 @@
 // The rules engine: setup, legal moves, apply, passing and stalls. Pure: no DOM, no timers.
 // Behaviour follows spec/RULES.md; enumeration order follows reference/engine/engine.js so the
 // bots play the same games as the reference given the same seed (see engine.parity.test.ts).
-import { COMPOUNDS, COMPOUNDS_BY_MEANING, COMPOUND_BY_ID, DECK, MEANING_CARD, type Compound } from './deck';
+import { COMPOUNDS, COMPOUNDS_BY_MEANING, COMPOUND_BY_ID, DECK, MEANING_CARD, useDeck, useDeckOf, type Compound } from './deck';
 import { rng, shuffle } from './rng';
 import type {
   Card,
@@ -137,6 +137,7 @@ export function canDraw(s: GameState) {
 // ---------- setup ----------
 
 export function newGame(config: GameConfig): GameState {
+  useDeck(config.deck);
   const n = config.players.length;
   const setup = DECK.setup[String(n)];
   if (!setup) throw new Error('2 to 4 players');
@@ -503,6 +504,7 @@ export const QUIET_STALLS = 4;
 export const FINAL_STALLS = 2;
 
 export function apply(s0: GameState, p: number, mv: Move): Result {
+  useDeckOf(s0);
   const bad = check(s0, p, mv);
   if (bad) return { ok: false, reason: bad };
   const s = clone(s0);

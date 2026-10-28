@@ -5,11 +5,14 @@ import { Controller } from '../game/controller';
 import { t } from '../i18n';
 import { platform } from '../platform';
 import { settings, type SetupPrefs } from '../storage';
+import { useDeck } from '../engine/deck';
 
 export const game = signal<Controller | null>(null);
 
 export function startGame(init: { config: GameConfig } | { state: import('../engine/types').GameState; elapsed?: number }) {
   game.value?.dispose();
+  // The game deals from its own deck (a custom one is embedded in its config); make it active first.
+  useDeck('config' in init ? init.config.deck : init.state.config.deck);
   const c = new Controller(init);
   game.value = c;
   c.start();
@@ -21,6 +24,7 @@ export function startGame(init: { config: GameConfig } | { state: import('../eng
 export function endGame() {
   game.value?.dispose();
   game.value = null;
+  useDeck();
 }
 
 export const BOT_LETTERS = ['B', 'C', 'D'];

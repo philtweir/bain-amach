@@ -1,4 +1,5 @@
 // Engine types. Everything in GameState is plain JSON: no Maps, no class instances.
+import type { DeckData } from './deck';
 
 export type Kind = 'V' | 'P' | 'M' | 'W';
 
@@ -92,6 +93,9 @@ export interface GameConfig {
   tutorial?: boolean;
   /** Rule variants for playtesting. All off by default (RULES.md as written). */
   rules?: RuleVariant;
+  /** A custom deck, built by the editor, embedded whole so editing or deleting it never changes a game
+   *  in progress. The bundled deck.json otherwise. */
+  deck?: DeckData;
 }
 
 export interface RuleVariant {

@@ -1,7 +1,7 @@
 // Home: continue a saved game, start a new one, glossary progress, install nudge, update banner.
 import { botName } from '../../game/critters';
 import { canInstall, installEvent, restartForUpdate, updateReady } from '../../app/session';
-import { COMPOUND_BY_ID, COMPOUNDS, DECK, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
+import { BASE as DECK, BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, BASE_COMPOUNDS as COMPOUNDS, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
 import { platform } from '../../platform';

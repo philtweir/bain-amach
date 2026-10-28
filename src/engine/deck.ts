@@ -23,9 +23,12 @@ export interface DeckData {
   starterVerbs: number;
   loneVerbDraw: number;
   setup: Record<string, { verbs: string; handSize: number; meaningsInHand: number }>;
+  /** Set on a deck built by the editor: its name, for the setup screen and recap. */
+  custom?: { id?: string; name: string };
 }
 
-export const DECK = raw as unknown as DeckData;
+/** The bundled deck: the glossary, the editor and every default game use it. */
+export const BASE = raw as unknown as DeckData;
 
 /** A compound in the engine's short form. `g` is the English meaning (gloss). */
 export interface Compound {
@@ -35,28 +38,65 @@ export interface Compound {
   g: string;
 }
 
-export const COMPOUNDS: Compound[] = DECK.compounds.map((c) => ({ id: c.id, v: c.verb, ps: c.particles, g: c.meaning }));
-export const DRAFT_COMPOUNDS = new Set(DECK.compounds.filter((c) => c.draft).map((c) => c.id));
-export const COMPOUND_BY_ID: Record<string, Compound> = Object.fromEntries(COMPOUNDS.map((c) => [c.id, c]));
-export const COMPOUNDS_BY_MEANING: Record<string, Compound[]> = {};
-for (const c of COMPOUNDS) (COMPOUNDS_BY_MEANING[c.g] ??= []).push(c);
-export const COMPOUNDS_BY_VERB: Record<string, Compound[]> = {};
-for (const c of COMPOUNDS) (COMPOUNDS_BY_VERB[c.v] ??= []).push(c);
+const short = (c: DeckCompound): Compound => ({ id: c.id, v: c.verb, ps: c.particles, g: c.meaning });
 
-export const PARTICLE_TYPE: Record<string, 'adverb' | 'preposition'> = Object.fromEntries(
-  DECK.particles.map((p) => [p.word, p.type]),
-);
+// Base-wide tables: every compound in the word list, whatever deck a game uses.
+export const BASE_COMPOUNDS: Compound[] = BASE.compounds.map(short);
+export const BASE_COMPOUND_BY_ID: Record<string, Compound> = Object.fromEntries(BASE_COMPOUNDS.map((c) => [c.id, c]));
+export const DRAFT_COMPOUNDS = new Set(BASE.compounds.filter((c) => c.draft).map((c) => c.id));
+export const PARTICLE_TYPE: Record<string, 'adverb' | 'preposition'> = Object.fromEntries(BASE.particles.map((p) => [p.word, p.type]));
+/** Every verb in the word list, for the glossary grouping. */
+export const VERBS: string[] = [...new Set(BASE_COMPOUNDS.map((c) => c.v))];
 
-export const MEANING_CARD: Record<string, string[]> = Object.fromEntries(DECK.meaningCards.map((m) => [m.id, m.meanings]));
+// The active deck: the one the game being played deals from (a custom deck, or the bundled one). These
+// bindings are reassigned by useDeck(), and modules that import them see the current values.
+export let DECK: DeckData = BASE;
+export let COMPOUNDS: Compound[] = [];
+export let COMPOUND_BY_ID: Record<string, Compound> = {};
+export let COMPOUNDS_BY_MEANING: Record<string, Compound[]> = {};
+export let COMPOUNDS_BY_VERB: Record<string, Compound[]> = {};
+export let MEANING_CARD: Record<string, string[]> = {};
+let PRINTED: Record<string, Record<string, string>> = {};
+let built: DeckData | null = null;
 
-/** Every verb that appears in the deck, for the glossary grouping. */
-export const VERBS: string[] = [...new Set(COMPOUNDS.map((c) => c.v))];
+/** Make `d` the active deck (a no-op if it already is). A game's deck is `config.deck ?? BASE`. */
+export function useDeck(d: DeckData = BASE) {
+  if (d === built) return;
+  built = d;
+  DECK = d;
+  COMPOUNDS = d.compounds.map(short);
+  COMPOUND_BY_ID = Object.fromEntries(COMPOUNDS.map((c) => [c.id, c]));
+  COMPOUNDS_BY_MEANING = {};
+  for (const c of COMPOUNDS) (COMPOUNDS_BY_MEANING[c.g] ??= []).push(c);
+  COMPOUNDS_BY_VERB = {};
+  for (const c of COMPOUNDS) (COMPOUNDS_BY_VERB[c.v] ??= []).push(c);
+  MEANING_CARD = Object.fromEntries(d.meaningCards.map((m) => [m.id, m.meanings]));
+  // Each compound is printed on exactly three meaning cards. A meaning with two compounds
+  // (GIVE UP) prints the first compound on its first three cards and the second on the next three.
+  PRINTED = {};
+  const seen: Record<string, number> = {};
+  for (const m of d.meaningCards) {
+    PRINTED[m.id] = {};
+    for (const g of m.meanings) {
+      const cs = COMPOUNDS_BY_MEANING[g] ?? [];
+      const i = seen[g] ?? 0;
+      seen[g] = i + 1;
+      const c = cs[Math.min(cs.length - 1, Math.floor(i / 3))];
+      if (c) PRINTED[m.id][g] = compoundText(c);
+    }
+  }
+}
+
+/** The deck a game state deals from, made active. */
+export function useDeckOf(s: { config: { deck?: DeckData } }) {
+  useDeck(s.config.deck ?? BASE);
+}
 
 export function compoundText(c: Compound): string {
   return c.v + ' ' + c.ps.join(' ');
 }
 
-/** The Irish answers printed for a meaning (GIVE UP has two). */
+/** The Irish answers printed for a meaning in the active deck (GIVE UP has two). */
 export function answersFor(g: string): string[] {
   return (COMPOUNDS_BY_MEANING[g] ?? []).map(compoundText);
 }
@@ -73,22 +113,7 @@ export function packSize(): number {
   return Object.values(DECK.verbs.pack3to4).reduce((a, b) => a + b, 0);
 }
 
-// Each compound is printed on exactly three meaning cards. A meaning with two compounds
-// (GIVE UP) prints the first compound on its first three cards and the second on the next three.
-const PRINTED: Record<string, Record<string, string>> = {};
-{
-  const seen: Record<string, number> = {};
-  for (const m of DECK.meaningCards) {
-    PRINTED[m.id] = {};
-    for (const g of m.meanings) {
-      const cs = COMPOUNDS_BY_MEANING[g] ?? [];
-      const i = seen[g] ?? 0;
-      seen[g] = i + 1;
-      const c = cs[Math.min(cs.length - 1, Math.floor(i / 3))];
-      if (c) PRINTED[m.id][g] = compoundText(c);
-    }
-  }
-}
+useDeck(BASE);
 
 /**
  * Which of its compound's meanings `g` is, in deck order: [1, 2] for cuir ar PUT ON (CLOTHES) when cuir ar also

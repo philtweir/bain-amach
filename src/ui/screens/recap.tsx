@@ -1,5 +1,5 @@
 // Recap: result, standings, every compound made in play order, up to three missed lines.
-import { COMPOUND_BY_ID, compoundText } from '../../engine/deck';
+import { BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, compoundText } from '../../engine/deck';
 import type { GameState } from '../../engine/types';
 import { t } from '../../i18n';
 import { botName, moodOf, speciesOf } from '../../game/critters';

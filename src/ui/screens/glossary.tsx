@@ -1,6 +1,6 @@
 // Glossary: every compound sense in the deck, grouped by verb, with times made and when last seen.
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { COMPOUNDS, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
+import { BASE_COMPOUNDS as COMPOUNDS, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import { dayLabel, t } from '../../i18n';
 import { madeCount, progress } from '../../storage';
 import { Face } from '../cards';

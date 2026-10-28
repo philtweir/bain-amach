@@ -1,0 +1,492 @@
+{
+ "version": "0.1-draft",
+ "notes": "DRAFT for Phil's Ulster check: words, phrases, meanings and the particle in each. Pattern tokens follow the verb in reading order; '~' is the stórfhocal tile's cell, every other token is a particle from the river (or a wildcard). No meaning card ends the line. Only verbs and particles from deck.json are used.",
+ "settings": {
+  "unlockAfterGames": 20,
+  "botCarryChance": 0.25,
+  "botCarryChanceUntilFirstSeen": 1.0,
+  "botPlayWindow": [
+   3,
+   10
+  ],
+  "botCarryWeights": {
+   "lostByPlayer": 0.4,
+   "unownedByPlayer": 0.4,
+   "any": 0.2
+  },
+  "playerMaxPerGame": 2,
+  "lossOnQuit": true
+ },
+ "settingsNotes": {
+  "botCarryChance": "per Hard bot per stórfhocal game: chance it carries one word, rolled at the deal",
+  "botCarryChanceUntilFirstSeen": "used instead until the player has seen a stórfhocal laid, so the feature shows itself in the first game",
+  "botPlayWindow": "the bot rolls a target between these of its own turns (race mode: its own plays) and lays its word at its first chance from then on; a bot that goes out first never lays it",
+  "botCarryWeights": "which word a bot carries: one the player lost to a bot, one the player doesn't own, or any word",
+  "playerMaxPerGame": "how many of their own stórfhocail a player may bring into one game",
+  "lossOnQuit": "quitting or restarting after laying a stórfhocal counts as losing it"
+ },
+ "words": [
+  {
+   "id": "s01",
+   "word": "aire",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s01a",
+     "verb": "tabhair",
+     "pattern": [
+      "~",
+      "do"
+     ],
+     "meaning": "TAKE CARE OF",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s02",
+   "word": "triail",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s02a",
+     "verb": "bain",
+     "pattern": [
+      "~",
+      "as"
+     ],
+     "meaning": "TRY OUT",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s03",
+   "word": "sult",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s03a",
+     "verb": "bain",
+     "pattern": [
+      "~",
+      "as"
+     ],
+     "meaning": "ENJOY",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s04",
+   "word": "úsáid",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s04a",
+     "verb": "bain",
+     "pattern": [
+      "~",
+      "as"
+     ],
+     "meaning": "MAKE USE OF",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s05",
+   "word": "geit",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s05a",
+     "verb": "bain",
+     "pattern": [
+      "~",
+      "as"
+     ],
+     "meaning": "STARTLE",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s06",
+   "word": "greim",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s06a",
+     "verb": "bain",
+     "pattern": [
+      "~",
+      "as"
+     ],
+     "meaning": "TAKE A BITE OF",
+     "check_note": ""
+    },
+    {
+     "id": "s06b",
+     "verb": "coinnigh",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "KEEP HOLD OF",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s07",
+   "word": "ceist",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s07a",
+     "verb": "cuir",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "ASK",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s08",
+   "word": "fios",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s08a",
+     "verb": "cuir",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "SEND FOR",
+     "check_note": ""
+    },
+    {
+     "id": "s08b",
+     "verb": "tabhair",
+     "pattern": [
+      "le",
+      "~"
+     ],
+     "meaning": "GIVE TO UNDERSTAND",
+     "check_note": "word after the particle"
+    }
+   ]
+  },
+  {
+   "id": "s09",
+   "word": "glaoch",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s09a",
+     "verb": "cuir",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "PHONE",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s10",
+   "word": "cosc",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s10a",
+     "verb": "cuir",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "BAN",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s11",
+   "word": "tús",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s11a",
+     "verb": "cuir",
+     "pattern": [
+      "~",
+      "le"
+     ],
+     "meaning": "START",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s12",
+   "word": "deireadh",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s12a",
+     "verb": "cuir",
+     "pattern": [
+      "~",
+      "le"
+     ],
+     "meaning": "PUT AN END TO",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s13",
+   "word": "cuairt",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s13a",
+     "verb": "tabhair",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "VISIT",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s14",
+   "word": "freagra",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s14a",
+     "verb": "tabhair",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "ANSWER",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s15",
+   "word": "cuidiú",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s15a",
+     "verb": "tabhair",
+     "pattern": [
+      "~",
+      "do"
+     ],
+     "meaning": "HELP",
+     "check_note": "Ulster form; cabhair elsewhere"
+    }
+   ]
+  },
+  {
+   "id": "s16",
+   "word": "cead",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s16a",
+     "verb": "tabhair",
+     "pattern": [
+      "~",
+      "do"
+     ],
+     "meaning": "ALLOW",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s17",
+   "word": "lámh",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s17a",
+     "verb": "tabhair",
+     "pattern": [
+      "~",
+      "do"
+     ],
+     "meaning": "GIVE A HAND TO",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s18",
+   "word": "deara",
+   "kind": "fossil",
+   "phrases": [
+    {
+     "id": "s18a",
+     "verb": "tabhair",
+     "pattern": [
+      "faoi",
+      "~"
+     ],
+     "meaning": "NOTICE",
+     "check_note": "only occurs in this phrase; word after the particle"
+    }
+   ]
+  },
+  {
+   "id": "s19",
+   "word": "dearmad",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s19a",
+     "verb": "déan",
+     "pattern": [
+      "~",
+      "de"
+     ],
+     "meaning": "FORGET",
+     "check_note": "de or ar? check Ulster usage"
+    }
+   ]
+  },
+  {
+   "id": "s20",
+   "word": "magadh",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s20a",
+     "verb": "déan",
+     "pattern": [
+      "~",
+      "faoi"
+     ],
+     "meaning": "MOCK",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s21",
+   "word": "gáire",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s21a",
+     "verb": "déan",
+     "pattern": [
+      "~",
+      "faoi"
+     ],
+     "meaning": "LAUGH AT",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s22",
+   "word": "cinnte",
+   "kind": "adjective",
+   "phrases": [
+    {
+     "id": "s22a",
+     "verb": "déan",
+     "pattern": [
+      "~",
+      "de"
+     ],
+     "meaning": "MAKE SURE OF",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s23",
+   "word": "súil",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s23a",
+     "verb": "coinnigh",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "KEEP AN EYE ON",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s24",
+   "word": "ceann",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s24a",
+     "verb": "tóg",
+     "pattern": [
+      "~",
+      "de"
+     ],
+     "meaning": "HEED",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s25",
+   "word": "bob",
+   "kind": "noun",
+   "phrases": [
+    {
+     "id": "s25a",
+     "verb": "buail",
+     "pattern": [
+      "~",
+      "ar"
+     ],
+     "meaning": "PLAY A TRICK ON",
+     "check_note": ""
+    }
+   ]
+  },
+  {
+   "id": "s26",
+   "word": "slán",
+   "kind": "adjective",
+   "phrases": [
+    {
+     "id": "s26a",
+     "verb": "tar",
+     "pattern": [
+      "~",
+      "as"
+     ],
+     "meaning": "COME THROUGH UNHURT",
+     "check_note": ""
+    }
+   ]
+  }
+ ]
+}
