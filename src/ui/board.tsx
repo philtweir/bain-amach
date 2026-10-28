@@ -16,6 +16,8 @@ import { reducedMotion } from './motion';
 
 export const PITCH = 66;
 const CARD = 64;
+/** A height change smaller than this (the tray's prompt wrapping) never re-fits or moves the board. */
+const MINOR_RESIZE = 80;
 const Z_MIN = 26 / CARD;
 const Z_MAX = 96 / CARD;
 const GLYPH_BELOW = 32 / CARD;
@@ -139,10 +141,16 @@ export function Board({ c }: { c: Controller }) {
     const el = vp.current!;
     const measure = () => {
       const r = el.getBoundingClientRect();
+      const prev = size.current;
       size.current = { w: Math.max(1, r.width), h: Math.max(1, r.height) };
+      // The tray grew or shrank by a line or two (a longer prompt): keep the view's top edge where it
+      // was and the zoom as it is, so nothing on the table moves. The camera is the view's centre.
+      if (ready.current && prev.w === size.current.w && Math.abs(prev.h - size.current.h) < MINOR_RESIZE) {
+        cam.current = { ...cam.current, y: cam.current.y + (size.current.h - prev.h) / 2 / cam.current.z };
+      }
       // The opening view: 64px cards around the latest play (or the starter verbs). Re-centre on
       // resizes until the player first touches the board.
-      if (!ready.current || !touched.current) {
+      else if (!ready.current || !touched.current) {
         ready.current = true;
         const last = [...s.lines].pop();
         const cells = last ? last.cells : s.board.map((b) => [b.x, b.y] as [number, number]);
