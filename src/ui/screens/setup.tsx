@@ -2,7 +2,10 @@
 import { useState } from "preact/hooks";
 import { BOT_LETTERS } from "../../app/session";
 import { botName, speciesOf } from "../../game/critters";
-import { DECK, deckSize, packSize } from "../../engine/deck";
+import { BASE } from "../../engine/deck";
+import { validateDeck } from "../../engine/deckTools";
+import { cardTotal, deckById, deckFit } from "../../app/decks";
+import { customDecks } from "../../storage";
 import type { Level } from "../../engine/types";
 import { t } from "../../i18n";
 import {
@@ -26,10 +29,16 @@ export function SetupScreen({
   const pass = p.who === "pass";
   const humans = pass ? p.humans : [];
   const nPlayers = (pass ? humans.length : 1) + p.bots.length;
-  const n = Math.max(2, Math.min(4, nPlayers));
-  const hand = DECK.setup[String(n)].handSize;
-  const canAddBot = nPlayers < 4;
-  const canAddHuman = pass && nPlayers < 4;
+  const n = Math.max(2, Math.min(4, nPlayers)) as 2 | 3 | 4;
+  // The chosen deck (a deleted one falls back to the default): which player counts it deals, and hands.
+  const custom = deckById(p.deck);
+  const fit = deckFit(custom);
+  const hand = fit[n] ?? BASE.setup[String(n)].handSize;
+  const maxPlayers = ([4, 3, 2] as const).find((k) => fit[k] !== null) ?? 0;
+  const dealable = fit[n] !== null;
+  const canAddBot = nPlayers < Math.min(4, maxPlayers);
+  const canAddHuman = pass && nPlayers < Math.min(4, maxPlayers);
+  const pack = Object.values(BASE.verbs.pack3to4).reduce((a, b) => a + b, 0);
   const usedColors = new Set(humans.map((h) => h.color));
   const botCfgs = p.bots.map((level) => ({
     name: "",
@@ -272,15 +281,35 @@ export function SetupScreen({
           </button>
         </div>
       </Section>
+      <Section label={t("setup.deck")}>
+        <select
+          class="deck-select"
+          aria-label={t("setup.deck")}
+          value={custom ? custom.id : ""}
+          onChange={(e) => set({ deck: (e.target as HTMLSelectElement).value || undefined })}
+        >
+          <option value="">{t("decks.default")}</option>
+          {customDecks.value.map((d) => (
+            <option value={d.id} key={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+      </Section>
       <div class="deck-note">
         <span class="deck-chip" aria-hidden="true" />
         <span>
-          {n === 2
-            ? t("setup.deck2", { n: deckSize(2), hand })
-            : t("setup.deck34", { n: deckSize(n), pack: packSize(), hand })}
+          {!dealable && custom
+            ? t("setup.deckCant", { n, why: (validateDeck(BASE, custom).players[n] as { reason: string }).reason })
+            : custom
+              ? t("setup.deckCustom", { n: cardTotal(custom), hand })
+              : n === 2
+                ? t("setup.deck2", { n: cardTotal(undefined, 2), hand })
+                : t("setup.deck34", { n: cardTotal(undefined, n), pack, hand })}
+          {custom && dealable && maxPlayers < 4 ? " " + t("setup.deckMax", { n: maxPlayers }) : ""}
         </span>
       </div>
-      <button class="ba-btn ba-btn-primary wide play-btn" onClick={play}>
+      <button class="ba-btn ba-btn-primary wide play-btn" disabled={!dealable} onClick={play}>
         {t("setup.play")}
       </button>
     </>

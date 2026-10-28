@@ -6,6 +6,7 @@ import { t } from '../i18n';
 import { platform } from '../platform';
 import { settings, type SetupPrefs } from '../storage';
 import { useDeck } from '../engine/deck';
+import { deckForSetup } from './decks';
 
 export const game = signal<Controller | null>(null);
 
@@ -72,7 +73,8 @@ export function configFrom(p: SetupPrefs, seed = freshSeed()): GameConfig {
       players.push({ name: BOT_LETTERS[i], kind: 'bot', level: lv, color: col });
     });
   }
-  return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints, rules: APP_RULES };
+  const deck = deckForSetup(p.deck);
+  return { seed, players, mode: p.who === 'pass' ? 'turns' : p.mode, answers: p.answers, hints: p.hints, rules: APP_RULES, ...(deck ? { deck } : {}) };
 }
 
 // ---------- install and update ----------

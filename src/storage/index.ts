@@ -3,6 +3,7 @@
 import { signal, effect } from '@preact/signals';
 import { platform } from '../platform';
 import type { Answers, GameState, Hints, Level, Mode } from '../engine/types';
+import type { CustomDeck } from '../engine/deckTools';
 
 function load<T>(key: string, v: number, fallback: T): T {
   const raw = platform.storage.get(key);
@@ -37,6 +38,8 @@ export interface SetupPrefs {
   hints: Hints;
   bots: Level[];
   humans: SetupPlayer[];
+  /** A custom deck's id; the default deck otherwise. */
+  deck?: string;
 }
 
 export interface Settings {
@@ -146,3 +149,11 @@ export function writeGame(g: SavedGame | null) {
   if (!g) platform.storage.remove(GAME_KEY);
   else if (!save(GAME_KEY, 1, g)) saveError.value = true;
 }
+
+// ---------- custom decks ----------
+
+const DECKS_KEY = 'ba.decks';
+export const customDecks = signal<CustomDeck[]>(load<CustomDeck[]>(DECKS_KEY, 1, []));
+effect(() => {
+  if (!save(DECKS_KEY, 1, customDecks.value)) saveError.value = true;
+});

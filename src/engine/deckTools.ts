@@ -291,3 +291,81 @@ export function defaultCustom(base: DeckData, players: 2 | 3 | 4 = 2): CustomSet
     seed: 1,
   };
 }
+
+/** The editor's settings part of a stored deck. */
+export function settingsOf(d: CustomSettings): CustomSettings {
+  return { name: d.name, verbs: d.verbs, particles: d.particles, wildcards: d.wildcards, meanings: d.meanings, meaningCards: d.meaningCards, seed: d.seed };
+}
+
+const FORMAT = 'bain-amach-deck';
+
+/** A deck as an export file. */
+export function serializeDeck(d: CustomDeck): string {
+  return JSON.stringify({ format: FORMAT, v: 1, deck: d }, null, 2);
+}
+
+/**
+ * An import file read back. Words the word list doesn't have are dropped and named; a deck that is
+ * left invalid (or isn't a deck file) is refused with the reason.
+ */
+export function parseDeck(text: string, base: DeckData): { deck?: CustomDeck; error?: string; dropped: string[] } {
+  let raw: { format?: string; deck?: Partial<CustomDeck> };
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { error: 'not a deck file', dropped: [] };
+  }
+  const d = raw?.deck;
+  if (raw?.format !== FORMAT || !d || typeof d !== 'object' || typeof d.verbs !== 'object' || typeof d.particles !== 'object' || !Array.isArray(d.meanings))
+    return { error: 'not a deck file', dropped: [] };
+  const { deck, removed } = migrateDeck(
+    {
+      id: String(d.id ?? ''),
+      name: String(d.name ?? 'Deck').slice(0, 40),
+      createdAt: String(d.createdAt ?? new Date().toISOString()),
+      updatedAt: String(d.updatedAt ?? new Date().toISOString()),
+      baseVersion: String(d.baseVersion ?? ''),
+      verbs: counts(d.verbs, MAX_COPIES),
+      particles: counts(d.particles, MAX_COPIES),
+      wildcards: clamp(Number(d.wildcards) || 0, 0, MAX_WILDCARDS),
+      meanings: d.meanings.map(String),
+      meaningCards: clamp(Math.round(Number(d.meaningCards) || 0), 0, maxCards(base)),
+      seed: Math.round(Number(d.seed) || 1),
+      generated: Array.isArray(d.generated) ? d.generated : [],
+    },
+    base,
+  );
+  const v = validateDeck(base, deck);
+  if (v.errors.length) return { error: v.errors.map((e) => e.text).join('; '), dropped: removed };
+  return { deck, dropped: removed };
+}
+
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+const counts = (r: unknown, max: number): Record<string, number> =>
+  Object.fromEntries(Object.entries((r ?? {}) as Record<string, unknown>).map(([k, n]) => [k, clamp(Math.round(Number(n) || 0), 0, max)]));
+
+/**
+ * A stored deck brought up to the current word list: verbs, particles and meanings it no longer has are
+ * dropped (and named in `removed`); new meanings stay unselected. The cards are regenerated only when the
+ * selection changed, or if they no longer fit it.
+ */
+export function migrateDeck(d: CustomDeck, base: DeckData): { deck: CustomDeck; removed: string[] } {
+  const verbs = new Set(base.compounds.map((c) => c.verb));
+  const parts = new Set(base.particles.map((p) => p.word));
+  const meanings = new Set(base.compounds.map((c) => c.meaning));
+  const removed = [...Object.keys(d.verbs).filter((v) => !verbs.has(v)), ...Object.keys(d.particles).filter((p) => !parts.has(p)), ...d.meanings.filter((m) => !meanings.has(m))];
+  const next: CustomDeck = {
+    ...d,
+    verbs: Object.fromEntries(Object.entries(d.verbs).filter(([v]) => verbs.has(v))),
+    particles: Object.fromEntries(Object.entries(d.particles).filter(([p]) => parts.has(p))),
+    meanings: d.meanings.filter((m) => meanings.has(m)),
+  };
+  const sel = new Set(selected(base, next).map((x) => x.m));
+  const stale = !next.generated.length || next.generated.some((c) => c.meanings.some((m) => !sel.has(m))) || next.generated.length !== next.meaningCards;
+  if (removed.some((m) => meanings.has(m) === false && d.meanings.includes(m)) || stale) {
+    const g = generateMeaningCards(base, next);
+    if (!g.impossible) next.generated = g.cards;
+  }
+  if (removed.length) next.baseVersion = base.version;
+  return { deck: next, removed };
+}

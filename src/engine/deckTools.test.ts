@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { BASE, type DeckData } from './deck';
-import { availableMeanings, buildDeck, defaultCustom, generateMeaningCards, handSizes, validateDeck, type CustomSettings } from './deckTools';
+import { availableMeanings, buildDeck, defaultCustom, generateMeaningCards, handSizes, migrateDeck, parseDeck, serializeDeck, validateDeck, type CustomDeck, type CustomSettings } from './deckTools';
 import { newGame } from './game';
 import { playDeck, randomValidDecks } from './testDecks';
 
@@ -103,4 +103,47 @@ describe('every deck the validator accepts plays to a finish (quick fuzz)', () =
       }
     }
   }, 120000);
+});
+
+describe('deck files and word-list changes', () => {
+  const stored = (): CustomDeck => {
+    const s = { ...defaultCustom(BASE, 2), name: 'Mine', meaningCards: 30 };
+    return { ...s, id: 'd1', createdAt: '2026-10-28T00:00:00.000Z', updatedAt: '2026-10-28T00:00:00.000Z', baseVersion: BASE.version, generated: generateMeaningCards(BASE, s).cards };
+  };
+
+  it('export then import gives an identical deck', () => {
+    const d = stored();
+    const r = parseDeck(serializeDeck(d), BASE);
+    expect(r.error).toBeUndefined();
+    expect(r.dropped).toEqual([]);
+    expect(r.deck).toEqual(d);
+  });
+
+  it('import refuses what is not a deck, and an invalid deck, with the reason', () => {
+    expect(parseDeck('hello', BASE).error).toBe('not a deck file');
+    expect(parseDeck(JSON.stringify({ format: 'something-else' }), BASE).error).toBe('not a deck file');
+    const bad = { ...stored(), verbs: { cuir: 3 } };
+    expect(parseDeck(serializeDeck(bad), BASE).error).toMatch(/different verbs/);
+  });
+
+  it('import drops words the word list does not have, and names them', () => {
+    const d = { ...stored(), verbs: { ...stored().verbs, snámh: 2 }, meanings: [...stored().meanings, 'SWIM AWAY'] };
+    const r = parseDeck(serializeDeck(d), BASE);
+    expect(r.deck).toBeDefined();
+    expect(r.dropped).toEqual(['snámh', 'SWIM AWAY']);
+    expect(r.deck!.verbs.snámh).toBeUndefined();
+  });
+
+  it('a word-list change drops gone meanings, keeps new ones unselected, and regenerates cards only then', () => {
+    const d = stored();
+    // Nothing changed: same deck, same cards.
+    expect(migrateDeck(d, BASE)).toEqual({ deck: d, removed: [] });
+    // A meaning the deck had is no longer in the word list.
+    const gone = d.meanings[0];
+    const smaller: DeckData = { ...BASE, compounds: BASE.compounds.filter((c) => c.meaning !== gone) };
+    const m = migrateDeck(d, smaller);
+    expect(m.removed).toEqual([gone]);
+    expect(m.deck.meanings).not.toContain(gone);
+    expect(m.deck.generated.flatMap((c) => c.meanings)).not.toContain(gone);
+  });
 });

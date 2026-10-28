@@ -13,6 +13,7 @@ import { RecapScreen } from '../ui/screens/recap';
 import { RulesScreen } from '../ui/screens/rules';
 import { SettingsScreen } from '../ui/screens/settings';
 import { SetupScreen } from '../ui/screens/setup';
+import { DeckEditScreen, DecksScreen } from '../ui/screens/decks';
 import { Tutorial, tutorialConfig } from '../ui/tutorial';
 import { configFrom, defaultSetup, endGame, game, learnerSetup, startGame } from './session';
 
@@ -107,10 +108,14 @@ function renderEntry(e: Entry) {
       return <RulesScreen onTutorial={startTutorial} />;
     case 'settings':
       return <SettingsScreen onTutorial={startTutorial} />;
+    case 'decks':
+      return <DecksScreen />;
+    case 'deckEdit':
+      return <DeckEditScreen id={e.params?.id as string} />;
   }
 }
 
-const SWIPE: Record<string, boolean> = { setup: true, glossary: true, rules: true, settings: true, welcome: true };
+const SWIPE: Record<string, boolean> = { setup: true, glossary: true, rules: true, settings: true, welcome: true, decks: true };
 
 export function App() {
   return <Navigator render={renderEntry} swipeBack={(e) => !!SWIPE[e.id]} />;

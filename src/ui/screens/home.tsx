@@ -5,7 +5,7 @@ import { BASE as DECK, BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, BASE_COMPOUNDS as 
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
 import { platform } from '../../platform';
-import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame } from '../../storage';
+import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame, customDecks } from '../../storage';
 import { useState } from 'preact/hooks';
 import { Avatar, Face, MeaningCard, initialOf } from '../cards';
 import { IconRules, IconSettings, IconShare } from '../icons';
@@ -183,6 +183,10 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
               <span style={{ width: `${(made / COMPOUNDS.length) * 100}%` }} />
             </div>
             <div class="caption muted">{last ? t('home.lastMade', { compound: compoundText(last), meaning: last.g.toLowerCase() }) : t('home.glossaryEmpty')}</div>
+          </button>
+          <button class="panel decks-card" onClick={() => nav.push('decks')}>
+            <span class="panel-title">{t('home.decks')}</span>
+            <span class="caption muted">{customDecks.value.length ? t('home.decksSubN', { n: customDecks.value.length }) : t('home.decksSub')}</span>
           </button>
           {s.lastResult && !saved && <p class="caption muted center">{t('home.lastGame', { text: s.lastResult })}</p>}
         </div>
