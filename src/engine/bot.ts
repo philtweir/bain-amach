@@ -1,8 +1,9 @@
 // Bots: the reference engine's planner, plus swaps and difficulty.
 import { COMPOUNDS } from './deck';
-import { apply, bestLine, isFresh, isStraddle, lineMoves, lineScore, loneMoves, meaningsOf, pass } from './game';
+import { apply, bestLine, isFresh, isStraddle, lineMoves, lineScore, loneMoves, meaningsOf, pass, sfMoves } from './game';
+import { ownTurn } from './storfhocail';
 import { next } from './rng';
-import type { GameState, Level, LineMove, Move } from './types';
+import type { GameState, Level, LineMove, Move, SfMove } from './types';
 
 /** How often a bot spots a line through a particle already down. */
 export const STRADDLE_SIGHT: Record<Level, number> = { easy: 0.25, normal: 0.6, hard: 1 };
@@ -28,6 +29,13 @@ export interface BotChoice {
 export function botMove(s: GameState, p: number): BotChoice {
   const level = s.config.players[p]?.level ?? 'hard';
   let rngState = s.rng;
+  // A Hard bot carrying a stórfhocal lays it at its first chance from its target turn on, ahead of
+  // anything else (spec/storfhocal.md §5). Only Hard bots are dealt one.
+  const carry = s.sf?.carry[p];
+  if (carry && !carry.laid && ownTurn(s, p) >= carry.target) {
+    const sf = sfMoves(s, p, carry.word, 1).sort((a, b) => sfScore(b) - sfScore(a))[0];
+    if (sf) return { move: sf, rng: rngState };
+  }
   let lines = lineMoves(s, p);
   // Lines through a particle, or onto a meaning card already down, are the harder ones to spot.
   const subtle = (l: (typeof lines)[number]) => isStraddle(l) || !!l.onto;
@@ -87,6 +95,11 @@ function leastUseful(s: GameState, p: number): number | null {
     if (!best || live < best.live) best = { id: m.id, live };
   }
   return best?.id ?? null;
+}
+
+/** A stórfhocal line's worth: a verb shed from the hand, wildcards held back. */
+function sfScore(mv: SfMove) {
+  return ('hand' in mv.verb ? 1 : 0) - mv.src.filter((x) => 'wild' in x).length * 0.6;
 }
 
 /**

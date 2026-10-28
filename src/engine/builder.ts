@@ -1,8 +1,9 @@
 // Queries for the line builder. `legal moves are the only source of highlights`: everything the UI
 // lights or lays comes from here. Also hidden-mode attempts and hints.
 import { COMPOUNDS_BY_MEANING, COMPOUNDS_BY_VERB, COMPOUND_BY_ID, compoundText, type Compound } from './deck';
-import { DIRS, bestLine, lineMoves, meaningsOf, view, type Ctx } from './game';
-import type { Card, Dir, GameState, LineMove, Rejection, Src, VerbSrc } from './types';
+import { DIRS, bestLine, holdsTile, lineMoves, meaningsOf, sfMoves, view, type Ctx } from './game';
+import { SF_WORD, phraseInDeck } from './storfhocail';
+import type { Card, Dir, GameState, LineMove, Rejection, SfMove, Src, VerbSrc } from './types';
 
 /** What the player has picked so far. Any field may be empty; order of picking is free. */
 export interface Selection {
@@ -329,6 +330,56 @@ export function judge(s: GameState, p: number, a: Attempt, focus?: { x: number; 
   const pl = a.place && pls.some((q) => q.x === a.place!.x && q.y === a.place!.y && q.d[0] === a.place!.d[0] && q.d[1] === a.place!.d[1]) ? a.place : pls[0];
   if (!pl) return { ok: false, reason: { why: 'NotLegal', detail: 'No room for that line' } };
   return { ok: true, move: wayToMove(w, pl) };
+}
+
+/** A hidden-mode stórfhocal attempt: the tile, a verb, and the tile and particles in the order picked. */
+export interface SfAttempt {
+  word: string;
+  verb: VerbSrc;
+  parts: ({ tile: true } | { river: number } | { wild: number } | { cross: { x: number; y: number } })[];
+}
+
+/** Judge a hidden-mode stórfhocal line: it must be one of the tile's phrases, in its order. A wildcard
+ *  can stand for a particle, never for the tile. */
+export function judgeSf(s: GameState, p: number, a: SfAttempt): { ok: true; move: SfMove } | { ok: false; reason: Rejection } {
+  const g = view(s);
+  const hand = s.hands[p];
+  const w = SF_WORD[a.word];
+  if (!w || !holdsTile(s, p, a.word)) return { ok: false, reason: { why: 'NotLegal', detail: 'Pick a stórfhocal from your pouch' } };
+  const verbWord = 'table' in a.verb ? g.at(a.verb.table.x, a.verb.table.y)?.t : hand.find((c) => c.id === (a.verb as { hand: number }).hand)?.t;
+  if (!verbWord) return { ok: false, reason: { why: 'NotLegal', detail: 'Pick a verb' } };
+  const tops = s.piles.map((pl) => pl.length);
+  const tokens: (string | null)[] = [];
+  for (const x of a.parts) {
+    if ('tile' in x) tokens.push('~');
+    else if ('river' in x) {
+      if (!tops[x.river]) return { ok: false, reason: { why: 'Taken', by: null, card: { river: x.river } } };
+      tokens.push(s.piles[x.river][--tops[x.river]].t);
+    } else if ('wild' in x) tokens.push(null);
+    else tokens.push(g.at(x.cross.x, x.cross.y)?.t ?? '');
+  }
+  const ph = w.phrases.find(
+    (ph) => phraseInDeck(ph) && ph.verb === verbWord && ph.pattern.length === tokens.length && ph.pattern.every((t, i) => (t === '~' ? tokens[i] === '~' : tokens[i] !== '~' && (tokens[i] === null || tokens[i] === t))),
+  );
+  if (!ph) return { ok: false, reason: { why: 'WrongLine', kind: 'NoSuchCompound', verb: verbWord, parts: tokens.map((t) => (t === '~' ? w.word : (t ?? '?'))) } };
+  const parts = a.parts.filter((x) => !('tile' in x));
+  const src: Src[] = parts.map((x) => ('river' in x ? { river: x.river } : 'wild' in x ? { wild: x.wild } : { existing: true }));
+  const cross = parts.find((x) => 'cross' in x) as { cross: { x: number; y: number } } | undefined;
+  const vk = JSON.stringify(a.verb);
+  // A placement for this phrase and verb (through the chosen particle if one was picked), with the picked sources.
+  for (const mv of sfMoves(s, p, a.word, Infinity)) {
+    if (mv.phrase !== ph.id || JSON.stringify(mv.verb) !== vk) continue;
+    if (cross) {
+      const i = ph.pattern.findIndex((_, k) => {
+        const x = mv.x + mv.d[0] * (k + 1),
+          y = mv.y + mv.d[1] * (k + 1);
+        return x === cross.cross.x && y === cross.cross.y;
+      });
+      if (i < 0 || !mv.src.some((x) => 'existing' in x)) continue;
+    } else if (mv.src.some((x) => 'existing' in x)) continue;
+    return { ok: true, move: { ...mv, src } };
+  }
+  return { ok: false, reason: { why: 'NotLegal', detail: 'No room for that line' } };
 }
 
 // ---------- hints ----------

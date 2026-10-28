@@ -17,7 +17,7 @@
       "particles": [
         "as"
       ],
-      "meaning": "GET (USE) OUT OF",
+      "meaning": "EXTRACT FROM",
       "check_note": ""
     },
     {
@@ -713,7 +713,7 @@
       "id": "m14",
       "meanings": [
         "GIVE UP",
-        "GET (USE) OUT OF",
+        "EXTRACT FROM",
         "LET OUT"
       ]
     },
@@ -769,7 +769,7 @@
       "id": "m21",
       "meanings": [
         "PRETEND",
-        "GET (USE) OUT OF",
+        "EXTRACT FROM",
         "DESCRIBE"
       ]
     },
@@ -816,7 +816,7 @@
     {
       "id": "m27",
       "meanings": [
-        "GET (USE) OUT OF",
+        "EXTRACT FROM",
         "DROP IN",
         "GIVE UP"
       ]

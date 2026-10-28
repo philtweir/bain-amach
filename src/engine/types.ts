@@ -1,9 +1,12 @@
 // Engine types. Everything in GameState is plain JSON: no Maps, no class instances.
 import type { DeckData } from './deck';
+import type { SfDeal, SfState } from './storfhocail';
 
-export type Kind = 'V' | 'P' | 'M' | 'W';
+/** Verb, particle, meaning card, wildcard, stórfhocal tile. */
+export type Kind = 'V' | 'P' | 'M' | 'W' | 'S';
 
-/** A card. `t` is the verb or particle word, '*' for a wildcard, or the meaning-card id (m01…) for a meaning card. */
+/** A card. `t` is the verb or particle word, '*' for a wildcard, the meaning-card id (m01…) for a meaning
+ *  card, or the word id (s01…) for a stórfhocal tile. */
 export interface Card {
   id: number;
   k: Kind;
@@ -25,6 +28,8 @@ export interface Placed extends Card {
   used?: string;
   /** Wildcards: the particle it stands for. */
   stands?: string;
+  /** Stórfhocal tiles: the phrase it was laid as (s01a…). */
+  phrase?: string;
 }
 
 export type Dir = [number, number];
@@ -62,7 +67,20 @@ export interface SwapMove {
   m: number;
 }
 
-export type Move = LineMove | LoneMove | SwapMove;
+/** A stórfhocal line: a verb, then the phrase's cells in order (the tile, and particles from the river,
+ *  wildcards or one particle already down). No meaning card. `src` covers the particle cells only. */
+export interface SfMove {
+  type: 'sf';
+  word: string;
+  phrase: string;
+  verb: VerbSrc;
+  x: number;
+  y: number;
+  d: Dir;
+  src: Src[];
+}
+
+export type Move = LineMove | LoneMove | SwapMove | SfMove;
 
 export type Level = 'easy' | 'normal' | 'hard';
 
@@ -93,6 +111,8 @@ export interface GameConfig {
   tutorial?: boolean;
   /** Rule variants for playtesting. All off by default (RULES.md as written). */
   rules?: RuleVariant;
+  /** Stórfhocail on (solo games against bots): the player's bag at the deal, for the bots' carry roll. */
+  sf?: SfDeal;
   /** A custom deck, built by the editor, embedded whole so editing or deleting it never changes a game
    *  in progress. The bundled deck.json otherwise. */
   deck?: DeckData;
@@ -127,12 +147,15 @@ export const APP_RULES: RuleVariant = { refillMeaning: true, tableMeanings: true
 
 export interface Line {
   p: number;
+  /** Compound id, or for a stórfhocal line the phrase id. */
   c: string;
   g: string;
   cells: [number, number][];
   wild: boolean;
   straddle: boolean;
   turnNo: number;
+  /** A stórfhocal line. */
+  sf?: true;
 }
 
 export interface Missed {
@@ -146,7 +169,7 @@ export interface Missed {
 }
 
 export type GameEvent =
-  | { e: 'line'; p: number; c: string; g: string; cells: [number, number][]; wild: boolean; straddle: boolean; river: number[]; turnNo: number; drew?: number[] }
+  | { e: 'line'; p: number; c: string; g: string; cells: [number, number][]; wild: boolean; straddle: boolean; river: number[]; turnNo: number; drew?: number[]; sf?: true }
   | { e: 'lone'; p: number; word: string; x: number; y: number; drew: number[]; turnNo: number }
   | { e: 'swap'; p: number; gave: number; took: number; turnNo: number }
   | { e: 'pass'; p: number; drew: number | null; turnNo: number }
@@ -188,6 +211,8 @@ export interface GameState {
   log: GameEvent[];
   missed: Missed[][];
   hintsUsed: boolean[];
+  /** Stórfhocail games only. */
+  sf?: SfState;
 }
 
 export type Rejection =

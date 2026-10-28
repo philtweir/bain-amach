@@ -3,6 +3,7 @@
 // bots play the same games as the reference given the same seed (see engine.parity.test.ts).
 import { COMPOUNDS, COMPOUNDS_BY_MEANING, COMPOUND_BY_ID, DECK, MEANING_CARD, useDeck, useDeckOf, type Compound } from './deck';
 import { rng, shuffle } from './rng';
+import { SF_CARD_ID, SF_PHRASE, SF_SETTINGS, SF_WORD, phraseInDeck, phraseParticles, rollCarries } from './storfhocail';
 import type {
   Card,
   Dir,
@@ -15,6 +16,7 @@ import type {
   Placed,
   Rejection,
   Result,
+  SfMove,
   Src,
 } from './types';
 
@@ -201,6 +203,7 @@ export function newGame(config: GameConfig): GameState {
     s.hands.push(h);
   }
   s.turn = config.firstPlayer ?? Math.floor(r() * n);
+  if (config.sf?.on) s.sf = { pouch: {}, carry: rollCarries(config, config.sf), laid: [] };
   ctxCache.set(s, g);
   return s;
 }
@@ -298,7 +301,147 @@ function ontoMoves(s: GameState, p: number, g: Ctx, hv: Card[], wildIds: number[
   return out;
 }
 
-export function isStraddle(mv: LineMove) {
+// ---------- stórfhocail ----------
+
+/** Whether p holds this tile now: in their pouch, or (a bot) carried and not yet laid. */
+export function holdsTile(s: GameState, p: number, word: string): boolean {
+  const c = s.sf?.carry[p];
+  return !!s.sf && ((s.sf.pouch[p] ?? []).includes(word) || (!!c && c.word === word && !c.laid));
+}
+
+/**
+ * Stórfhocal lines p could lay with this tile: a verb on the table with a free run, or one from the
+ * hand at the best few spots, or (verb from the hand) through one particle already down. Only phrases
+ * the game's deck can make.
+ */
+export function sfMoves(s: GameState, p: number, word: string, handSpots = 4): SfMove[] {
+  const w = SF_WORD[word];
+  if (!w || !holdsTile(s, p, word)) return [];
+  const g = view(s);
+  const hand = s.hands[p];
+  const wildIds = hand.filter((c) => c.k === 'W').map((c) => c.id);
+  const out: SfMove[] = [];
+  for (const ph of w.phrases) {
+    if (!phraseInDeck(ph)) continue;
+    const L = ph.pattern.length;
+    const parts = phraseParticles(ph);
+    const src = g.plan(parts, wildIds);
+    for (const v of s.board) {
+      if (v.k !== 'V' || v.t !== ph.verb || !src) continue;
+      for (const d of DIRS) if (g.runFree(v.x, v.y, d, 1, L)) out.push({ type: 'sf', word, phrase: ph.id, verb: { table: { x: v.x, y: v.y } }, x: v.x, y: v.y, d, src });
+    }
+    const vc = hand.find((h) => h.k === 'V' && h.t === ph.verb);
+    if (!vc) continue;
+    if (src) {
+      const spots = g.spots(L - 1);
+      for (let i = 0; i < Math.min(spots.length, handSpots); i++) out.push({ type: 'sf', word, phrase: ph.id, verb: { hand: vc.id }, x: spots[i].x, y: spots[i].y, d: spots[i].d, src });
+    }
+    // Through a particle already down: never through the tile's own cell.
+    for (const b of s.board) {
+      if (b.k !== 'P' || b.cross) continue;
+      ph.pattern.forEach((tok, i) => {
+        if (tok !== b.t) return;
+        const pi = ph.pattern.slice(0, i).filter((t) => t !== '~').length;
+        for (const d of DIRS) {
+          const vx = b.x - d[0] * (i + 1),
+            vy = b.y - d[1] * (i + 1);
+          if (!g.runFree(vx, vy, d, 0, L, i + 1)) continue;
+          const src0 = g.plan(parts.filter((_, j) => j !== pi), wildIds);
+          if (!src0) continue;
+          let q = 0;
+          out.push({ type: 'sf', word, phrase: ph.id, verb: { hand: vc.id }, x: vx, y: vy, d, src: parts.map((_, j) => (j === pi ? { existing: true as const } : src0[q++])) });
+        }
+      });
+    }
+  }
+  return out;
+}
+
+/** Tiles p has brought into this game: those in the pouch and those laid. The cap is playerMaxPerGame. */
+export function tilesBrought(s: GameState, p: number): number {
+  return (s.sf?.pouch[p]?.length ?? 0) + (s.sf?.laid.filter((l) => l.p === p).length ?? 0);
+}
+
+/** Bring a tile from the bag into p's pouch. Doesn't use a turn. The caller checks the bag holds it. */
+export function pouchPut(s0: GameState, p: number, word: string): Result {
+  if (!s0.sf || s0.over) return { ok: false, reason: { why: 'NotLegal', detail: 'stórfhocail are off in this game' } };
+  if (!SF_WORD[word]) return { ok: false, reason: { why: 'NotLegal', detail: 'no such tile' } };
+  if (tilesBrought(s0, p) >= SF_SETTINGS.playerMaxPerGame) return { ok: false, reason: { why: 'NotLegal', detail: 'no more tiles this game' } };
+  const s = clone(s0);
+  s.sf!.pouch[p] = [...(s.sf!.pouch[p] ?? []), word];
+  return { ok: true, state: s };
+}
+
+/** Put an unlaid tile back in the bag. */
+export function pouchTake(s0: GameState, p: number, word: string): Result {
+  const pouch = s0.sf?.pouch[p] ?? [];
+  const i = pouch.indexOf(word);
+  if (i < 0) return { ok: false, reason: { why: 'NotLegal', detail: 'not in the pouch' } };
+  const s = clone(s0);
+  s.sf!.pouch[p] = pouch.filter((_, j) => j !== i);
+  return { ok: true, state: s };
+}
+
+function rejectSf(s: GameState, p: number, mv: SfMove): Rejection | null {
+  if (!s.sf) return { why: 'NotLegal', detail: 'stórfhocail are off in this game' };
+  const ph = SF_PHRASE[mv.phrase];
+  if (!SF_WORD[mv.word] || !ph || ph.word !== mv.word) return { why: 'NotLegal', detail: 'that phrase is not on this tile' };
+  if (!holdsTile(s, p, mv.word)) return { why: 'NotLegal', detail: 'tile not held' };
+  if (!phraseInDeck(ph)) return { why: 'NotLegal', detail: "this deck can't make that phrase" };
+  const parts = phraseParticles(ph);
+  if (mv.src.length !== parts.length) return { why: 'NotLegal', detail: 'wrong number of particles' };
+  const [dx, dy] = mv.d;
+  if (Math.abs(dx) + Math.abs(dy) !== 1) return { why: 'NotLegal', detail: 'bad direction' };
+  const g = view(s);
+  const hand = s.hands[p];
+  const fromHand = 'hand' in mv.verb;
+  if ('table' in mv.verb) {
+    const v = g.at(mv.verb.table.x, mv.verb.table.y);
+    if (!v || v.k !== 'V' || v.t !== ph.verb || v.x !== mv.x || v.y !== mv.y) return { why: 'NotLegal', detail: 'no such verb on the table' };
+  } else {
+    const vid = mv.verb.hand;
+    const v = hand.find((h) => h.id === vid);
+    if (!v || v.k !== 'V' || v.t !== ph.verb) return { why: 'NotLegal', detail: 'verb not in hand' };
+    const occ = g.at(mv.x, mv.y);
+    if (occ) return { why: 'Taken', by: occ.owner >= 0 ? occ.owner : null, card: { x: mv.x, y: mv.y } };
+  }
+  const tops = s.piles.map((pl) => pl.length);
+  const usedWild = new Set<number>();
+  let existing = 0,
+    q = 0;
+  for (let i = 0; i < ph.pattern.length; i++) {
+    const tok = ph.pattern[i];
+    const x = mv.x + dx * (i + 1),
+      y = mv.y + dy * (i + 1),
+      occ = g.at(x, y);
+    if (tok === '~') {
+      // The tile's cell is never shared.
+      if (occ) return { why: 'Taken', by: occ.owner >= 0 ? occ.owner : null, card: { x, y } };
+      continue;
+    }
+    const src = mv.src[q++];
+    if ('existing' in src) {
+      existing++;
+      if (!fromHand) return { why: 'NotLegal', detail: 'a line through a particle needs a verb from the hand' };
+      if (!occ || occ.k !== 'P' || occ.t !== tok || occ.cross) return { why: 'NotLegal', detail: 'cannot run through that card' };
+      continue;
+    }
+    if (occ) return { why: 'Taken', by: occ.owner >= 0 ? occ.owner : null, card: { x, y } };
+    if ('river' in src) {
+      const pl = s.piles[src.river];
+      if (!pl || tops[src.river] === 0 || pl[tops[src.river] - 1].t !== tok) return { why: 'Taken', by: lastRiverTaker(s, src.river), card: { river: src.river } };
+      tops[src.river]--;
+    } else {
+      const w = hand.find((h) => h.id === src.wild);
+      if (!w || w.k !== 'W' || usedWild.has(w.id)) return { why: 'NotLegal', detail: 'wildcard not in hand' };
+      usedWild.add(w.id);
+    }
+  }
+  if (existing > 1) return { why: 'NotLegal', detail: 'only one particle may be shared' };
+  return null;
+}
+
+export function isStraddle(mv: LineMove | SfMove) {
   return mv.src.some((x) => 'existing' in x);
 }
 
@@ -423,6 +566,7 @@ export function check(s: GameState, p: number, mv: Move): Rejection | null {
   if (s.config.mode === 'turns' && s.turn !== p) return { why: 'NotLegal', detail: 'not your turn' };
   const hand = s.hands[p];
   if (mv.type === 'line') return rejectLine(s, p, mv);
+  if (mv.type === 'sf') return rejectSf(s, p, mv);
   if (mv.type === 'lone') {
     const v = hand.find((c) => c.id === mv.v);
     if (!v || v.k !== 'V') return { why: 'NotLegal', detail: 'verb not in hand' };
@@ -531,6 +675,41 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
       s.faceUp = s.mpile.pop()!;
     } else s.faceUp = m;
     ev = { e: 'swap', p, gave: m.id, took: took.id, turnNo: s.turnNo };
+  } else if (mv.type === 'sf') {
+    const ph = SF_PHRASE[mv.phrase];
+    const [dx, dy] = mv.d,
+      axis = dx ? 'h' : 'v';
+    const cells: [number, number][] = [];
+    const river: number[] = [];
+    if ('hand' in mv.verb) g.put(mv.x, mv.y, removeFromHand(hand, mv.verb.hand), null, p);
+    cells.push([mv.x, mv.y]);
+    let q = 0;
+    ph.pattern.forEach((tok, i) => {
+      const x = mv.x + dx * (i + 1),
+        y = mv.y + dy * (i + 1);
+      if (tok === '~') g.put(x, y, { id: SF_CARD_ID + s.lines.length, k: 'S', t: mv.word }, axis, p, { phrase: ph.id });
+      else {
+        const src = mv.src[q++];
+        if ('existing' in src) g.at(x, y)!.cross = true;
+        else if ('wild' in src) g.put(x, y, removeFromHand(hand, src.wild), axis, p, { stands: tok });
+        else {
+          g.put(x, y, s.piles[src.river].pop()!, axis, p);
+          river.push(src.river);
+        }
+      }
+      cells.push([x, y]);
+    });
+    const sf = s.sf!;
+    const pouch = sf.pouch[p] ?? [];
+    if (pouch.includes(mv.word)) sf.pouch[p] = pouch.filter((w, i) => w !== mv.word || i !== pouch.indexOf(mv.word));
+    else sf.carry[p] = { ...sf.carry[p], laid: true };
+    sf.laid.push({ word: mv.word, phrase: ph.id, p });
+    const wild = mv.src.some((x) => 'wild' in x),
+      straddle = isStraddle(mv);
+    s.lines.push({ p, c: ph.id, g: ph.meaning, cells, wild, straddle, turnNo: s.turnNo, sf: true });
+    ev = { e: 'line', p, c: ph.id, g: ph.meaning, cells, wild, straddle, river, turnNo: s.turnNo, sf: true };
+    if (!s.config.legacyStall) s.stalls = 0;
+    s.quiet = 0;
   } else {
     const c = COMPOUND_BY_ID[mv.c];
     const [dx, dy] = mv.d,
