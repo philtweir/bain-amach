@@ -17,6 +17,34 @@ export interface Platform {
 const nav = typeof navigator !== 'undefined' ? navigator : undefined;
 const isIOS = !!nav && (/iPad|iPhone|iPod/.test(nav.userAgent) || (nav.platform === 'MacIntel' && nav.maxTouchPoints > 1));
 
+/** The test build shares the release's origin, so its keys get a prefix: a test build can't touch
+ *  a playtester's real games, glossary or bag. Release keys are unprefixed, as they always were. */
+export const STORAGE_PREFIX = typeof __APP_CHANNEL__ !== 'undefined' && __APP_CHANNEL__ === 'main' ? 'ba-main:' : '';
+
+/** Test build only: replace this build's data with a copy of the release's. One way, after a confirm. */
+export function copyReleaseData(): number {
+  if (!STORAGE_PREFIX) return 0;
+  let n = 0;
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k?.startsWith(STORAGE_PREFIX)) localStorage.removeItem(k);
+    }
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('ba.')) keys.push(k);
+    }
+    for (const k of keys) {
+      localStorage.setItem(STORAGE_PREFIX + k, localStorage.getItem(k)!);
+      n++;
+    }
+  } catch {
+    /* storage unavailable */
+  }
+  return n;
+}
+
 let wakeLock: { release(): Promise<void> } | null = null;
 let wantAwake = false;
 
@@ -45,14 +73,14 @@ export const platform: Platform = {
   storage: {
     get(key) {
       try {
-        return localStorage.getItem(key);
+        return localStorage.getItem(STORAGE_PREFIX + key);
       } catch {
         return null;
       }
     },
     set(key, value) {
       try {
-        localStorage.setItem(key, value);
+        localStorage.setItem(STORAGE_PREFIX + key, value);
         return true;
       } catch {
         return false;
@@ -60,7 +88,7 @@ export const platform: Platform = {
     },
     remove(key) {
       try {
-        localStorage.removeItem(key);
+        localStorage.removeItem(STORAGE_PREFIX + key);
       } catch {
         /* ignore */
       }
