@@ -4,6 +4,17 @@ import { signal } from '@preact/signals';
 import { BASE, type DeckData } from '../engine/deck';
 import { buildDeck, defaultCustom, generateMeaningCards, migrateDeck, parseDeck, serializeDeck, settingsOf, validateDeck, type CustomDeck, type CustomSettings } from '../engine/deckTools';
 import { customDecks } from '../storage';
+import originalRaw from '../../data/decks/original.json';
+
+/** Built-in decks besides Standard: read-only, dealt exactly as shipped, verb pack and all. */
+export interface Preset {
+  id: string;
+  data: DeckData;
+}
+/** The first deck, from the 25 October handoff (Phil liked it best). */
+export const ORIGINAL = originalRaw as unknown as DeckData;
+export const PRESETS: Preset[] = [{ id: 'preset:original', data: ORIGINAL }];
+export const presetById = (id: string | undefined): Preset | undefined => (id ? PRESETS.find((p) => p.id === id) : undefined);
 
 /** Said once after the word list changed under a saved deck ("2 meanings were removed …"). */
 export const deckNotice = signal<number>(0);
@@ -34,18 +45,18 @@ export function built(d: CustomDeck): DeckData {
   return b;
 }
 
-/** Which player counts a deck (or the default, for undefined) can deal, and its hand sizes. */
-export function deckFit(d: CustomDeck | undefined) {
-  if (!d) return { 2: BASE.setup['2'].handSize, 3: BASE.setup['3'].handSize, 4: BASE.setup['4'].handSize } as Record<2 | 3 | 4, number | null>;
+/** Which player counts a deck (Standard, or a built-in's data, for undefined) can deal, and its hand sizes. */
+export function deckFit(d: CustomDeck | undefined, data: DeckData = BASE) {
+  if (!d) return { 2: data.setup['2'].handSize, 3: data.setup['3'].handSize, 4: data.setup['4'].handSize } as Record<2 | 3 | 4, number | null>;
   const v = validateDeck(BASE, d).players;
   return { 2: v[2].ok ? v[2].handSize : null, 3: v[3].ok ? v[3].handSize : null, 4: v[4].ok ? v[4].handSize : null } as Record<2 | 3 | 4, number | null>;
 }
 
 /** Cards in the deck for n players (verbs, particles, wildcards and meaning cards). */
-export function cardTotal(d: CustomDeck | undefined, n = 2): number {
+export function cardTotal(d: CustomDeck | undefined, n = 2, data: DeckData = BASE): number {
   if (!d) {
-    const pack = n > 2 ? Object.values(BASE.verbs.pack3to4).reduce((a, b) => a + b, 0) : 0;
-    return Object.values(BASE.verbs.base).reduce((a, b) => a + b, 0) + pack + BASE.particles.reduce((a, p) => a + p.copies, 0) + BASE.wildcards + BASE.meaningCards.length;
+    const pack = n > 2 ? Object.values(data.verbs.pack3to4).reduce((a, b) => a + b, 0) : 0;
+    return Object.values(data.verbs.base).reduce((a, b) => a + b, 0) + pack + data.particles.reduce((a, p) => a + p.copies, 0) + data.wildcards + data.meaningCards.length;
   }
   const sum = (r: Record<string, number>) => Object.values(r).reduce((a, b) => a + b, 0);
   return sum(d.verbs) + sum(d.particles) + d.wildcards + d.meaningCards;
@@ -75,10 +86,12 @@ export function deleteDeck(id: string) {
   customDecks.value = customDecks.value.filter((d) => d.id !== id);
 }
 
-/** A copy of a deck, or of the default (2-player counts, or 3–4 with the pack added). */
-export function duplicateDeck(from: CustomDeck | 2 | 4, name: string): CustomDeck {
-  const s = typeof from === 'number' ? defaultCustom(BASE, from) : settingsOf(from);
-  const d = makeDeck({ ...s, name });
+/** A copy of a deck, of the default (2-player counts, or 3–4 with the pack added), or of a built-in
+ *  (3–4 counts, keeping its own meaning cards until the copy is edited). */
+export function duplicateDeck(from: CustomDeck | 2 | 4 | Preset, name: string): CustomDeck {
+  const preset = typeof from === 'object' && 'data' in from ? from : undefined;
+  const s = typeof from === 'number' ? defaultCustom(BASE, from) : preset ? defaultCustom(preset.data, 4) : settingsOf(from as CustomDeck);
+  const d = preset ? { ...makeDeck({ ...s, name }), generated: preset.data.meaningCards } : makeDeck({ ...s, name });
   customDecks.value = [...customDecks.value, d];
   return d;
 }
@@ -98,6 +111,8 @@ export function importDeck(text: string): { deck?: CustomDeck; error?: string; d
 
 /** The built deck for a setup's choice: undefined for the bundled deck (or a deck since deleted). */
 export function deckForSetup(id: string | undefined): DeckData | undefined {
+  const pr = presetById(id);
+  if (pr) return pr.data;
   const d = deckById(id);
   return d ? built(d) : undefined;
 }

@@ -1,7 +1,7 @@
 // Custom decks (feature plan, deck editor): the list of decks, and the editor for one. Changes save as
 // you go; a game already started keeps its own copy of its deck.
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { cardTotal, deckById, deckFit, deleteDeck, duplicateDeck, exportDeck, importDeck, renameDeck, saveDeck, deckNotice } from '../../app/decks';
+import { PRESETS, cardTotal, deckById, deckFit, deleteDeck, duplicateDeck, exportDeck, importDeck, renameDeck, saveDeck, deckNotice } from '../../app/decks';
 import { saveFile } from '../../app/backup';
 import { BASE, PARTICLE_TYPE, VERBS, type DeckCompound, type DeckData } from '../../engine/deck';
 import { availableMeanings, buildDeck, defaultCustom, generateMeaningCards, maxCards, MAX_COPIES, MAX_WILDCARDS, validateDeck, type CustomDeck } from '../../engine/deckTools';
@@ -77,6 +77,22 @@ export function DecksScreen() {
               </div>
             </div>
           </div>
+          {PRESETS.map((pr) => (
+            <div class="panel deck-card is-builtin" data-deck={pr.id} key={pr.id}>
+              <span class="deck-chip deck-stack" aria-hidden="true" />
+              <div class="dc-body">
+                <div class="dc-name">
+                  {t('decks.original')} <span class="lock-chip">{t('decks.builtIn')}</span>
+                </div>
+                <div class="caption muted">{t('decks.originalLine', { a: cardTotal(undefined, 2, pr.data), b: cardTotal(undefined, 3, pr.data), c: pr.data.compounds.length })}</div>
+                <div class="dc-actions">
+                  <button class="ba-btn ba-btn-secondary" onClick={() => edit(duplicateDeck(pr, t('decks.copyName', { name: t('decks.original') })).id)}>
+                    {t('decks.duplicate')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
           {list.map((d) => {
             const fit = deckFit(d);
             const counts = COUNTS.filter((k) => fit[k] !== null);

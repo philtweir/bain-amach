@@ -4,7 +4,7 @@ import { BOT_LETTERS } from "../../app/session";
 import { botName, speciesOf } from "../../game/critters";
 import { BASE } from "../../engine/deck";
 import { validateDeck } from "../../engine/deckTools";
-import { cardTotal, deckById, deckFit } from "../../app/decks";
+import { PRESETS, cardTotal, deckById, deckFit, presetById } from "../../app/decks";
 import { customDecks, savedGame, sfProgress } from "../../storage";
 import { SF_SETTINGS, SF_WORD, ownedCount, sfUnlocked } from "../../engine/storfhocail";
 import { tilesAtStake, unlockNow } from "../../app/storfhocail";
@@ -39,13 +39,16 @@ export function SetupScreen({
   const n = Math.max(2, Math.min(4, nPlayers)) as 2 | 3 | 4;
   // The chosen deck (a deleted one falls back to the default): which player counts it deals, and hands.
   const custom = deckById(p.deck);
-  const fit = deckFit(custom);
-  const hand = fit[n] ?? BASE.setup[String(n)].handSize;
+  // A built-in (Original) deals like Standard, from its own data.
+  const preset = custom ? undefined : presetById(p.deck);
+  const data = preset?.data ?? BASE;
+  const fit = deckFit(custom, data);
+  const hand = fit[n] ?? data.setup[String(n)].handSize;
   const maxPlayers = ([4, 3, 2] as const).find((k) => fit[k] !== null) ?? 0;
   const dealable = fit[n] !== null;
   const canAddBot = nPlayers < Math.min(4, maxPlayers);
   const canAddHuman = pass && nPlayers < Math.min(4, maxPlayers);
-  const pack = Object.values(BASE.verbs.pack3to4).reduce((a, b) => a + b, 0);
+  const pack = Object.values(data.verbs.pack3to4).reduce((a, b) => a + b, 0);
   const usedColors = new Set(humans.map((h) => h.color));
   const botCfgs = p.bots.map((level) => ({
     name: "",
@@ -183,8 +186,8 @@ export function SetupScreen({
     </>
   );
 
-  const deckName = custom ? custom.name : t("decks.standard");
-  const deckSize = cardTotal(custom, n);
+  const deckName = custom ? custom.name : preset ? t("decks.original") : t("decks.standard");
+  const deckSize = cardTotal(custom, n, data);
   const right = (
     <>
       <Section label={t("setup.deck")}>
@@ -358,8 +361,8 @@ export function SetupScreen({
             : custom
               ? t("setup.deckCustom", { n: cardTotal(custom), hand })
               : n === 2
-                ? t("setup.deck2", { n: cardTotal(undefined, 2), hand })
-                : t("setup.deck34", { n: cardTotal(undefined, n), pack, hand })}
+                ? t("setup.deck2", { n: cardTotal(undefined, 2, data), hand })
+                : t("setup.deck34", { n: cardTotal(undefined, n, data), pack, hand })}
           {custom && dealable && maxPlayers < 4 ? " " + t("setup.deckMax", { n: maxPlayers }) : ""}
         </span>
       </div>
@@ -371,7 +374,7 @@ export function SetupScreen({
 
   return (
     <Screen class="setup">
-      {picking && <DeckPicker value={custom?.id} n={n} onPick={(id) => { set({ deck: id }); setPicking(false); }} onClose={() => setPicking(false)} />}
+      {picking && <DeckPicker value={custom?.id ?? preset?.id} n={n} onPick={(id) => { set({ deck: id }); setPicking(false); }} onClose={() => setPicking(false)} />}
       <Scroll>
         <div class="pad">
           <Header title={t("setup.title")} />
@@ -399,8 +402,10 @@ function botColor(humanColors: number[], i: number) {
 /** Choose the deck: decks that can't serve this table are disabled with the reason. */
 function DeckPicker({ value, n, onPick, onClose }: { value?: string; n: 2 | 3 | 4; onPick: (id: string | undefined) => void; onClose: () => void }) {
   const std = { id: undefined as string | undefined, name: t("decks.standard"), sub: t("decks.standardSub", { a: cardTotal(undefined, 2), b: cardTotal(undefined, 3) }), ok: true };
+  const builtIns = PRESETS.map((pr) => ({ id: pr.id as string | undefined, name: t("decks.original"), sub: t("decks.originalSub", { a: cardTotal(undefined, 2, pr.data), b: cardTotal(undefined, 3, pr.data) }), ok: true }));
   const rows = [
     std,
+    ...builtIns,
     ...customDecks.value.map((d) => {
       const fit = deckFit(d);
       const counts = ([2, 3, 4] as const).filter((k) => fit[k] !== null);
