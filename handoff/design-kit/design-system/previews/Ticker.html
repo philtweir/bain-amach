@@ -1,0 +1,28 @@
+<!-- @dsCard group="Cards" height=240 subtitle="A meaning card line that loops through every answer when they don't fit" -->
+<!doctype html>
+<html lang="ga">
+<head><meta charset="utf-8"><title>Ticker — preview</title>
+<style>
+  .row { display: flex; gap: 18px; align-items: flex-start; padding: 12px 16px; flex-wrap: wrap; }
+  .cap { font: 400 13px/17px var(--font-ui); color: var(--ink-muted); margin-top: 6px; width: 200px; }
+</style></head>
+<body>
+<div class="row">
+  <div>
+    <div class="ba-card ba-meaning">
+      <div class="ba-m"><span class="ba-en">Stay away from</span><span class="ba-ga">fan amach ó</span></div>
+      <div class="ba-m"><span class="ba-en">Leave out</span><span class="ba-ga">fág amach</span></div>
+      <div class="ba-m"><span class="ba-en">Give up</span><span class="ba-ga ba-ticker is-running" style="--tick-dur: 7.5s" aria-label="éirigh as, or tabhair suas"><span class="ba-tick" aria-hidden="true"><span class="ba-run"><span>éirigh as</span><span>tabhair suas</span></span><span class="ba-run"><span>éirigh as</span><span>tabhair suas</span></span></span><span class="ba-more" aria-hidden="true">+1</span></span></div>
+    </div>
+    <div class="cap">In the hand, overflowing: holds, then loops</div>
+  </div>
+  <div>
+    <div class="ba-card ba-meaning" style="width: 260px">
+      <div class="ba-m"><span class="ba-en">Stay away from</span><span class="ba-ga">fan amach ó</span></div>
+      <div class="ba-m"><span class="ba-en">Leave out</span><span class="ba-ga">fág amach</span></div>
+      <div class="ba-m"><span class="ba-en">Give up</span><span class="ba-ga ba-ticker" aria-label="éirigh as, or tabhair suas"><span class="ba-tick" aria-hidden="true"><span class="ba-run"><span>éirigh as</span><span>tabhair suas</span></span></span><span class="ba-more" aria-hidden="true">+1</span></span></div>
+    </div>
+    <div class="cap">Room for both (tablet): still</div>
+  </div>
+</div>
+</body>

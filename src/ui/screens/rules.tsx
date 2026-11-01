@@ -145,6 +145,7 @@ export function RulesScreen({ onTutorial }: { onTutorial: () => void }) {
                 {t('rules.sfBody')}
               </Rule>
               <Rule title={t('rules.sfStakes')}>{t('rules.sfStakesBody')}</Rule>
+              <Rule title={t('rules.sfClaim')}>{t('rules.sfClaimBody')}</Rule>
             </>
           )}
         </div>

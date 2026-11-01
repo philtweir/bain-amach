@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { seedSettings } from './helpers';
 
 // spec/storfhocal.md §12: unlock and visibility, the bag, the glossary, and a game that lays one and wins.
@@ -56,10 +57,11 @@ test('the bag stays off Home until the first tile, stays once revealed even when
   await expect(page.locator('.bag-grid')).not.toContainText('geit');
 });
 
-test('a restore point at 10 tiles brings the bag back, only into an empty bag', async ({ page }) => {
+test('a restore point at 10 tiles waits to be saved, and brings the bag back only into an empty bag', async ({ page }) => {
   await seedSettings(page);
   const ten = Object.fromEntries(['s01', 's02', 's03', 's04', 's05', 's06', 's07', 's08', 's09', 's10'].map((w) => [w, 1]));
-  await seedSf(page, { finishedGames: 30, bagRevealed: true, owned: ten });
+  // Progress from v1.1 (restoreSeen) migrates to a point waiting to be saved.
+  await seedSf(page, { finishedGames: 30, bagRevealed: true, owned: ten, restoreSeen: 10 });
   await page.goto('./');
   await page.locator('.bag-card').click();
   await expect(page.locator('.restore-point')).toContainText('10 collected');
@@ -72,6 +74,10 @@ test('a restore point at 10 tiles brings the bag back, only into an empty bag', 
   })).trim();
   expect(code).toMatch(/^BA1-/);
   await expect(page.locator('.restore-point')).toHaveCount(0);
+  // Saved: a row stays, so the code can be copied again.
+  await expect(page.locator('.rp-saved')).toContainText('Restore point · 10');
+  await page.getByRole('button', { name: 'Show code' }).click();
+  await expect(page.getByRole('textbox', { name: 'Restore code' })).toHaveValue(code);
   // Storage lost: an empty bag. Restore from Settings.
   await page.evaluate(() => localStorage.setItem('ba.sf', JSON.stringify({ v: 1, data: { finishedGames: 30 } })));
   await page.goto('./');
@@ -132,4 +138,62 @@ test('take a tile from the bag, lay it to go out, and win the bot’s tile on th
   expect(pr.finishedGames).toBe(21);
   expect(pr.wonFrom.s05.name).toBe('Giorria');
   expect(pr.seen.s01a.times).toBe(1);
+});
+
+test('tap a bot’s tile on the table to see it, then run your own line through it', async ({ page }) => {
+  await seedSettings(page);
+  await seedSf(page, { finishedGames: 20, bagRevealed: true, owned: {}, seen: { s01a: { times: 1, last: 'd' } } });
+  await page.goto('./?e2e&seed=21');
+  await page.getByRole('button', { name: 'New game' }).click();
+  await page.locator('.bot-row').first().getByRole('radio', { name: 'Hard' }).click();
+  await sfSection(page).getByRole('radio', { name: 'On', exact: true }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  // Giorria laid tabhair · aire · do across; your turn, with tabhair in hand and do on the river.
+  await page.evaluate(() => {
+    const c = (window as any).__game;
+    const s = structuredClone(c.gs.value);
+    s.turn = 0;
+    s.board = [
+      { id: 9400, k: 'V', t: 'tabhair', x: 0, y: 0, axis: null, owner: -1 },
+      { id: 100000, k: 'S', t: 's01', x: 1, y: 0, axis: 'h', owner: 1, phrase: 's01a' },
+      { id: 9401, k: 'P', t: 'do', x: 2, y: 0, axis: 'h', owner: 1 },
+    ];
+    s.sf.laid = [{ word: 's01', phrase: 's01a', p: 1 }];
+    s.hands[0] = [{ id: 9301, k: 'V', t: 'tabhair' }, { id: 9303, k: 'V', t: 'fan' }];
+    s.piles[0].push({ id: 9302, k: 'P', t: 'do' });
+    c.gs.value = s;
+    c.botPlaying.value = null;
+    c.clearSelection();
+  });
+  await page.locator('[data-cell="1,0"] button, [data-cell="1,0"] .ba-card').first().click();
+  await expect(page.locator('.sf-peek')).toContainText('tabhair aire do');
+  await expect(page.locator('.sf-peek')).toContainText('Run a line through it');
+  await expect(page.locator('.tray-head')).toContainText('A line through aire');
+  await page.locator('.tray [data-card="9301"]').click();
+  await expect.poll(() => page.evaluate(() => (window as any).__game.gs.value.lines.at(-1))).toMatchObject({ p: 0, c: 's01a', sf: true });
+  const after = await page.evaluate(() => {
+    const s = (window as any).__game.gs.value;
+    return { cross: s.board.find((b: any) => b.k === 'S').cross, tiles: s.board.filter((b: any) => b.k === 'S').length, laid: s.sf.laid.length };
+  });
+  expect(after).toEqual({ cross: true, tiles: 1, laid: 1 });
+});
+
+test('a meaning with two answers shows both in the hand (reduced motion: the first and +1)', async ({ page }) => {
+  const deck = JSON.parse(readFileSync(new URL('../../data/deck.json', import.meta.url), 'utf8'));
+  const giveUp = deck.meaningCards.find((m: { meanings: string[] }) => m.meanings.includes('GIVE UP')).id;
+  await seedSettings(page);
+  await page.goto('./?e2e&seed=21');
+  await page.getByRole('button', { name: 'New game' }).click();
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.evaluate((id) => {
+    const c = (window as any).__game;
+    const s = structuredClone(c.gs.value);
+    s.hands[0] = [{ id: 9500, k: 'M', t: id }, ...s.hands[0].filter((x: any) => x.k !== 'M')];
+    c.gs.value = s;
+  }, giveUp);
+  const ticker = page.locator('.tray [data-card="9500"] .ba-ticker');
+  await expect(ticker).toHaveCount(1);
+  await expect(ticker).toContainText(/éirigh as, or tabhair suas|tabhair suas, or éirigh as/);
+  await expect(page.locator('.tray [data-card="9500"]')).toHaveAttribute('aria-label', /éirigh as, or tabhair suas|tabhair suas, or éirigh as/);
+  if (await ticker.evaluate((el) => el.classList.contains('is-running'))) await expect(ticker.locator('.ba-more')).toHaveText('+1');
 });

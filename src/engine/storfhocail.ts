@@ -134,24 +134,43 @@ export interface Settlement {
   lost: string[];
   /** Bot-laid words nobody keeps. */
   vanished: string[];
+  /** Bot-laid words the player won but didn't claim: they go back to the bots. */
+  returned: string[];
+}
+
+/** The tiles laid this game: the player's and the bots'. */
+export function laidCounts(s: GameState): { mine: number; theirs: number } {
+  const human = humanOf(s);
+  const mine = (s.sf?.laid ?? []).filter((l) => l.p === human).length;
+  return { mine, theirs: (s.sf?.laid.length ?? 0) - mine };
+}
+
+/** Whether the player still has a tile they could lay with this deck: one in the bag (or in hand) not yet on the table. */
+export function usableLeft(s: GameState): boolean {
+  if (!s.sf || !s.config.sf) return false;
+  const human = humanOf(s);
+  const onTable = new Set(s.sf.laid.filter((l) => l.p === human).map((l) => l.word));
+  const usable = new Set(playableWords());
+  return s.config.sf.owned.some((w) => usable.has(w) && !onTable.has(w));
 }
 
 /**
- * Settling up (spec §6). The player wins: bots' tiles on the table come to them, theirs go back. A bot
- * wins: the player's laid tiles are lost, bots' vanish. A tie: the player keeps theirs, bots' vanish.
+ * Settling up. The player wins outright: their tiles stay theirs, and they claim the bots' tiles if they
+ * laid at least as many as the bots did, or had nothing usable left to lay; otherwise the bots' tiles go
+ * back. A bot wins: the player's laid tiles are lost, bots' vanish. A shared win: each side keeps its own.
  * Quitting (or restarting) after laying one counts as losing it. Tiles never laid are never at risk.
  */
 export function settleStorfhocail(s: GameState, quit = false): Settlement {
-  const none: Settlement = { gained: [], lost: [], vanished: [] };
+  const none: Settlement = { gained: [], lost: [], vanished: [], returned: [] };
   if (!s.sf) return none;
-  const human = s.config.players.findIndex((p) => p.kind === 'human');
+  const human = humanOf(s);
   const mine = s.sf.laid.filter((l) => l.p === human).map((l) => l.word);
   const bots = s.sf.laid.filter((l) => l.p !== human).map((l) => l.word);
-  if (quit) return { gained: [], lost: SF_SETTINGS.lossOnQuit ? mine : [], vanished: bots };
+  if (quit) return { ...none, lost: SF_SETTINGS.lossOnQuit ? mine : [], vanished: bots };
   if (!s.over) return none;
-  if (s.over.tie) return { gained: [], lost: [], vanished: bots };
-  if (s.over.winners[0] === human) return { gained: bots, lost: [], vanished: [] };
-  return { gained: [], lost: mine, vanished: bots };
+  if (s.over.tie) return { ...none, vanished: bots };
+  if (s.over.winners[0] === human) return mine.length >= bots.length || !usableLeft(s) ? { ...none, gained: bots } : { ...none, returned: bots };
+  return { ...none, lost: mine, vanished: bots };
 }
 
 // ---------- the player's progress (stored on the device) ----------
@@ -177,20 +196,39 @@ export interface SfProgress {
   history: { date: string; gained: string[]; lost: string[] }[];
   /** Word id → who the player won it from, and when. */
   wonFrom: Record<string, { name: string; date: string }>;
-  /** The highest restore point the bag has offered and the player has dealt with (saved or "Not now"). */
-  restoreSeen: number;
+  /** The latest restore point: a snapshot taken the moment the bag reached a multiple of restoreEvery,
+   *  kept until saved (and after, so the code can be copied again). A higher milestone replaces it. */
+  restorePoint?: RestorePoint;
   /** "Don't warn me again" on the bag sheet's stakes warning. */
   noWarn: boolean;
 }
 
-export const emptySfProgress = (): SfProgress => ({ finishedGames: 0, announced: false, unlocked: false, bagRevealed: false, owned: {}, seen: {}, lostByPlayer: [], laid: {}, history: [], wonFrom: {}, restoreSeen: 0, noWarn: false });
+export interface RestorePoint {
+  /** The milestone: the snapshot holds exactly this many tiles. */
+  at: number;
+  /** The words in the snapshot. */
+  words: string[];
+  code: string;
+  /** When the bag reached it (YYYY-MM-DD). */
+  reached: string;
+  saved: boolean;
+  /** When it was first saved. */
+  savedOn?: string;
+}
+
+export const emptySfProgress = (): SfProgress => ({ finishedGames: 0, announced: false, unlocked: false, bagRevealed: false, owned: {}, seen: {}, lostByPlayer: [], laid: {}, history: [], wonFrom: {}, noWarn: false });
 
 /** Stored progress from any earlier version: v1.1's first build counted solo games only. */
-export function migrateSfProgress(x: Partial<SfProgress> & { finishedSoloGames?: number }): SfProgress {
-  const { finishedSoloGames, ...rest } = x;
+export function migrateSfProgress(x: Partial<SfProgress> & { finishedSoloGames?: number; restoreSeen?: number }): SfProgress {
+  const { finishedSoloGames, restoreSeen, ...rest } = x;
   const pr = { ...emptySfProgress(), ...rest };
   if (x.finishedGames === undefined && finishedSoloGames !== undefined) pr.finishedGames = finishedSoloGames;
   for (const w of Object.keys(pr.owned)) if (pr.owned[w] > 0) pr.owned[w] = 1;
+  // v1.1 kept only the milestone it last offered: take that snapshot from the bag now, to save again.
+  if (restoreSeen && !pr.restorePoint && ownedCount(pr) >= restoreSeen) {
+    const words = Object.keys(pr.owned).filter((w) => pr.owned[w] > 0).slice(0, restoreSeen);
+    pr.restorePoint = { at: restoreSeen, words, code: restoreCode(pr, words), reached: new Date().toISOString().slice(0, 10), saved: false };
+  }
   return pr;
 }
 
@@ -236,7 +274,24 @@ export function applySettlement(pr: SfProgress, st: Settlement, laidByPlayer: st
   const laid = { ...pr.laid };
   for (const w of laidByPlayer) laid[w] = (laid[w] ?? 0) + 1;
   const history = st.gained.length || st.lost.length ? [...pr.history, { date, gained: st.gained, lost: st.lost }].slice(-50) : pr.history;
-  return { ...pr, owned, lostByPlayer, laid, history, wonFrom, bagRevealed: pr.bagRevealed || Object.keys(owned).length > 0 };
+  const next = { ...pr, owned, lostByPlayer, laid, history, wonFrom, bagRevealed: pr.bagRevealed || Object.keys(owned).length > 0 };
+  return { ...next, restorePoint: snapshotDue(next, st.gained, date) ?? pr.restorePoint };
+}
+
+/**
+ * A new restore point when the bag has just reached a multiple of restoreEvery above the last one (a
+ * jump from 9 to 12 reaches 10). The snapshot is the bag at that moment trimmed to exactly the
+ * milestone, dropping the tiles won last in this game.
+ */
+function snapshotDue(pr: SfProgress, gained: string[], date: string): RestorePoint | null {
+  const step = SF_SETTINGS.restoreEvery;
+  const n = ownedCount(pr);
+  const at = Math.floor(n / step) * step;
+  if (at < step || at <= (pr.restorePoint?.at ?? 0)) return null;
+  const owned = Object.keys(pr.owned).filter((w) => pr.owned[w] > 0);
+  const drop = new Set([...gained].reverse().filter((w) => pr.owned[w] > 0).slice(0, n - at));
+  const words = owned.filter((w) => !drop.has(w)).slice(0, at);
+  return { at, words, code: restoreCode(pr, words), reached: date, saved: false };
 }
 
 // ---------- restore points ----------
@@ -252,16 +307,9 @@ function checksum(text: string): string {
 const toB64 = (text: string) => btoa(String.fromCharCode(...new TextEncoder().encode(text))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const fromB64 = (b64: string) => new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0)));
 
-/** The restore point due now, if any: the bag has reached a multiple of restoreEvery not yet dealt with. */
-export function restoreDue(pr: SfProgress): number {
-  const step = SF_SETTINGS.restoreEvery;
-  const at = Math.floor(ownedCount(pr) / step) * step;
-  return at >= step && at > pr.restoreSeen ? at : 0;
-}
-
 /** A restore point: a short text code holding the bag and the phrases seen. */
-export function restoreCode(pr: SfProgress): string {
-  const body = toB64(JSON.stringify({ o: Object.keys(pr.owned).filter((w) => pr.owned[w] > 0).sort(), s: Object.fromEntries(Object.entries(pr.seen).map(([k, v]) => [k, v.times])) }));
+export function restoreCode(pr: SfProgress, words = Object.keys(pr.owned).filter((w) => pr.owned[w] > 0)): string {
+  const body = toB64(JSON.stringify({ o: [...words].sort(), s: Object.fromEntries(Object.entries(pr.seen).map(([k, v]) => [k, v.times])) }));
   return RESTORE_PREFIX + body + '-' + checksum(body);
 }
 
@@ -281,7 +329,9 @@ export function applyRestore(pr: SfProgress, code: string, date: string): { prog
   const seen = { ...pr.seen };
   for (const [k, n] of Object.entries(data.s)) if (SF_PHRASE[k] && typeof n === 'number') seen[k] = { times: Math.max(n, seen[k]?.times ?? 0), last: seen[k]?.last ?? date };
   const next = { ...pr, owned, seen, bagRevealed: true, lostByPlayer: pr.lostByPlayer.filter((w) => !owned[w]) };
-  return { progress: { ...next, restoreSeen: Math.max(pr.restoreSeen, Math.floor(ownedCount(next) / SF_SETTINGS.restoreEvery) * SF_SETTINGS.restoreEvery) } };
+  // The point it came from counts as saved: the player has the code.
+  const n = ownedCount(next);
+  return { progress: { ...next, restorePoint: { at: n, words: Object.keys(owned), code: code.trim().replace(/\s+/g, ''), reached: date, saved: true, savedOn: date } } };
 }
 
 // ---------- line ids: a compound, or a stórfhocal phrase ----------

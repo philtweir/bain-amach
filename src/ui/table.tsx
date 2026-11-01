@@ -3,12 +3,12 @@
 import type { JSX } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import { COMPOUNDS, printedAnswer } from '../engine/deck';
-import { SF_WORD, lineGloss, lineText, phraseText, settleStorfhocail } from '../engine/storfhocail';
-import { HandTile, SfBagSheet, SfMini, StakeChip, stakeBot } from './storfhocal';
+import { SF_WORD, laidCounts, lineGloss, lineText, phraseText, settleStorfhocail, usableLeft } from '../engine/storfhocail';
+import { HandTile, SfBagSheet, SfMini, SfWide, StakeChip, stakeBot } from './storfhocal';
 import { sfProgress } from '../storage';
 import { SfRows } from './screens/recap';
 import { canDraw, lineMoves, meaningsOf } from '../engine/game';
-import type { Card } from '../engine/types';
+import type { Card, Placed } from '../engine/types';
 import { hasMeaning, selEmpty, type Controller } from '../game/controller';
 import { t } from '../i18n';
 import { Critter } from './critters';
@@ -135,16 +135,16 @@ function River({ c }: { c: Controller }) {
 function TrayCard({ c, card, st }: { c: Controller; card: Card; st: { lit?: boolean; selected?: boolean; dim?: boolean; shake?: boolean } }) {
   const hidden = c.hidden;
   if (card.k === 'M') {
-    const h = press(() => c.tapMeaning(card.id));
+    const h = press(() => c.tapMeaning(card.id), () => c.tapMeaning(card.id, true));
     return (
       <div class="tray-slot" {...h}>
-        <MeaningCard card={card} hidden={hidden} onTap={() => {}} {...st} />
+        <MeaningCard card={card} hidden={hidden} onTap={() => {}} ticker {...st} />
       </div>
     );
   }
   const h = press(
     () => (card.k === 'W' ? c.tapWild(card.id) : c.tapHandVerb(card.id)),
-    card.k === 'V' ? () => c.tapHandVerb(card.id, true) : undefined,
+    card.k === 'V' ? () => c.tapHandVerb(card.id, true) : () => c.tapWild(card.id, true),
   );
   return (
     <button class={'ba-card ' + typeClass(card) + stateClass(st)} data-card={card.id} aria-label={cardLabel(card)} aria-pressed={st.selected ? 'true' : 'false'} {...h}>
@@ -211,12 +211,14 @@ function YourLine({ c }: { c: Controller }) {
               <span class="ba-star" />
             </span>
           );
-        if ('tile' in p)
+        if ('tile' in p) {
+          const word = sel.tile ?? (sel.through ? s.board.find((b) => b.x === sel.through!.x && b.y === sel.through!.y)?.t : undefined);
           return (
             <span key={i} class="ba-card ba-sf yl-card">
-              <span class="ba-word">{sel.tile ? SF_WORD[sel.tile]?.word : ''}</span>
+              <span class="ba-word">{word ? SF_WORD[word]?.word : ''}</span>
             </span>
           );
+        }
         const b = s.board.find((x) => x.x === p.cross.x && x.y === p.cross.y);
         return (
           <span key={i} class={'ba-card yl-card ' + (b ? typeClass(b) : '')}>
@@ -281,7 +283,7 @@ function Header({ c }: { c: Controller }) {
     sub = note ?? t('table.finalStallsSub', { total: fs.total });
   }
 
-  if (c.hidden) {
+  if (c.hidden && !(spot && canAct)) {
     const ready = hasMeaning(sel) && !!sel.verb && c.picks.value.length > 0;
     const any = hasMeaning(sel) || !!sel.verb || c.picks.value.length > 0;
     if (any && canAct) {
@@ -315,7 +317,7 @@ function Header({ c }: { c: Controller }) {
               <LockRing c={c} /> {t('table.wait')}
             </button>
           ) : (
-            <button class="ba-btn ba-btn-primary" disabled={!ready || !canAct} onClick={() => c.layIt()} key="lay">
+            <button class="ba-btn ba-btn-primary" disabled={!ready || !canAct} {...press(() => c.layIt(), () => c.layIt(true))} key="lay">
               {t('table.layIt')}
             </button>
           ),
@@ -354,6 +356,12 @@ function Header({ c }: { c: Controller }) {
         {t('table.layAlone')} <span class="ba-cost">· {t('table.draw2')}</span>
       </button>,
     );
+  } else if (sel.through && canAct) {
+    // A tile on the table picked: its verbs in the hand and the river tops its phrases need are lit.
+    const w = SF_WORD[s.board.find((b) => b.x === sel.through!.x && b.y === sel.through!.y)?.t ?? ''];
+    title = t('table.pickVerb');
+    sub = t('sf.throughSub', { word: w?.word ?? '', list: (w?.phrases ?? []).map((ph) => phraseText(ph) + ' · ' + ph.meaning.toLowerCase()).join('; ') });
+    actions.push(cancel);
   } else if (sel.tile && canAct) {
     // Your tile picked: the verbs and river tops that complete one of its phrases are lit.
     title = t('table.pickVerb');
@@ -387,6 +395,9 @@ function Header({ c }: { c: Controller }) {
     actions.push(cancel);
   } else {
     if (stuck) sub = t('table.stuckOn');
+    // Bots ahead on tiles, and you have one to lay: what claiming theirs takes.
+    const lc = laidCounts(s);
+    if (!note && !stuck && s.sf && !c.passAndPlay && lc.theirs > lc.mine && usableLeft(s)) sub = t('sf.trayBehind', { b: lc.theirs, m: lc.mine, n: lc.theirs - lc.mine });
     if (sfBtn) actions.push(sfBtn);
     if (c.race) {
       actions.push(stuckBtn);
@@ -415,7 +426,7 @@ function Choices({ c }: { c: Controller }) {
   return (
     <div class="choices">
       {choices.map((cid) => (
-        <button class="choice" key={cid} onClick={() => c.chooseCompound(cid)}>
+        <button class="choice" key={cid} {...press(() => c.chooseCompound(cid), () => c.chooseCompound(cid, true))}>
           <span class="ch-ga">{lineText(cid)}</span>
           <span class="ch-en">{c.lineDescription(cid)}</span>
         </button>
@@ -559,6 +570,7 @@ function MeaningPeek({ c }: { c: Controller }) {
   const s = c.gs.value;
   if (!pk) return null;
   const card = s.board.find((b) => b.x === pk.x && b.y === pk.y);
+  if (card?.k === 'S') return <SfPeek c={c} card={card} />;
   if (!card || card.k !== 'M') return null;
   const usable = !!s.config.rules?.tableMeanings;
   // Sit on the other half of the board from the card, so it never covers what you tapped.
@@ -569,6 +581,28 @@ function MeaningPeek({ c }: { c: Controller }) {
     <div class={'peek' + (low ? ' is-low' : '')} role="status" onClick={() => (c.peek.value = null)}>
       <div class="peek-label">{usable ? t('table.peekUsable') : t('table.peek')}</div>
       <MeaningCard card={card} hidden={c.hidden} used={card.used} alts uses={meaningUses(s.lines).get(pk.x + ',' + pk.y)} />
+    </div>
+  );
+}
+
+/** A stórfhocal on the table, opened up: its face, every line through it, and whether one more can run through. */
+function SfPeek({ c, card }: { c: Controller; card: Placed }) {
+  const s = c.gs.value;
+  const k = card.x + ',' + card.y;
+  const through = s.lines.filter((l) => l.sf && l.cells.some(([x, y]) => x + ',' + y === k));
+  const cell = document.querySelector(`[data-cell="${k}"]`)?.getBoundingClientRect();
+  const board = document.querySelector('.table-board')?.getBoundingClientRect();
+  const low = !!cell && !!board && cell.top + cell.height / 2 < board.top + board.height / 2;
+  return (
+    <div class={'peek sf-peek' + (low ? ' is-low' : '')} role="status" onClick={() => (c.peek.value = null)}>
+      <div class="peek-label">{t('sf.peekLabel', { name: c.name(card.owner) })}</div>
+      <SfWide word={card.t} hidden={c.hidden} />
+      <ul class="sf-peek-lines">
+        {through.map((l, i) => (
+          <li key={i}>{t('sf.peekLine', { phrase: c.hidden ? (SF_WORD[card.t]?.word ?? '') : lineText(l.c), meaning: lineGloss(l.c).toLowerCase(), name: c.name(l.p) })}</li>
+        ))}
+      </ul>
+      <p class="sf-peek-note">{card.cross ? t('sf.peekShared') : t('sf.peekCan')}</p>
     </div>
   );
 }

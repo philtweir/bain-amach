@@ -12,6 +12,8 @@ const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCas
 /** Verb groups rendered while the screen slides in; the rest follow once it has landed. */
 const FIRST_GROUPS = 5;
 const SLIDE_MS = 420;
+/** One order for verbs and for the entries in each: A–Z by the Irish, fadas ignored. */
+const GA = new Intl.Collator('ga', { sensitivity: 'base' });
 
 export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOnly?: boolean }) {
   const [q, setQ] = useState('');
@@ -47,7 +49,7 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
           if (fq && !fold(phraseText(ph, w.word)).includes(fq) && !fold(ph.meaning).includes(fq)) continue;
           group(ph.verb).sf.push({ w, ph });
         }
-    return [...by.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ga'));
+    return [...by.entries()].sort((a, b) => GA.compare(a[0], b[0]));
   }, [q, onlyDrafts, pr]);
   const entries = groups.reduce((n, [, g]) => n + g.cs.length + g.sf.length, 0);
   const focusRef = useRef<HTMLDivElement>(null);
@@ -77,7 +79,11 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
                   {sf.length > 0 && ' · ' + (sf.length === 1 ? t('glossary.sfOne') : t('glossary.sfN', { n: sf.length }))}
                 </span>
               </div>
-              {cs.map((c) => {
+              {[...cs.map((c) => ({ text: compoundText(c), c })), ...sf.map((e) => ({ text: phraseText(e.ph, e.w.word), e }))]
+                .sort((a, b) => GA.compare(a.text, b.text))
+                .map((item) => {
+                if ('e' in item) return <SfRow key={item.e.ph.id} e={item.e} focus={focus} />;
+                const c = item.c;
                 const p = prog[c.id];
                 const isMade = !!p && p.made > 0;
                 const isOpen = open === c.id;
@@ -106,9 +112,6 @@ export function GlossaryScreen({ focus, draftsOnly }: { focus?: string; draftsOn
                   </div>
                 );
               })}
-              {sf.map((e) => (
-                <SfRow key={e.ph.id} e={e} focus={focus} />
-              ))}
             </section>
           ))}
         </div>

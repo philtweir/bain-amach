@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { botTurn } from './bot';
 import { judgeSf } from './builder';
 import { BASE } from './deck';
-import { DIRS, apply, check, newGame, pouchPut, sfMoves, wrongLine } from './game';
-import { SF, SF_PHRASE, SF_SETTINGS, applyRestore, applySettlement, botSfChance, emptySfProgress, migrateSfProgress, phraseSeen, pickBotWord, restoreCode, restoreDue, settleStorfhocail, sfUnlocked, wordSeen, type SfDeal, type SfProgress } from './storfhocail';
+import { DIRS, apply, check, newGame, pouchPut, sfMoves, sfThroughMoves, wrongLine } from './game';
+import { botMove } from './bot';
+import { emptySelection, ways } from './builder';
+import { SF, SF_PHRASE, SF_SETTINGS, applyRestore, applySettlement, botSfChance, emptySfProgress, migrateSfProgress, phraseSeen, pickBotWord, restoreCode, settleStorfhocail, sfUnlocked, wordSeen, type SfDeal, type SfProgress } from './storfhocail';
 import { APP_RULES, type Card, type GameState, type LineMove, type PlayerConfig, type Placed, type SfMove } from './types';
 
 let nid = 5000;
@@ -75,7 +77,7 @@ describe('stórfhocal lines', () => {
     if (r.ok) expect(r.state.board.find((b) => b.x === 1 && b.y === 0)!.cross).toBe(true);
   });
 
-  it('nothing runs through a stórfhocal: not a regular line, not another stórfhocal line', () => {
+  it('a tile is never a particle: no ordinary line runs through it, nor does a different tile\'s phrase', () => {
     const eist = V('éist');
     const tile = at({ id: 100000, k: 'S', t: 's11' }, 2, 0, 'h', { phrase: 's11a' });
     const s = position({ board: [at(V('cuir'), 0, 0), tile], piles: [['le'], ['as'], ['ar'], ['do'], ['amach']], hand: [eist, { id: nid++, k: 'M', t: 'm01' }, V('tabhair')], pouch: ['s01'] });
@@ -111,6 +113,55 @@ describe('stórfhocal lines', () => {
   });
 });
 
+describe('a line through a stórfhocal on the table', () => {
+  // A bot laid tabhair · aire · do across the top; aire sits at (1, 0).
+  const tableTile = (hand: Card[], piles: string[][] = [['do']]) => {
+    const s = position({
+      board: [at(V('tabhair'), 0, 0), at({ id: 100000, k: 'S', t: 's01' }, 1, 0, 'h', { owner: 1, phrase: 's01a' }), at(P('do'), 2, 0, 'h', { owner: 1 })],
+      piles,
+      hand,
+    });
+    s.sf!.laid = [{ word: 's01', phrase: 's01a', p: 1 }];
+    return s;
+  };
+
+  it('runs down through the tile with a verb from the hand: no tile from the bag, nothing laid, the tile shared once', () => {
+    const s = tableTile([V('tabhair'), V('fan')]);
+    const mvs = sfThroughMoves(s, 0);
+    expect(mvs.map((m) => [m.x, m.y, m.d[1]])).toEqual(expect.arrayContaining([[1, -1, 1], [1, 1, -1]]));
+    const r = apply(s, 0, mvs.find((m) => m.d[1] === 1)!);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const t = r.state;
+    expect(t.board.filter((b) => b.k === 'S')).toHaveLength(1);
+    expect(t.board.find((b) => b.k === 'S')!.cross).toBe(true);
+    expect(t.sf!.laid).toEqual(s.sf!.laid);
+    expect(t.hands[0].map((c) => c.t)).toEqual(['fan']);
+    expect(t.lines.at(-1)).toMatchObject({ p: 0, c: 's01a', sf: true });
+    expect(sfThroughMoves({ ...t, turn: 0 }, 0)).toEqual([]);
+  });
+
+  it('needs a verb from the hand, the tile where the phrase puts it, and no second shared card', () => {
+    const s = tableTile([V('tabhair'), V('fan')]);
+    const mv = sfThroughMoves(s, 0)[0];
+    expect(check(s, 0, { ...mv, verb: { table: { x: 0, y: 0 } } })).toMatchObject({ why: 'NotLegal' });
+    expect(check(s, 0, { ...mv, on: { x: 2, y: 0 } })).toMatchObject({ why: 'NotLegal' });
+    expect(check(s, 0, mv)).toBeNull();
+  });
+
+  it('the builder offers it once the tile is picked, and a bot takes it when it has no other line', () => {
+    const s = tableTile([V('tabhair'), V('fan')]);
+    const ws = ways(s, 0, { ...emptySelection(), through: { x: 1, y: 0 } });
+    expect(ws.length).toBeGreaterThan(0);
+    expect(ws.every((w) => w.on && w.on.x === 1 && w.on.y === 0)).toBe(true);
+    const b = structuredClone(s);
+    b.hands = [[V('fan')], [V('tabhair')]];
+    b.turn = 1;
+    const choice = botMove(b, 1);
+    expect(choice.move).toMatchObject({ type: 'sf', on: { x: 1, y: 0 } });
+  });
+});
+
 describe('settling up', () => {
   const ended = (laid: { word: string; p: number }[], over: GameState['over']): GameState => {
     const s = position({ piles: [['do']], hand: [V('fan')] });
@@ -123,17 +174,42 @@ describe('settling up', () => {
     { word: 's05', p: 1 },
   ];
   it('the player wins: bots’ tiles come to the bag, the player’s go back', () => {
-    expect(settleStorfhocail(ended(laid, { how: 'out', winners: [0], tie: false, counts: [0, 3] }))).toEqual({ gained: ['s05'], lost: [], vanished: [] });
+    expect(settleStorfhocail(ended(laid, { how: 'out', winners: [0], tie: false, counts: [0, 3] }))).toEqual({ gained: ['s05'], lost: [], vanished: [], returned: [] });
   });
   it('a bot wins: the player’s laid tiles are lost, bots’ vanish', () => {
-    expect(settleStorfhocail(ended(laid, { how: 'fewest', winners: [1], tie: false, counts: [4, 2] }))).toEqual({ gained: [], lost: ['s01'], vanished: ['s05'] });
+    expect(settleStorfhocail(ended(laid, { how: 'fewest', winners: [1], tie: false, counts: [4, 2] }))).toEqual({ gained: [], lost: ['s01'], vanished: ['s05'], returned: [] });
   });
   it('a tie: the player keeps theirs, bots’ vanish', () => {
-    expect(settleStorfhocail(ended(laid, { how: 'fewest', winners: [0, 1], tie: true, counts: [2, 2] }))).toEqual({ gained: [], lost: [], vanished: ['s05'] });
+    expect(settleStorfhocail(ended(laid, { how: 'fewest', winners: [0, 1], tie: true, counts: [2, 2] }))).toEqual({ gained: [], lost: [], vanished: ['s05'], returned: [] });
   });
   it('quitting after laying one loses it; before laying, nothing is lost', () => {
-    expect(settleStorfhocail(ended(laid, null), true)).toEqual({ gained: [], lost: ['s01'], vanished: ['s05'] });
-    expect(settleStorfhocail(ended([{ word: 's05', p: 1 }], null), true)).toEqual({ gained: [], lost: [], vanished: ['s05'] });
+    expect(settleStorfhocail(ended(laid, null), true)).toEqual({ gained: [], lost: ['s01'], vanished: ['s05'], returned: [] });
+    expect(settleStorfhocail(ended([{ word: 's05', p: 1 }], null), true)).toEqual({ gained: [], lost: [], vanished: ['s05'], returned: [] });
+  });
+
+  // The claim: on an outright win, the bots' tiles come only if the player laid as many, or had nothing usable left.
+  const won = (laid0: { word: string; p: number }[], bag: string[]) => {
+    const s = ended(laid0, { how: 'out', winners: [0], tie: false, counts: [0, 3] });
+    s.config = { ...s.config, sf: { on: true, owned: bag, seenAny: true } };
+    return settleStorfhocail(s);
+  };
+  it('claim: 0 laid to their 1 with a usable tile in the bag: the bot’s tile goes back', () => {
+    expect(won([{ word: 's05', p: 1 }], ['s02'])).toEqual({ gained: [], lost: [], vanished: [], returned: ['s05'] });
+  });
+  it('claim: 0 to 1 with an empty bag: claimed', () => {
+    expect(won([{ word: 's05', p: 1 }], []).gained).toEqual(['s05']);
+  });
+  it('claim: 1 to 1: claimed', () => {
+    expect(won([{ word: 's01', p: 0 }, { word: 's05', p: 1 }], ['s01', 's02']).gained).toEqual(['s05']);
+  });
+  it('claim: 1 to 2 with a tile left: neither of the bots’ tiles is claimed', () => {
+    expect(won([{ word: 's01', p: 0 }, { word: 's05', p: 1 }, { word: 's06', p: 1 }], ['s01', 's02'])).toMatchObject({ gained: [], returned: ['s05', 's06'] });
+  });
+  it('claim: 2 to 2 after taking a second tile: claimed', () => {
+    expect(won([{ word: 's01', p: 0 }, { word: 's05', p: 1 }, { word: 's02', p: 0 }, { word: 's06', p: 1 }], ['s01', 's02', 's03']).gained).toEqual(['s05', 's06']);
+  });
+  it('claim: every usable tile already laid counts as nothing left', () => {
+    expect(won([{ word: 's01', p: 0 }, { word: 's05', p: 1 }, { word: 's06', p: 1 }], ['s01']).gained).toEqual(['s05', 's06']);
   });
 });
 
@@ -182,10 +258,11 @@ describe('bots and stórfhocail', () => {
         t++;
       }
       expect(s.over).not.toBeNull();
-      expect(s.lines.filter((l) => l.sf && l.p === 0)).toEqual([]);
+      // Only the Hard bot lays tiles (the Normal one may still run a line through one on the table).
+      expect(s.sf!.laid.filter((l) => l.p === 0)).toEqual([]);
       // No human at the table has laid any, so the cap holds the bots to one.
-      expect(s.lines.filter((l) => l.sf).length).toBeLessThanOrEqual(1);
-      laid += s.lines.filter((l) => l.sf).length;
+      expect(s.sf!.laid.length).toBeLessThanOrEqual(1);
+      laid += s.sf!.laid.length;
     }
     expect(laid).toBeGreaterThan(20);
   });
@@ -242,11 +319,11 @@ describe('stórfhocal data', () => {
 describe('the bag and progress', () => {
   it('a settlement fills and empties slots (a second copy adds nothing); a lost word is remembered until won back', () => {
     let pr: SfProgress = { ...emptySfProgress(), owned: { s01: 1 } };
-    pr = applySettlement(pr, { gained: ['s05'], lost: ['s01'], vanished: [] }, ['s01'], '2026-10-28');
+    pr = applySettlement(pr, { gained: ['s05'], lost: ['s01'], vanished: [], returned: [] }, ['s01'], '2026-10-28');
     expect(pr.owned).toEqual({ s05: 1 });
     expect(pr.lostByPlayer).toEqual(['s01']);
     expect(pr.laid).toEqual({ s01: 1 });
-    pr = applySettlement(pr, { gained: ['s01', 's05'], lost: [], vanished: [] }, [], '2026-10-29', { s01: 'Giorria' });
+    pr = applySettlement(pr, { gained: ['s01', 's05'], lost: [], vanished: [], returned: [] }, [], '2026-10-29', { s01: 'Giorria' });
     expect(pr.owned).toEqual({ s05: 1, s01: 1 });
     expect(pr.wonFrom.s01).toEqual({ name: 'Giorria', date: '2026-10-29' });
     expect(pr.lostByPlayer).toEqual([]);
@@ -256,9 +333,9 @@ describe('the bag and progress', () => {
   it('the bag shows from the first tile and stays after the last is lost', () => {
     let pr = emptySfProgress();
     expect(pr.bagRevealed).toBe(false);
-    pr = applySettlement(pr, { gained: ['s02'], lost: [], vanished: [] }, [], 'd');
+    pr = applySettlement(pr, { gained: ['s02'], lost: [], vanished: [], returned: [] }, [], 'd');
     expect(pr.bagRevealed).toBe(true);
-    pr = applySettlement(pr, { gained: [], lost: ['s02'], vanished: [] }, ['s02'], 'd');
+    pr = applySettlement(pr, { gained: [], lost: ['s02'], vanished: [], returned: [] }, ['s02'], 'd');
     expect(pr.owned).toEqual({});
     expect(pr.bagRevealed).toBe(true);
   });
@@ -273,21 +350,44 @@ describe('the bag and progress', () => {
     expect(old.owned).toEqual({ s01: 1 });
   });
 
-  it('restore points: due at each 10, a code that round-trips, and only into an empty bag', () => {
+  it('a restore code round-trips, and restores only into an empty bag', () => {
     const ten = Object.fromEntries(SF.words.slice(0, 10).map((w) => [w.id, 1]));
     const pr: SfProgress = { ...emptySfProgress(), owned: ten, seen: { s01a: { times: 3, last: 'd' } } };
-    expect(restoreDue({ ...pr, owned: { s01: 1 } })).toBe(0);
-    expect(restoreDue(pr)).toBe(10);
-    expect(restoreDue({ ...pr, restoreSeen: 10 })).toBe(0);
     const code = restoreCode(pr);
     expect(code).toMatch(/^BA1-/);
     const back = applyRestore(emptySfProgress(), code, 'd');
     expect(back.progress!.owned).toEqual(ten);
     expect(back.progress!.seen.s01a.times).toBe(3);
-    expect(back.progress!.restoreSeen).toBe(10);
+    expect(back.progress!.restorePoint).toMatchObject({ at: 10, saved: true });
     expect(applyRestore({ ...emptySfProgress(), owned: { s02: 1 } }, code, 'd').error).toBe('notEmpty');
     expect(applyRestore(emptySfProgress(), code.slice(0, -1) + (code.endsWith('a') ? 'b' : 'a'), 'd').error).toBe('badCode');
     expect(applyRestore(emptySfProgress(), 'hello', 'd').error).toBe('badCode');
+  });
+
+  it('a restore point is taken when the bag reaches 10, waits to be saved, and survives a lost tile', () => {
+    const ids = SF.words.map((w) => w.id);
+    const nine: SfProgress = { ...emptySfProgress(), owned: Object.fromEntries(ids.slice(0, 9).map((w) => [w, 1])) };
+    expect(applySettlement(nine, { gained: [], lost: [], vanished: [], returned: [] }, [], 'd').restorePoint).toBeUndefined();
+    let pr = applySettlement(nine, { gained: [ids[9]], lost: [], vanished: [], returned: [] }, [], '2026-10-30');
+    const rp = pr.restorePoint!;
+    expect(rp).toMatchObject({ at: 10, saved: false, reached: '2026-10-30' });
+    expect(rp.words.sort()).toEqual(ids.slice(0, 10).sort());
+    // Later, then a tile lost to a bot: the point and its code stay, and still restore the 10.
+    pr = applySettlement(pr, { gained: [], lost: [ids[0]], vanished: [], returned: [] }, [ids[0]], 'd');
+    expect(pr.restorePoint).toEqual(rp);
+    expect(Object.keys(applyRestore(emptySfProgress(), rp.code, 'd').progress!.owned).length).toBe(10);
+  });
+
+  it('a jump from 9 to 12 takes a 10-tile point, without the tiles won last', () => {
+    const ids = SF.words.map((w) => w.id);
+    const nine: SfProgress = { ...emptySfProgress(), owned: Object.fromEntries(ids.slice(0, 9).map((w) => [w, 1])) };
+    const pr = applySettlement(nine, { gained: [ids[9], ids[10], ids[11]], lost: [], vanished: [], returned: [] }, [], 'd');
+    expect(pr.restorePoint!.at).toBe(10);
+    expect(pr.restorePoint!.words.sort()).toEqual(ids.slice(0, 10).sort());
+    // Saved, then 20: a new point replaces it; going back below 10 and up again doesn't.
+    const saved = { ...pr, restorePoint: { ...pr.restorePoint!, saved: true } };
+    const again = applySettlement(saved, { gained: [], lost: [ids[0]], vanished: [], returned: [] }, [], 'd');
+    expect(applySettlement(again, { gained: [ids[0]], lost: [], vanished: [], returned: [] }, [], 'd').restorePoint!.saved).toBe(true);
   });
 
   it('a phrase is seen once laid, or once its tile is owned (printed on it)', () => {

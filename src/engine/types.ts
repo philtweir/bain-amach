@@ -68,7 +68,8 @@ export interface SwapMove {
 }
 
 /** A stórfhocal line: a verb, then the phrase's cells in order (the tile, and particles from the river,
- *  wildcards or one particle already down). No meaning card. `src` covers the particle cells only. */
+ *  wildcards or one particle already down). No meaning card. `src` covers the particle cells only.
+ *  `on`: the line runs through a tile already on the table (its cell), instead of laying one. */
 export interface SfMove {
   type: 'sf';
   word: string;
@@ -78,6 +79,7 @@ export interface SfMove {
   y: number;
   d: Dir;
   src: Src[];
+  on?: { x: number; y: number };
 }
 
 export type Move = LineMove | LoneMove | SwapMove | SfMove;

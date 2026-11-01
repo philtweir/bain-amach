@@ -4,7 +4,7 @@ import { canInstall, installEvent, restartForUpdate, updateReady } from '../../a
 import { BASE as DECK, BASE_COMPOUND_BY_ID as COMPOUND_BY_ID, BASE_COMPOUNDS as COMPOUNDS, DRAFT_COMPOUNDS, compoundText } from '../../engine/deck';
 import type { Card } from '../../engine/types';
 import { ago, t } from '../../i18n';
-import { platform } from '../../platform';
+import { copyReleaseData, platform } from '../../platform';
 import { madeCount, progress, savedGame, saveError, settings, updateSettings, writeGame, sfProgress } from '../../storage';
 import { SF, SF_WORD, ownedCount } from '../../engine/storfhocail';
 import { SfMini } from '../storfhocal';
@@ -79,6 +79,96 @@ function InstallNudge() {
   );
 }
 
+/** A build from main (the test build at /main/). Releases never show the stamp. */
+const IN_TEST = __APP_CHANNEL__ === 'main';
+const builtDate = (iso: string, opts: Intl.DateTimeFormatOptions) => (iso ? new Date(iso).toLocaleString(undefined, opts) : '');
+
+/** The IN TEST stamp: tapping it opens the build sheet. */
+function TestStamp() {
+  const [open, setOpen] = useState(false);
+  const commit = __APP_COMMIT__ || 'local';
+  const day = builtDate(__APP_BUILT__, { day: 'numeric', month: 'short' });
+  return (
+    <>
+      <button class="ba-stamp home-stamp" type="button" aria-label={t('test.stampLabel', { commit, date: builtDate(__APP_BUILT__, { day: 'numeric', month: 'long' }) })} onClick={() => setOpen(true)}>
+        <b>{t('test.stamp')}</b>
+        <small>main · {commit}{day ? ' · ' + day : ''}</small>
+      </button>
+      {open && <TestSheet onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+function TestSheet({ onClose }: { onClose: () => void }) {
+  const [confirm, setConfirm] = useState(false);
+  const commit = __APP_COMMIT__ || 'local';
+  const report = () => {
+    const body = [`Build: main · ${commit}`, `Built: ${__APP_BUILT__ || 'local'}`, `Release: ${__APP_RELEASE__ || 'none'}`, `Device: ${navigator.userAgent}`, '', 'What happened:', ''].join('\n');
+    const url = `https://github.com/philtweir/bain-amach/issues/new?title=${encodeURIComponent(`[test ${commit}] `)}&body=${encodeURIComponent(body)}`;
+    window.open(url, '_blank', 'noopener');
+  };
+  return (
+    <div class="sheet-wrap" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div class="ba-scrim scrim-in" aria-hidden="true" />
+      <div class="ba-sheet sheet sheet-in test-build" role="dialog" aria-modal="true" aria-label={t('test.title')}>
+        <div class="grabber" aria-hidden="true" />
+        <div class="sheet-head">
+          <h2 class="sheet-title">{t('test.title')}</h2>
+          <span class="ba-stamp tb-stamp" aria-hidden="true">
+            <b>{t('test.stamp')}</b>
+          </span>
+        </div>
+        <p class="sheet-sub">{t('test.sub')}</p>
+        <dl class="panel tb-facts">
+          <div>
+            <dt>{t('test.build')}</dt>
+            <dd>main · {commit}</dd>
+          </div>
+          <div>
+            <dt>{t('test.built')}</dt>
+            <dd>{builtDate(__APP_BUILT__, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) || t('test.local')}</dd>
+          </div>
+          <div>
+            <dt>{t('test.release')}</dt>
+            <dd>{__APP_RELEASE__ || t('test.noRelease')}</dd>
+          </div>
+        </dl>
+        {confirm ? (
+          <>
+            <p class="confirm-q">{t('test.copyQ')}</p>
+            <div class="row2">
+              <button class="ba-btn ba-btn-secondary" onClick={() => setConfirm(false)}>
+                {t('test.keep')}
+              </button>
+              <button
+                class="ba-btn ba-btn-primary"
+                onClick={() => {
+                  copyReleaseData();
+                  location.reload();
+                }}
+              >
+                {t('test.copyYes')}
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <button class="ba-btn ba-btn-primary wide" onClick={report}>
+              {t('test.report')}
+            </button>
+            <button class="ba-btn ba-btn-secondary wide" onClick={() => setConfirm(true)}>
+              {t('test.copy')}
+            </button>
+            <a class="ba-btn ba-btn-quiet wide" href="../">
+              {t('test.openRelease')}
+            </a>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNew: () => void }) {
   const [discarding, setDiscarding] = useState(false);
   const saved = savedGame.value;
@@ -119,6 +209,7 @@ export function HomeScreen({ onContinue, onNew }: { onContinue: () => void; onNe
               <IconSettings size={26} />
             </button>
           </div>
+          {IN_TEST && <TestStamp />}
           <div class="home-sample" aria-hidden="true">
             <div class="hs-line">
               <Face card={{ id: -11, k: 'V', t: 'tabhair' }} size="hand" />

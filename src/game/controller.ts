@@ -14,6 +14,7 @@ import {
   judgeSf,
   usesTable,
   ways,
+  wayOf,
   wayToMove,
   type Attempt,
   type Placement,
@@ -21,10 +22,10 @@ import {
   type Way,
 } from '../engine/builder';
 import { COMPOUND_BY_ID, COMPOUNDS_BY_VERB, compoundText } from '../engine/deck';
-import { SF_CARD_ID, SF_PHRASE, lineGloss, lineParticles, lineText } from '../engine/storfhocail';
+import { SF_CARD_ID, SF_PHRASE, laidCounts, lineGloss, lineParticles, lineText, usableLeft } from '../engine/storfhocail';
 import { noteSeen } from '../app/storfhocail';
 import { apply, canDraw, FINAL_STALLS, holdsTile, meaningsOf, newGame, pass, pouchPut, pouchTake, raceStall, setStuck, useHint, view, wrongLine } from '../engine/game';
-import type { GameConfig, GameEvent, GameState, LineMove, Move, Rejection, VerbSrc } from '../engine/types';
+import type { GameConfig, GameEvent, GameState, LineMove, Move, Rejection, SfMove, VerbSrc } from '../engine/types';
 import { t } from '../i18n';
 import { platform } from '../platform';
 import { madeCount, recordLine, settings, sfProgress, updateSettings, writeGame } from '../storage';
@@ -81,7 +82,7 @@ export interface SpotChoice {
 /** A line has its meaning once a hand meaning card or a table meaning card is picked. */
 export const hasMeaning = (sel: Selection) => sel.meaning !== undefined || !!sel.onto;
 /** What the line will mean: a meaning card, or a stórfhocal tile (its own phrases). */
-export const hasTarget = (sel: Selection) => hasMeaning(sel) || !!sel.tile;
+export const hasTarget = (sel: Selection) => hasMeaning(sel) || !!sel.tile || !!sel.through;
 export const selEmpty = (sel: Selection) => !hasTarget(sel) && !sel.verb && !sel.river.length && !sel.wild.length && !sel.cross;
 
 const SPEED: Record<string, number> = { slow: 0.6, normal: 1, fast: 1.6 };
@@ -121,6 +122,10 @@ export class Controller {
   needWild = signal<{ compound: string; n: number } | null>(null);
   /** The bag picker is open (stórfhocail games). */
   sfPicker = signal(false);
+  /** A long-press started or added to the line being built: laying it opens the spot chooser. */
+  private longSel = false;
+  /** A tile just taken from the bag. */
+  freshTile = signal<{ word: string; at: number } | null>(null);
   /** The "the winner keeps it" warning has been seen this game. */
   /** A table meaning card being looked at: shows all three of its meanings. */
   peek = signal<{ x: number; y: number } | null>(null);
@@ -496,8 +501,8 @@ export class Controller {
         if (bot) this.botPlaying.value = ev.p;
         this.later(flight, () => {
           const word = ev.sf ? SF_PHRASE[ev.c]?.word : undefined;
-          // A bot's tile the player doesn't own: theirs if they win.
-          const keep = word && !(sfProgress.peek().owned[word] > 0) && !this.passAndPlay ? t('sf.keepIt') : undefined;
+          // A bot's tile the player doesn't own: what claiming it takes (laid as many as the bots, or nothing usable left).
+          const keep = word && !(sfProgress.peek().owned[word] > 0) && !this.passAndPlay ? claimLine(next) : undefined;
           this.toast({ kind: 'made', ga: text, en: ev.g.toLowerCase() + ' · ' + this.name(ev.p), player: ev.p, word, keep });
           if (this.botPlaying.value === ev.p) this.botPlaying.value = null;
           this.popNewMeanings();
@@ -655,6 +660,7 @@ export class Controller {
   }
 
   clearSelection() {
+    this.longSel = false;
     batch(() => {
       this.sel.value = emptySelection();
       this.needWild.value = null;
@@ -725,7 +731,7 @@ export class Controller {
     if (msg) this.toast({ kind: 'soft', icon: 'no', msg });
   }
 
-  tapMeaning(id: number) {
+  tapMeaning(id: number, long = false) {
     if (!this.canAct.value) return;
     if (this.tutorialHook?.('tapMeaning', id) === false) return;
     this.touch();
@@ -746,7 +752,7 @@ export class Controller {
     this.peek.value = null;
     if (ways(this.gs.value, this.viewer.value, next).length) this.sel.value = next;
     else this.sel.value = { ...emptySelection(), meaning: id };
-    this.afterPick(`m:${id}`);
+    this.afterPick(`m:${id}`, long);
   }
 
   /** A stórfhocal tile in the pouch: the line will be one of its phrases. */
@@ -776,6 +782,8 @@ export class Controller {
     const r = pouchPut(this.gs.value, this.viewer.value, word);
     if (!r.ok) return false;
     this.gs.value = r.state;
+    // The tray scrolls it into view and it glints once.
+    this.freshTile.value = { word, at: Date.now() };
     this.save();
     return true;
   }
@@ -796,7 +804,7 @@ export class Controller {
     this.pickVerb({ hand: id }, `v:${id}`, long);
   }
 
-  tapWild(id: number) {
+  tapWild(id: number, long = false) {
     if (!this.canAct.value) return;
     this.touch();
     if (this.hidden) {
@@ -809,7 +817,7 @@ export class Controller {
     const next = { ...sel, wild: has ? sel.wild.filter((w) => w !== id) : [...sel.wild, id] };
     if (!has && !ways(this.gs.value, this.viewer.value, next).length) return this.bad(`w:${id}`);
     this.sel.value = next;
-    this.afterPick(`w:${id}`);
+    this.afterPick(`w:${id}`, long);
   }
 
   tapRiver(i: number, long = false) {
@@ -843,8 +851,8 @@ export class Controller {
   tapTable(x: number, y: number, long = false) {
     const c = view(this.gs.value).at(x, y);
     if (!c) return;
-    // A meaning card on the table shows all three of its meanings, whoever's turn it is.
-    if (c.k === 'M') this.peek.value = this.peek.value && this.peek.value.x === x && this.peek.value.y === y && !this.canAct.value ? null : { x, y };
+    // A meaning card or a stórfhocal on the table opens up, whoever's turn it is.
+    if (c.k === 'M' || c.k === 'S') this.peek.value = this.peek.value && this.peek.value.x === x && this.peek.value.y === y && !this.canAct.value ? null : { x, y };
     if (!this.canAct.value) return;
     if (this.tutorialHook?.('tapTable', { x, y }) === false) return;
     this.touch();
@@ -863,6 +871,31 @@ export class Controller {
       const next = { ...sel, cross: { x, y }, verb: sel.verb && 'table' in sel.verb ? undefined : sel.verb };
       if (!ways(this.gs.value, this.viewer.value, next).length) return this.bad(`t:${x},${y}`);
       this.sel.value = next;
+      this.afterPick(`t:${x},${y}`, long);
+      return;
+    }
+    if (c.k === 'S') {
+      // A stórfhocal on the table: run a line through it, as through a particle (verb from the hand).
+      const sel = this.sel.value;
+      const same = !!sel.through && sel.through.x === x && sel.through.y === y;
+      if (this.hidden) {
+        this.sel.value = { ...sel, through: same ? undefined : { x, y }, tile: undefined, meaning: same ? sel.meaning : undefined, onto: undefined };
+        this.picks.value = [...this.picks.value.filter((pk) => !('tile' in pk)), ...(same ? [] : [{ tile: true as const }])];
+        return;
+      }
+      if (same) {
+        this.sel.value = { ...sel, through: undefined };
+        this.peek.value = null;
+        return;
+      }
+      if (c.cross) return this.bad(`t:${x},${y}`, t('sf.alreadyShared'));
+      const next: Selection = { ...sel, through: { x, y }, tile: undefined, meaning: undefined, onto: undefined, cross: undefined, verb: sel.verb && 'table' in sel.verb ? undefined : sel.verb };
+      if (ways(this.gs.value, this.viewer.value, next).length) this.sel.value = next;
+      else {
+        const fresh = { ...emptySelection(), through: { x, y } };
+        if (!ways(this.gs.value, this.viewer.value, fresh).length) return this.bad(`t:${x},${y}`, t('sf.noThrough'));
+        this.sel.value = fresh;
+      }
       this.afterPick(`t:${x},${y}`, long);
       return;
     }
@@ -932,6 +965,8 @@ export class Controller {
 
   /** After a pick: lay the line if it is complete and unambiguous. */
   private afterPick(key: string, long = false) {
+    if (long) this.longSel = true;
+    long = this.longSel;
     const sel = this.sel.value;
     if (this.tutorialHook?.('afterPick', sel) === false) return;
     if (!hasTarget(sel) || (!sel.verb && !sel.cross)) return;
@@ -959,7 +994,7 @@ export class Controller {
   }
 
   /** Two ways to finish: the player picked one compound. */
-  chooseCompound(cid: string) {
+  chooseCompound(cid: string, long = false) {
     const sel = this.sel.value;
     const all = this.ways.value.filter((w) => w.c === cid);
     const ws = all.filter((w) => w.src.every((x) => !('wild' in x) || sel.wild.includes(x.wild)));
@@ -971,6 +1006,10 @@ export class Controller {
     if (!way) return;
     const pls = placements(this.gs.value, way, this.focus);
     if (!pls.length) return this.bad('choice', t('table.noRoom'));
+    if (long || this.longSel) {
+      this.spot.value = { way, options: pls.slice(0, 14), chosen: 0 };
+      return;
+    }
     this.layWay(way, pls[0]);
   }
 
@@ -1046,15 +1085,27 @@ export class Controller {
   }
 
   /** Hidden mode: commit the assembled line. */
-  layIt() {
+  layIt(long = false) {
     if (!this.canAct.value || this.locked.value) return;
+    // A long-press anywhere in the line: the judged line opens the spot chooser instead of laying.
+    const lay = (mv: LineMove | SfMove) => {
+      const way = long || this.longSel ? wayOf(mv) : null;
+      const pls = way ? placements(this.gs.value, way, this.focus) : [];
+      if (way && pls.length) {
+        const i = pls.findIndex((p) => p.x === mv.x && p.y === mv.y && p.d[0] === mv.d[0] && p.d[1] === mv.d[1]);
+        this.spot.value = { way, options: i > 0 ? [pls[i], ...pls.filter((_, k) => k !== i)].slice(0, 14) : pls.slice(0, 14), chosen: 0 };
+        return;
+      }
+      this.play(mv);
+    };
     const sel = this.sel.value;
     if (!this.hidden) return;
-    if (sel.tile) {
+    if (sel.tile || sel.through) {
       if (!sel.verb || !this.picks.value.some((p) => !('tile' in p))) return this.bad('lay', t('table.buildingSub'));
       const parts = this.picks.value.map((p) => ('tile' in p ? { tile: true as const } : 'river' in p ? { river: p.river } : p));
-      const j = judgeSf(this.gs.value, this.viewer.value, { word: sel.tile, verb: sel.verb, parts });
-      if (j.ok) return this.play(j.move);
+      const word = sel.tile ?? view(this.gs.value).at(sel.through!.x, sel.through!.y)!.t;
+      const j = judgeSf(this.gs.value, this.viewer.value, { word, verb: sel.verb, parts, ...(sel.through ? { on: sel.through } : {}) });
+      if (j.ok) return lay(j.move);
       return this.refuse(j.reason);
     }
     if (!hasMeaning(sel) || !sel.verb || !this.picks.value.length) return this.bad('lay', t('table.buildingSub'));
@@ -1062,7 +1113,7 @@ export class Controller {
     const parts = this.picks.value.filter((p): p is Exclude<Pick, { tile: true }> => !('tile' in p));
     const a: Attempt = { meaning: onto ? view(this.gs.value).at(onto.x, onto.y)!.id : sel.meaning!, verb: sel.verb, parts, onto };
     const j = judge(this.gs.value, this.viewer.value, a, this.focus);
-    if (j.ok) return this.play(j.move);
+    if (j.ok) return lay(j.move);
     this.refuse(j.reason);
   }
 
@@ -1208,6 +1259,8 @@ export class Controller {
       wild: sel.wild.filter(inHand),
       onto,
       tile: sel.tile && holdsTile(s, p, sel.tile) ? sel.tile : undefined,
+      // A table tile someone else's line has just run through can't be shared again.
+      through: sel.through && view(s).at(sel.through.x, sel.through.y)?.cross === false ? sel.through : undefined,
     };
     const changed = JSON.stringify(kept) !== JSON.stringify(sel);
     const hv = this.hintVerb.value;
@@ -1301,4 +1354,11 @@ export const ALL_COMPOUNDS = COMPOUNDS;
 
 export function lineMoveText(mv: LineMove) {
   return compoundText(COMPOUND_BY_ID[mv.c]);
+}
+
+/** What the player must do to claim the bots' tiles, for the bot's toast. */
+function claimLine(s: GameState): string {
+  const { mine, theirs } = laidCounts(s);
+  if (!usableLeft(s) || mine >= theirs) return t('sf.claimWin');
+  return mine === 0 ? t('sf.claimLay') : t('sf.claimMore', { b: theirs, m: mine });
 }

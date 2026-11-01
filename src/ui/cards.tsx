@@ -1,5 +1,6 @@
 // Card faces, built on the design kit's ba- classes.
 import type { JSX } from 'preact';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import { PARTICLE_TYPE, answersFor, printedAnswer, senseOf } from '../engine/deck';
 import { meaningsOf } from '../engine/game';
 import type { Card as CardT, Placed } from '../engine/types';
@@ -134,7 +135,74 @@ export function Face(p: FaceProps) {
 }
 
 /** The wide meaning card in the hand: three meanings, the Irish answer under each (or a dotted rule). */
-export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string; alts?: boolean; uses?: Use[] } & CardState) {
+/** The answers to a meaning, the printed one first. */
+function answersOf(card: CardT, g: string): string[] {
+  const first = printedAnswer(card.t, g);
+  return [first, ...new Set(answersFor(g).filter((a) => a !== first))];
+}
+
+/**
+ * Ticker (design kit): one line that loops when it holds more than fits. Still when everything fits,
+ * dots between; otherwise it holds, then laps at about 32px a second. Paused while the card is picked
+ * up or off screen. Reduced motion: the first item and a +n chip (CSS).
+ */
+export function Ticker({ items, paused, class: cls = '' }: { items: string[]; paused?: boolean; class?: string }) {
+  const box = useRef<HTMLSpanElement>(null);
+  const run = useRef<HTMLSpanElement>(null);
+  const [lap, setLap] = useState<number | null>(null);
+  const [offscreen, setOffscreen] = useState(false);
+  const key = items.join('|');
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const measure = () => {
+      const w = run.current?.scrollWidth ?? 0;
+      // The run's own width against the room for it (the +n chip only shows under reduced motion).
+      setLap(w > el.clientWidth + 1 ? w : null);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [key]);
+  useEffect(() => {
+    const el = box.current;
+    if (!el || lap === null || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([e]) => setOffscreen(!e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lap !== null]);
+  const running = lap !== null;
+  // One lap moves the width of a run (plus its trailing dot); the first 14% of the cycle is the hold.
+  const secs = running ? (lap! + 16) / 32 / 0.86 : 0;
+  return (
+    <span class={'ba-ticker' + (running ? ' is-running' : '') + (running && (paused || offscreen) ? ' is-paused' : '') + (cls ? ' ' + cls : '')} ref={box} style={running ? ({ '--tick-dur': secs.toFixed(2) + 's' } as JSX.CSSProperties) : undefined}>
+      <span class="sr-only">{items.join(', ' + t('a11y.or') + ' ')}</span>
+      <span class="ba-tick" aria-hidden="true">
+        <span class="ba-run" ref={run}>
+          {items.map((x, i) => (
+            <span key={i}>{x}</span>
+          ))}
+        </span>
+        {running && (
+          <span class="ba-run">
+            {items.map((x, i) => (
+              <span key={i}>{x}</span>
+            ))}
+          </span>
+        )}
+      </span>
+      {items.length > 1 && (
+        <span class="ba-more" aria-hidden="true">
+          +{items.length - 1}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** A meaning card at hand size. `ticker`: in the hand, a meaning with more than one answer shows them all. */
+export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => void; used?: string; alts?: boolean; uses?: Use[]; ticker?: boolean } & CardState) {
   // On the board: every meaning in use is marked, with an arrow after it for each of its lines,
   // running the way that line reads into the card.
   const inUse = p.uses ? byMeaning(p.uses) : [];
@@ -142,7 +210,7 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
   const ms = meaningsOf(p.card);
   const Tag = p.onTap ? 'button' : 'div';
   const label = t('a11y.meaning', {
-    list: ms.map((g) => g.toLowerCase() + (p.hidden ? '' : ', ' + printedAnswer(p.card.t, g))).join('; '),
+    list: ms.map((g) => g.toLowerCase() + (p.hidden ? '' : ', ' + (p.ticker ? answersOf(p.card, g).join(', ' + t('a11y.or') + ' ') : printedAnswer(p.card.t, g)))).join('; '),
   });
   return (
     <Tag class={'ba-card ba-meaning' + stateClass(p)} onClick={p.onTap} aria-label={label} aria-pressed={p.onTap ? (p.selected ? 'true' : 'false') : undefined} data-card={p.card.id} type={p.onTap ? 'button' : undefined}>
@@ -161,7 +229,11 @@ export function MeaningCard(p: { card: CardT; hidden?: boolean; onTap?: () => vo
             )}
           </span>
           {!p.hidden && <SenseCount text={printedAnswer(p.card.t, g)} g={g} />}
-          <span class={'ba-ga' + (p.hidden ? ' is-hidden' : '')}>{p.hidden ? '·' : printedAnswer(p.card.t, g)}</span>
+          {p.ticker && !p.hidden && answersOf(p.card, g).length > 1 ? (
+            <Ticker class="ba-ga" items={answersOf(p.card, g)} paused={p.selected} />
+          ) : (
+            <span class={'ba-ga' + (p.hidden ? ' is-hidden' : '')}>{p.hidden ? '·' : printedAnswer(p.card.t, g)}</span>
+          )}
           {p.alts && !p.hidden && answersFor(g).filter((a) => a !== printedAnswer(p.card.t, g)).map((a) => (
             <span class="ba-alt" key={a}>
               {t('table.alsoAnswer', { answer: a })}

@@ -257,6 +257,45 @@ Departures and calls made in the build:
 Still with Phil: the Ulster check of the word list, Irish strings (Decks, Test with bots, the bag,
 restore points, the stake warning), tuning p, and preset decks.
 
+## v1.2 delta (playtest fixes, 2026-11-01)
+
+`handoff/design-kit/docs/changes-v1.2.md`, applied on top of v1.1 (`faa5d6a`). Patches 0001 (release and
+test channels) and 0002 (the Original deck) went in as they came; `storfhocail.cross.test.ts` too.
+
+| Item | Built |
+|---|---|
+| 1 Glossary order | One `Intl.Collator('ga', { sensitivity: 'base' })` for verbs and for the entries in each; Stórfhocal phrases sort in among the compounds |
+| 2 Every answer in the hand | The Ticker on hand meaning cards (`answersFor`, printed answer first): still when it fits, else a hold and a lap at 32px/s; paused while the card is picked or off screen; under reduced motion (system or Settings) the first answer and `+1`. Accessible name "éirigh as, or tabhair suas". Table, river, peek and hidden mode unchanged |
+| 3 Tile scrolls into view | Taking a tile scrolls the meanings lane to its start and the tile glints (`is-fresh`, 1.2s); `overflow-anchor: none` on the lanes |
+| 4 Both phrases on a tile | `.ba-sf-ph ~ .ba-sf-ph ~ .ba-sf-ph` hides only a third |
+| 5 Restore points wait | `restorePoint {at, words, code, reached, saved, savedOn}`, snapshotted at settlement and trimmed to the milestone by dropping the tiles won last; Later hides it for the visit; saving keeps a "Restore point · 10 · saved … · Show code" row; the strip fades tiles that have left. v1.1's `restoreSeen` migrates to a point waiting to be saved |
+| 6 Long-press placement | A long-press on any step of a line (meaning card, wildcard, tile, choice button, the source choice, Lay it in hidden mode) makes the completing step open the spot chooser |
+| 7 Crossing a phrase's particle | Already worked; the regression test is in |
+| 8 Claiming | Outright win: the bots' tiles are claimed only if you laid as many, or had nothing usable left; otherwise they go back. Toast, tray line, result card, bag sheet and Rules copy as specified |
+| 9 Test builds | The IN TEST stamp and build sheet on Home, only when `__APP_CHANNEL__ === 'main'` |
+| 10 Original deck | Patch 0002 |
+
+The delta's `components.css` began with a Google Fonts `@import`; dropped when copying (the app
+self-hosts its fonts).
+
+**Deploys:** the new workflow runs on a push to `main` or a `v*` tag, so pushes to
+`claude/gifted-bell-4sxvja` no longer deploy. Until Phil renames that branch to `main` and tags
+`v1.2.0` (README-v1.2.md), the live site stays on the v1.1 build.
+
+### Lines through a stórfhocal on the table (Phil, 2026-11-01)
+
+Phil asked to tap a tile on the table to see it, and to run his own line through one. Both are in:
+
+- **Tap a tile on the table** (any time, like a meaning card): its face with every phrase, who laid it,
+  the lines through it, and whether one more line can run through it.
+- **A line through a tile already down** works like a line through a particle: one of that tile's
+  phrases (the same one again, or another), a verb from the hand, particles from the river or
+  wildcards, the tile where the phrase puts it. A tile carries one line through it, then it's shared.
+  No tile comes out of the bag, nothing is laid or put at stake, and no meaning card is used.
+- **Bots** use it too when they have no ordinary line. Easy and Normal spot it as often as a line
+  through a particle; Hard always.
+- It doesn't count towards the claim rule (that counts tiles laid), and it never opens a stake.
+
 ## Deck depth (Phil, open)
 
 Each of the 36 compounds has exactly one meaning, and no verb + particles appears twice. Many phrasal

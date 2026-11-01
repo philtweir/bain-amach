@@ -1,6 +1,8 @@
 // Stórfhocail at the table and around it: the Opal tile (wide in the hand, square elsewhere), the bag
 // sheet in a game (with its stakes warning), and the stake chip in the status strip.
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import { reducedMotion } from './motion';
+import { press } from './press';
 import { DECK } from '../engine/deck';
 import { SF, SF_PHRASE, SF_WORD, phraseInDeck, phraseText, type SfWord } from '../engine/storfhocail';
 import type { GameState } from '../engine/types';
@@ -192,15 +194,32 @@ export function HandTile({ c }: { c: Controller }) {
   const s = c.gs.value;
   const v = c.viewer.value;
   const word = s.sf?.pouch[v]?.[0];
+  const slot = useRef<HTMLDivElement>(null);
+  const [, tick] = useState(0);
+  const fresh0 = c.freshTile.value;
+  // Taken from the bag: bring the meanings lane back to its start once the tile is drawn, then end the glint.
+  useEffect(() => {
+    if (!fresh0 || !word || fresh0.word !== word) return;
+    const lane = slot.current?.closest('.lane-scroll') as HTMLElement | null;
+    lane?.scrollTo({ left: 0, behavior: reducedMotion() ? 'auto' : 'smooth' });
+    const tm = setTimeout(() => tick((n) => n + 1), 1250);
+    return () => clearTimeout(tm);
+  }, [fresh0]);
+  const h = press(
+    () => word && c.tapTile(word),
+    () => word && c.tapTile(word, true),
+  );
   if (!word || !c.isHuman(v)) return null;
   const sel = c.sel.value;
   const lit = c.lit.value;
   const active = !c.hidden && !selEmpty(sel);
   const selected = sel.tile === word;
   const isLit = !!lit?.tiles.has(word);
+  const fresh = c.freshTile.value;
+  const glint = !!fresh && fresh.word === word && Date.now() - fresh.at < 1200;
   return (
-    <div class="tray-slot">
-      <SfWide word={word} hidden={c.hidden} selected={selected} lit={isLit && !selected} dim={active && !selected && !isLit} onTap={() => c.tapTile(word)} />
+    <div class="tray-slot" ref={slot} {...h}>
+      <SfWide word={word} hidden={c.hidden} selected={selected} lit={isLit && !selected} dim={active && !selected && !isLit} fresh={glint && !selected && !isLit} onTap={() => {}} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 // Queries for the line builder. `legal moves are the only source of highlights`: everything the UI
 // lights or lays comes from here. Also hidden-mode attempts and hints.
 import { COMPOUNDS_BY_MEANING, COMPOUNDS_BY_VERB, COMPOUND_BY_ID, compoundText, type Compound } from './deck';
-import { DIRS, bestLine, holdsTile, lineMoves, meaningsOf, sfMoves, view, type Ctx } from './game';
+import { DIRS, bestLine, holdsTile, lineMoves, meaningsOf, sfMoves, sfThroughMoves, view, type Ctx } from './game';
 import { SF_PHRASE, SF_WORD, phraseInDeck, phraseParticles } from './storfhocail';
 import type { Card, Dir, GameState, LineMove, Rejection, SfMove, Src, VerbSrc } from './types';
 
@@ -17,6 +17,8 @@ export interface Selection {
   onto?: { x: number; y: number };
   /** A stórfhocal tile from the pouch (word id): the line is one of its phrases, with no meaning card. */
   tile?: string;
+  /** A stórfhocal tile on the table, picked to run a line through (then `tile` is its word). */
+  through?: { x: number; y: number };
 }
 
 export const emptySelection = (): Selection => ({ river: [], wild: [] });
@@ -34,6 +36,8 @@ export interface Way {
   onto?: { x: number; y: number };
   /** A stórfhocal line: the tile and phrase (then `c` is the phrase id, `g` its meaning, `m` is -1). */
   sf?: { word: string; phrase: string };
+  /** A stórfhocal line through a tile already on the table: that tile's cell. */
+  on?: { x: number; y: number };
 }
 
 export interface Placement {
@@ -158,8 +162,37 @@ function sfWays(s: GameState, p: number, sel: Selection): Way[] {
   return out;
 }
 
+/** Stórfhocal ways through a tile already on the table: a verb from the hand, particles from the river
+ *  or wildcards (the tile is the line's one shared card). */
+function sfThroughWays(s: GameState, p: number, sel: Selection): Way[] {
+  if (!s.sf || sel.meaning !== undefined || sel.onto || sel.cross || (sel.verb && 'table' in sel.verb)) return [];
+  if (sel.tile && !sel.through) return [];
+  const g = view(s);
+  const hand = s.hands[p];
+  const allWild = hand.filter((c) => c.k === 'W').map((c) => c.id);
+  const wildIds = [...sel.wild.filter((w) => allWild.includes(w)), ...allWild.filter((w) => !sel.wild.includes(w))];
+  const hv = hand.filter((c) => c.k === 'V' && (!sel.verb || c.id === (sel.verb as { hand: number }).hand));
+  const out: Way[] = [];
+  for (const b of s.board) {
+    if (b.k !== 'S' || b.cross || (sel.through && (sel.through.x !== b.x || sel.through.y !== b.y))) continue;
+    for (const ph of SF_WORD[b.t]?.phrases ?? []) {
+      if (!phraseInDeck(ph)) continue;
+      const v = hv.find((h) => h.t === ph.verb);
+      if (!v || !sfCrossPlacements(g, b.x, b.y, ph.pattern.indexOf('~'), ph.pattern.length).length) continue;
+      for (const src of sourceCombos(s, phraseParticles(ph), wildIds, -1)) {
+        let ok = true;
+        for (const r of sel.river) if (src.filter((x) => 'river' in x && x.river === r).length < sel.river.filter((q) => q === r).length) ok = false;
+        for (const w of sel.wild) if (!src.some((x) => 'wild' in x && x.wild === w)) ok = false;
+        if (ok) out.push({ m: -1, g: ph.meaning, c: ph.id, sf: { word: b.t, phrase: ph.id }, verb: { hand: v.id }, src, on: { x: b.x, y: b.y } });
+      }
+    }
+  }
+  return out;
+}
+
 /** Every way to complete a line for player p consistent with the selection. */
 export function ways(s: GameState, p: number, sel: Selection): Way[] {
+  if (sel.through) return sfThroughWays(s, p, sel);
   if (sel.tile) return sfWays(s, p, sel);
   const g = view(s);
   const hand = s.hands[p];
@@ -235,8 +268,8 @@ export function ways(s: GameState, p: number, sel: Selection): Way[] {
         }
     }
   }
-  // With nothing chosen yet, tiles in the pouch are lines too (they light up).
-  if (sel.meaning === undefined && !sel.onto) out.push(...sfWays(s, p, sel));
+  // With nothing chosen yet, tiles in the pouch are lines too (they light up), and so are tiles on the table.
+  if (sel.meaning === undefined && !sel.onto) out.push(...sfWays(s, p, sel), ...sfThroughWays(s, p, sel));
   return out;
 }
 
@@ -261,7 +294,8 @@ export function placements(s: GameState, w: Way, focus?: { x: number; y: number 
     const ph = SF_PHRASE[w.sf.phrase];
     const n = ph.pattern.length;
     L = n - 1;
-    if (w.cross) {
+    if (w.on) out = sfCrossPlacements(g, w.on.x, w.on.y, ph.pattern.indexOf('~'), n);
+    else if (w.cross) {
       const pi = w.src.findIndex((x) => 'existing' in x);
       const i = ph.pattern.findIndex((t, k) => t !== '~' && ph.pattern.slice(0, k).filter((u) => u !== '~').length === pi);
       out = sfCrossPlacements(g, w.cross.x, w.cross.y, i, n);
@@ -301,8 +335,22 @@ function scorePlacements(g: Ctx, out: Placement[], L: number, focus?: { x: numbe
   return out.map((pl) => [score(pl), pl] as const).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
 }
 
+/** The way a judged move takes, so its other placements can be offered (a long-press on Lay it). */
+export function wayOf(mv: LineMove | SfMove): Way {
+  const tokens = mv.type === 'sf' ? SF_PHRASE[mv.phrase].pattern : COMPOUND_BY_ID[mv.c].ps;
+  // The shared particle's cell: the k-th particle in the line, counting only particle cells.
+  let cross: { x: number; y: number } | undefined;
+  const pi = mv.src.findIndex((x) => 'existing' in x);
+  if (pi >= 0) {
+    const i = tokens.findIndex((tk, k) => tk !== '~' && tokens.slice(0, k).filter((u) => u !== '~').length === pi);
+    cross = { x: mv.x + mv.d[0] * (i + 1), y: mv.y + mv.d[1] * (i + 1) };
+  }
+  if (mv.type === 'sf') return { m: -1, g: SF_PHRASE[mv.phrase].meaning, c: mv.phrase, verb: mv.verb, src: mv.src, sf: { word: mv.word, phrase: mv.phrase }, ...(cross ? { cross } : {}), ...(mv.on ? { on: mv.on } : {}) };
+  return { m: mv.m, g: mv.g, c: mv.c, verb: mv.verb, src: mv.src, ...(cross ? { cross } : {}), ...(mv.onto ? { onto: mv.onto } : {}) };
+}
+
 export function wayToMove(w: Way, pl: Placement): LineMove | SfMove {
-  if (w.sf) return { type: 'sf', word: w.sf.word, phrase: w.sf.phrase, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src };
+  if (w.sf) return { type: 'sf', word: w.sf.word, phrase: w.sf.phrase, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src, ...(w.on ? { on: w.on } : {}) };
   const mv: LineMove = { type: 'line', m: w.m, g: w.g, c: w.c, verb: w.verb, x: pl.x, y: pl.y, d: pl.d, src: w.src };
   if (w.onto) mv.onto = w.onto;
   return mv;
@@ -311,7 +359,7 @@ export function wayToMove(w: Way, pl: Placement): LineMove | SfMove {
 /** Whether a way builds on the table (a verb or particle already down, or onto a meaning card), so the
  *  fresh-line rule doesn't make it draw. */
 export function usesTable(w: Way): boolean {
-  return !('hand' in w.verb) || !!w.onto || w.src.some((x) => 'existing' in x);
+  return !('hand' in w.verb) || !!w.onto || !!w.on || w.src.some((x) => 'existing' in x);
 }
 
 /** Fewest wildcards, then one that builds on the table (no fresh-line draw), then river piles in order. */
@@ -336,7 +384,9 @@ export function lit(s: GameState, p: number, sel: Selection, ws = ways(s, p, sel
   const out: Lit = { meanings: new Set(), handVerbs: new Set(), tableCells: new Set(), river: new Set(), wild: new Set(), tiles: new Set() };
   const hand = s.hands[p];
   for (const w of ws) {
-    if (w.sf) {
+    if (w.on) {
+      if (!sel.through) out.tableCells.add(w.on.x + ',' + w.on.y);
+    } else if (w.sf) {
       if (!sel.tile) out.tiles.add(w.sf.word);
     } else if (w.onto) {
       if (!sel.onto) out.tableCells.add(w.onto.x + ',' + w.onto.y);
@@ -433,6 +483,8 @@ export function judge(s: GameState, p: number, a: Attempt, focus?: { x: number; 
 /** A hidden-mode stórfhocal attempt: the tile, a verb, and the tile and particles in the order picked. */
 export interface SfAttempt {
   word: string;
+  /** The tile is the one on the table at this cell (a line through it). */
+  on?: { x: number; y: number };
   verb: VerbSrc;
   parts: ({ tile: true } | { river: number } | { wild: number } | { cross: { x: number; y: number } })[];
 }
@@ -443,7 +495,7 @@ export function judgeSf(s: GameState, p: number, a: SfAttempt): { ok: true; move
   const g = view(s);
   const hand = s.hands[p];
   const w = SF_WORD[a.word];
-  if (!w || !holdsTile(s, p, a.word)) return { ok: false, reason: { why: 'NotLegal', detail: 'Pick a stórfhocal from your pouch' } };
+  if (!w || (!a.on && !holdsTile(s, p, a.word))) return { ok: false, reason: { why: 'NotLegal', detail: 'Pick a stórfhocal from your pouch' } };
   const verbWord = 'table' in a.verb ? g.at(a.verb.table.x, a.verb.table.y)?.t : hand.find((c) => c.id === (a.verb as { hand: number }).hand)?.t;
   if (!verbWord) return { ok: false, reason: { why: 'NotLegal', detail: 'Pick a verb' } };
   const tops = s.piles.map((pl) => pl.length);
@@ -465,7 +517,7 @@ export function judgeSf(s: GameState, p: number, a: SfAttempt): { ok: true; move
   const cross = parts.find((x) => 'cross' in x) as { cross: { x: number; y: number } } | undefined;
   const vk = JSON.stringify(a.verb);
   // A placement for this phrase and verb (through the chosen particle if one was picked), with the picked sources.
-  for (const mv of sfMoves(s, p, a.word, Infinity)) {
+  for (const mv of a.on ? sfThroughMoves(s, p, a.on) : sfMoves(s, p, a.word, Infinity)) {
     if (mv.phrase !== ph.id || JSON.stringify(mv.verb) !== vk) continue;
     if (cross) {
       const i = ph.pattern.findIndex((_, k) => {

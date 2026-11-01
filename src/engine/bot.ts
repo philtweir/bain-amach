@@ -1,6 +1,6 @@
 // Bots: the reference engine's planner, plus swaps and difficulty.
 import { COMPOUNDS } from './deck';
-import { apply, bestLine, isFresh, isStraddle, lineMoves, lineScore, loneMoves, meaningsOf, pass, sfMoves } from './game';
+import { apply, bestLine, isFresh, isStraddle, lineMoves, lineScore, loneMoves, meaningsOf, pass, sfMoves, sfThroughMoves } from './game';
 import { botSfChance, pickBotWord, playableWords } from './storfhocail';
 import { next } from './rng';
 import type { GameState, Level, LineMove, Move, SfMove } from './types';
@@ -57,6 +57,20 @@ export function botMove(s: GameState, p: number): BotChoice {
   }
   const line = level === 'easy' ? riverFirst(lines) : bestLine(lines, s);
   if (line) return { move: line, rng: rngState };
+  // No ordinary line: one through a stórfhocal already on the table (it sheds a verb). As hard to spot
+  // as a line through a particle.
+  if (s.sf) {
+    const through = sfThroughMoves(s, p).sort((a, b) => sfScore(b) - sfScore(a));
+    if (through.length) {
+      let seen = STRADDLE_SIGHT[level] >= 1;
+      if (!seen) {
+        const [r, st] = next(rngState);
+        rngState = st;
+        seen = r < STRADDLE_SIGHT[level];
+      }
+      if (seen) return { move: through[0], rng: rngState };
+    }
+  }
 
   const hand = s.hands[p];
   if (s.config.botSwaps !== false && s.faceUp) {

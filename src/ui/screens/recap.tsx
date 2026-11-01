@@ -160,6 +160,8 @@ export function SfRows({ s, st, name, ownedBefore }: { s: GameState; st: Settlem
   const human = s.config.players.findIndex((p) => p.kind === 'human');
   const winner = s.over && !s.over.tie ? s.over.winners[0] : -1;
   const had = new Set(ownedBefore ?? []);
+  const mine = laid.filter((l) => l.p === human).length;
+  const theirs = laid.length - mine;
   const word = (w: string) => SF_WORD[w]?.word ?? w;
   const rows = laid.map((l) => {
     const w = word(l.word);
@@ -167,7 +169,8 @@ export function SfRows({ s, st, name, ownedBefore }: { s: GameState; st: Settlem
       if (st.lost.includes(l.word)) return { w: l.word, line: t('sf.took', { name: winner >= 0 ? name(winner) : t('sf.theBot'), word: w }), sub: t('sf.tookSub', { name: winner >= 0 ? name(winner) : t('sf.theBot') }) };
       return { w: l.word, line: t('sf.stays', { word: w }), sub: s.over?.tie ? t('sf.staysTie') : t('sf.staysWon') };
     }
-    if (st.gained.includes(l.word)) return { w: l.word, line: had.has(l.word) ? t('sf.already', { word: w }) : t('sf.joins', { word: w }), sub: t('sf.joinsSub', { name: name(l.p) }) };
+    if (st.gained.includes(l.word)) return { w: l.word, line: had.has(l.word) ? t('sf.already', { word: w }) : t('sf.joins', { word: w }), sub: mine > 0 ? t(mine === 1 ? 'sf.claimedOne' : 'sf.claimedSome', { name: name(l.p) }) : t('sf.joinsSub', { name: name(l.p) }) };
+    if (st.returned.includes(l.word)) return { w: l.word, line: t('sf.goesBack', { word: w, name: name(l.p) }), sub: mine === 0 ? t('sf.goesBackNone', { n: theirs }) : t('sf.goesBackSome', { m: mine, n: theirs }) };
     return { w: l.word, line: t('sf.laidBy', { word: w, name: name(l.p) }), sub: winner === l.p ? t('sf.goesWith', { name: name(l.p) }) : t('sf.gone') };
   });
   return (

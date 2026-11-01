@@ -1,8 +1,9 @@
 // Your Stórfhocail (the bag): one slot per word in the list, in a fixed order. A filled slot shows the
 // tile; an empty one is blank, so the set's size shows without spoiling the words. Tap a tile for its
-// detail. At 10, 20, 30 tiles the bag offers a restore point; restoring works only into an empty bag.
+// detail. At 10, 20, 30 tiles the bag takes a restore point, which waits here until it is saved;
+// restoring works only into an empty bag.
 import { useState } from 'preact/hooks';
-import { SF, SF_WORD, applyRestore, ownedCount, restoreCode, restoreDue } from '../../engine/storfhocail';
+import { SF, SF_WORD, applyRestore, ownedCount, type RestorePoint } from '../../engine/storfhocail';
 import { saveFile } from '../../app/backup';
 import { ago, t } from '../../i18n';
 import { sfProgress } from '../../storage';
@@ -18,14 +19,17 @@ export function BagScreen() {
   const [restoring, setRestoring] = useState(false);
   const total = SF.words.length;
   const n = ownedCount(pr);
-  const due = restoreDue(pr);
+  const rp = pr.restorePoint;
+  // "Later" hides the card for this visit only.
+  const [later, setLater] = useState(false);
   return (
     <Screen class="bag">
       <Scroll>
         <div class="pad">
           <Header title={t('bag.title')} right={<span class="caption muted tabnum">{t('sf.countOf', { n, total })}</span>} />
           <p class="body muted">{t('bag.intro')}</p>
-          {due > 0 && <RestorePoint at={due} />}
+          {rp && !rp.saved && !later && <RestoreCard rp={rp} onLater={() => setLater(true)} />}
+          {rp?.saved && <SavedPoint rp={rp} />}
           <div class="bag-grid">
             {SF.words.map((w) =>
               (pr.owned[w.id] ?? 0) > 0 ? (
@@ -51,36 +55,81 @@ export function BagScreen() {
   );
 }
 
-/** A milestone reached: save a code that brings the bag back to this point after lost data. */
-function RestorePoint({ at }: { at: number }) {
-  const done = () => (sfProgress.value = { ...sfProgress.value, restoreSeen: at });
+const shortDate = (d: string) => new Date(d + 'T12:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
+async function saveCode(rp: RestorePoint) {
+  try {
+    await navigator.clipboard?.writeText(rp.code);
+  } catch {
+    // no clipboard: the file is enough
+  }
+  await saveFile(`bain-amach-bag-${rp.at}.txt`, rp.code + '\n', 'text/plain');
+}
+
+/** The tiles a restore point holds; any that have left the bag since are faded. */
+function PointStrip({ rp }: { rp: RestorePoint }) {
+  const owned = sfProgress.value.owned;
   return (
-    <div class="panel restore-point" role="region" aria-label={t('bag.milestone', { n: at })}>
+    <div class="rp-strip" role="list" aria-label={t('bag.pointHolds', { list: rp.words.map((w) => SF_WORD[w]?.word ?? w).join(', ') })}>
+      {rp.words.map((w) => (
+        <span role="listitem" key={w} class={(owned[w] ?? 0) > 0 ? '' : 'is-gone'}>
+          <SfMini word={w} size={24} glyph />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** A restore point not yet saved: it waits here, and losing tiles afterwards doesn't change it. */
+function RestoreCard({ rp, onLater }: { rp: RestorePoint; onLater: () => void }) {
+  const pr = sfProgress.value;
+  const intact = rp.words.every((w) => (pr.owned[w] ?? 0) > 0);
+  return (
+    <div class="panel restore-point" role="region" aria-label={t('bag.pointTitle', { n: rp.at })}>
       <div class="rp-head">
-        <span class="rp-n">{t('bag.milestone', { n: at })}</span>
-        <span class="caption muted">{t('bag.milestoneReady')}</span>
+        <span class="rp-n">{intact ? t('bag.milestone', { n: rp.at }) : t('bag.pointTitle', { n: rp.at })}</span>
+        <span class="caption muted">{intact ? t('bag.milestoneReady') : t('bag.notSaved')}</span>
       </div>
-      <p class="body">{t('bag.milestoneBody', { n: at })}</p>
+      <p class="body">{intact ? t('bag.milestoneBody', { n: rp.at }) : t('bag.pointBody', { n: rp.at, date: shortDate(rp.reached) })}</p>
+      {!intact && <PointStrip rp={rp} />}
       <div class="row2">
-        <button class="ba-btn ba-btn-secondary" onClick={done}>
-          {t('bag.notNow')}
+        <button class="ba-btn ba-btn-secondary" onClick={onLater}>
+          {t('bag.later')}
         </button>
         <button
           class="ba-btn ba-btn-primary"
           onClick={async () => {
-            const code = restoreCode(sfProgress.value);
-            try {
-              await navigator.clipboard?.writeText(code);
-            } catch {
-              // no clipboard: the file is enough
-            }
-            await saveFile(`bain-amach-bag-${at}.txt`, code + '\n', 'text/plain');
-            done();
+            await saveCode(rp);
+            const today = new Date().toISOString().slice(0, 10);
+            sfProgress.value = { ...sfProgress.value, restorePoint: { ...rp, saved: true, savedOn: rp.savedOn ?? today } };
           }}
         >
           {t('bag.saveRestore')}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** A saved restore point stays listed, so its code can be copied again. */
+function SavedPoint({ rp }: { rp: RestorePoint }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div class="rp-saved">
+      <div class="rp-saved-row">
+        <span class="caption muted">{t('bag.savedRow', { n: rp.at, date: shortDate(rp.savedOn ?? rp.reached) })}</span>
+        <button class="ba-btn ba-btn-quiet link-btn" onClick={() => setShow(!show)} aria-expanded={show ? 'true' : 'false'}>
+          {show ? t('bag.hideCode') : t('bag.showCode')}
+        </button>
+      </div>
+      {show && (
+        <>
+          <textarea class="restore-code" rows={3} readOnly value={rp.code} aria-label={t('bag.restoreCode')} onFocus={(e) => (e.target as HTMLTextAreaElement).select()} />
+          <button class="ba-btn ba-btn-secondary" onClick={() => saveCode(rp)}>
+            {t('bag.copyAgain')}
+          </button>
+        </>
+      )}
     </div>
   );
 }

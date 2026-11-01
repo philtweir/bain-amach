@@ -361,6 +361,37 @@ export function sfMoves(s: GameState, p: number, word: string, handSpots = 4): S
   return out;
 }
 
+/**
+ * Stórfhocal lines through a tile already on the table (any player's, not yet shared): another phrase
+ * of that tile, or the same one again, with a verb from the hand and particles from the river or
+ * wildcards. No tile is laid and nothing goes into the hand's count.
+ */
+export function sfThroughMoves(s: GameState, p: number, only?: { x: number; y: number }): SfMove[] {
+  if (!s.sf) return [];
+  const g = view(s);
+  const hand = s.hands[p];
+  const wildIds = hand.filter((c) => c.k === 'W').map((c) => c.id);
+  const out: SfMove[] = [];
+  for (const b of s.board) {
+    if (b.k !== 'S' || b.cross || (only && (only.x !== b.x || only.y !== b.y))) continue;
+    for (const ph of SF_WORD[b.t]?.phrases ?? []) {
+      if (!phraseInDeck(ph)) continue;
+      const vc = hand.find((h) => h.k === 'V' && h.t === ph.verb);
+      if (!vc) continue;
+      const L = ph.pattern.length;
+      const i = ph.pattern.indexOf('~');
+      const src = g.plan(phraseParticles(ph), wildIds);
+      if (!src) continue;
+      for (const d of DIRS) {
+        const vx = b.x - d[0] * (i + 1),
+          vy = b.y - d[1] * (i + 1);
+        if (g.runFree(vx, vy, d, 0, L, i + 1)) out.push({ type: 'sf', word: b.t, phrase: ph.id, verb: { hand: vc.id }, x: vx, y: vy, d, src, on: { x: b.x, y: b.y } });
+      }
+    }
+  }
+  return out;
+}
+
 /** Take a tile from the bag into p's hand: one at a time. Doesn't use a turn. The caller checks the bag holds it. */
 export function pouchPut(s0: GameState, p: number, word: string): Result {
   if (!s0.sf || s0.over) return { ok: false, reason: { why: 'NotLegal', detail: 'stórfhocail are off in this game' } };
@@ -385,7 +416,14 @@ function rejectSf(s: GameState, p: number, mv: SfMove): Rejection | null {
   if (!s.sf) return { why: 'NotLegal', detail: 'stórfhocail are off in this game' };
   const ph = SF_PHRASE[mv.phrase];
   if (!SF_WORD[mv.word] || !ph || ph.word !== mv.word) return { why: 'NotLegal', detail: 'that phrase is not on this tile' };
-  if (!holdsTile(s, p, mv.word)) return { why: 'NotLegal', detail: 'tile not held' };
+  if (mv.on) {
+    // Through a tile on the table: like a line through a particle, the verb comes from the hand, the
+    // tile is the line's one shared card, and a tile can be shared once.
+    const t = view(s).at(mv.on.x, mv.on.y);
+    if (!t || t.k !== 'S' || t.t !== mv.word || t.cross) return { why: 'NotLegal', detail: 'cannot run through that tile' };
+    if (!('hand' in mv.verb)) return { why: 'NotLegal', detail: 'a line through a tile needs a verb from the hand' };
+    if (mv.src.some((x) => 'existing' in x)) return { why: 'NotLegal', detail: 'only one card may be shared' };
+  } else if (!holdsTile(s, p, mv.word)) return { why: 'NotLegal', detail: 'tile not held' };
   if (!phraseInDeck(ph)) return { why: 'NotLegal', detail: "this deck can't make that phrase" };
   const parts = phraseParticles(ph);
   if (mv.src.length !== parts.length) return { why: 'NotLegal', detail: 'wrong number of particles' };
@@ -414,7 +452,11 @@ function rejectSf(s: GameState, p: number, mv: SfMove): Rejection | null {
       y = mv.y + dy * (i + 1),
       occ = g.at(x, y);
     if (tok === '~') {
-      // The tile's cell is never shared.
+      if (mv.on) {
+        if (x !== mv.on.x || y !== mv.on.y) return { why: 'NotLegal', detail: 'the tile is not where the phrase puts it' };
+        continue;
+      }
+      // A tile from the hand needs its cell free.
       if (occ) return { why: 'Taken', by: occ.owner >= 0 ? occ.owner : null, card: { x, y } };
       continue;
     }
@@ -686,7 +728,10 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
     ph.pattern.forEach((tok, i) => {
       const x = mv.x + dx * (i + 1),
         y = mv.y + dy * (i + 1);
-      if (tok === '~') g.put(x, y, { id: SF_CARD_ID + s.lines.length, k: 'S', t: mv.word }, axis, p, { phrase: ph.id });
+      if (tok === '~') {
+        if (mv.on) g.at(x, y)!.cross = true;
+        else g.put(x, y, { id: SF_CARD_ID + s.lines.length, k: 'S', t: mv.word }, axis, p, { phrase: ph.id });
+      }
       else {
         const src = mv.src[q++];
         if ('existing' in src) g.at(x, y)!.cross = true;
@@ -699,13 +744,15 @@ export function apply(s0: GameState, p: number, mv: Move): Result {
       cells.push([x, y]);
     });
     const sf = s.sf!;
-    const pouch = sf.pouch[p] ?? [];
-    if (pouch.includes(mv.word)) sf.pouch[p] = pouch.filter((w, i) => w !== mv.word || i !== pouch.indexOf(mv.word));
-    sf.laid.push({ word: mv.word, phrase: ph.id, p });
-    // The player's tile opens a stake; a bot's answers it.
-    sf.stake = s.config.players[p]?.kind === 'human';
+    if (!mv.on) {
+      const pouch = sf.pouch[p] ?? [];
+      if (pouch.includes(mv.word)) sf.pouch[p] = pouch.filter((w, i) => w !== mv.word || i !== pouch.indexOf(mv.word));
+      sf.laid.push({ word: mv.word, phrase: ph.id, p });
+      // The player's tile opens a stake; a bot's answers it. A line through a tile on the table lays none.
+      sf.stake = s.config.players[p]?.kind === 'human';
+    }
     const wild = mv.src.some((x) => 'wild' in x),
-      straddle = isStraddle(mv);
+      straddle = isStraddle(mv) || !!mv.on;
     s.lines.push({ p, c: ph.id, g: ph.meaning, cells, wild, straddle, turnNo: s.turnNo, sf: true });
     ev = { e: 'line', p, c: ph.id, g: ph.meaning, cells, wild, straddle, river, turnNo: s.turnNo, sf: true };
     if (!s.config.legacyStall) s.stalls = 0;
